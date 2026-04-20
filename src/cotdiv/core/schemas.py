@@ -25,6 +25,8 @@ class MetricValue(BaseModel):
 class TestResult(BaseModel):
     """Output of a Lanham-style causal-intervention test."""
 
+    __test__ = False  # tell pytest this is not a test class
+
     model_config = ConfigDict(frozen=True)
 
     name: str
