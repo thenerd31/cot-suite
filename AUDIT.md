@@ -55,6 +55,9 @@ Breakdown of test counts by file:
 
 ### 1. `mistake_injection` — same model or different?
 
+*Snippet is a pre-fix snapshot; line numbers reference the state prior to
+commit `5a81ac7`.*
+
 Snippet from `src/cotdiv/tests/lanham/mistake_injection.py:84-89`:
 
 ```python
@@ -78,6 +81,9 @@ corruption. The prior default violated this.
 > applied to `paraphrasing`'s `paraphraser`.
 
 ### 2. `paraphrasing` — does the paraphraser see the question?
+
+*Snippet is a pre-fix snapshot; line numbers reference the state prior to
+commit `5a81ac7`.*
 
 Snippet from `src/cotdiv/tests/lanham/paraphrasing.py:36-43`:
 
@@ -108,6 +114,9 @@ test (same shortcut as #1). The paper uses a separate paraphraser for the
 same RLHF-independence reason.
 
 ### 3. Classification thresholds — where do the numbers come from?
+
+*Snippet is a pre-fix snapshot; line numbers reference the state prior to
+commit `5a81ac7`.*
 
 Snippet from `src/cotdiv/core/classify.py:20-23`:
 
