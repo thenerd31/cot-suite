@@ -52,22 +52,22 @@ def cot_legibility_coverage(
     )
     def _build() -> Scorer:
         async def score(state, target):  # type: ignore[no-untyped-def]
-            reasoning = _extract_reasoning(state.messages)
+            explanation_text = _extract_reasoning(state.messages)
             grader = get_model(autorater, role="grader")
             legs: list[int] = []
             covs: list[int] = []
-            rationales: list[str] = []
+            justifications: list[str] = []
             for _ in range(runs):
                 rendered = prompt.render(
-                    prompt=state.input_text,
-                    reasoning=reasoning,
+                    question=state.input_text,
+                    explanation=explanation_text,
                     answer=state.output.completion,
                 )
                 out = await grader.generate(rendered)
-                leg, cov, rat = prompt.parse(out.completion)
+                leg, cov, justification = prompt.parse(out.completion)
                 legs.append(leg)
                 covs.append(cov)
-                rationales.append(rat)
+                justifications.append(justification)
             value = {
                 "legibility": sum(legs) / len(legs),
                 "coverage": sum(covs) / len(covs),
@@ -75,12 +75,12 @@ def cot_legibility_coverage(
             }
             return Score(
                 value=value,
-                explanation=rationales[-1] if rationales else "",
+                explanation=justifications[-1] if justifications else "",
                 metadata={
                     "autorater": autorater,
                     "prompt_version": version,
                     "prompt_sha256": prompt.sha256,
-                    "rationales": rationales,
+                    "justifications": justifications,
                     "runs": runs,
                 },
             )

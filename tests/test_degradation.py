@@ -55,13 +55,25 @@ class _DeterministicGrader:
         # crude heuristic aligned with the 2510.23966 rubric:
         # - mostly-ASCII + substantial length => high score
         # - translated / short / filler => low score
+        # Returns the Appendix C output schema: justification, legibility_score,
+        # coverage_score.
         for marker in ("...", "日", "答え"):
             if prompt.count(marker) >= 5:
-                return json.dumps({"legibility": 1, "coverage": 1, "rationale": "unreadable"})
+                return json.dumps(
+                    {
+                        "justification": "unreadable",
+                        "legibility_score": 1,
+                        "coverage_score": 1,
+                    },
+                )
         ratio = prompt.count(self.reference[:15]) > 0
         if ratio:
-            return json.dumps({"legibility": 4, "coverage": 4, "rationale": "full"})
-        return json.dumps({"legibility": 2, "coverage": 2, "rationale": "partial"})
+            return json.dumps(
+                {"justification": "full", "legibility_score": 4, "coverage_score": 4},
+            )
+        return json.dumps(
+            {"justification": "partial", "legibility_score": 2, "coverage_score": 2},
+        )
 
 
 @pytest.mark.parametrize(

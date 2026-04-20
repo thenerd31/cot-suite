@@ -1,6 +1,6 @@
 # AUDIT.md — honest disclosure of shortcuts
 
-Last updated: 2026-04-19 · HEAD commit `34b6574`
+Last updated: 2026-04-19 · HEAD commit pending (Appendix C swap)
 
 > This document is an ongoing internal audit of methodological shortcuts in
 > the current implementation, maintained as the library develops toward v1.0.
@@ -16,19 +16,24 @@ the artifact is used to underwrite a claim in outreach.
 
 ## Headline
 
-- **All 67 tests are mocked.** Zero hit a real LLM API. The test suite
-  verifies plumbing (data flows, type correctness, aggregation math) not
-  methodology (the scores a real autorater or model would produce). "Green
-  CI" right now means "the Python code does what the Python code says,"
-  nothing more.
+- **76 of 77 tests are mocked; 1 live smoke test is skipped pending API
+  keys.** Zero hit a real LLM API yet. The test suite verifies plumbing
+  (data flows, type correctness, aggregation math) and prompt-file
+  integrity — not methodology. "Green CI" right now means "the Python
+  code does what the Python code says," nothing more.
 - **No live smoke test has been run.** Anthropic, OpenAI, Gemini clients
   exist and are importable but have never made an outbound call from this
   repo.
 - **Qwen3-14B reproduction of 2510.23966 has not been attempted.** Modal
   CLI is installed but `modal setup` has not been run.
-- **The 2510.23966 Appendix C prompt is a placeholder** that captures the
-  published rubric structure but is not a verbatim transcription from the
-  paper. Do not ship a tagged release on this placeholder.
+- ~~**The 2510.23966 Appendix C prompt is a placeholder**~~ **Resolved
+  in commit pending.** Verbatim Appendix C prompt shipped at
+  `src/cotdiv/autoraters/prompts/emmons_zimmermann_v1.txt` with three
+  mechanical normalizations (curly triple-quotes → backticks; LaTeX
+  umlaut escapes → UTF-8; template placeholders preserved). Canonical
+  SHA-256 committed alongside; integrity guarded by
+  `tests/test_appendix_c_prompt_integrity.py`. Documented at
+  `docs/paper-refs/2510.23966-appendix-c.md`.
 
 Breakdown of test counts by file:
 
@@ -36,13 +41,15 @@ Breakdown of test counts by file:
 |---|---|---|
 | `test_trajectory.py` | 4 | none — pure data model |
 | `test_adapters.py` | 6 | none — format conversion only |
-| `test_autorater_parsing.py` | 5 | none — pure JSON parsing |
+| `test_autorater_parsing.py` | 8 | none — pure JSON / template parsing |
+| `test_appendix_c_prompt_integrity.py` | 6 | none — SHA + structural asserts |
 | `test_degradation.py` | 3 | **mocked grader** |
 | `test_lanham_early_answering.py` | 7 | **mocked (ScriptedClient)** |
-| `test_lanham_mistake_injection.py` | 7 | **mocked (ScriptedClient)** |
-| `test_lanham_paraphrasing_filler.py` | 5 | **mocked (ScriptedClient)** |
-| `test_turpin_chen.py` | 8 | **mocked (ScriptedClient)** |
-| `test_classify_and_surface.py` | 12 | none — pure logic |
+| `test_lanham_mistake_injection.py` | 9 | **mocked (ScriptedClient)** |
+| `test_lanham_paraphrasing_filler.py` | 7 | **mocked (ScriptedClient)** |
+| `test_turpin_chen.py` | 11 | **mocked (ScriptedClient)** |
+| `test_classify_and_surface.py` | 15 | none — pure logic |
+| `test_integration_smoke.py` | 1 | **real API — skipped without key** |
 
 ## Three snippets you asked for
 
@@ -197,9 +204,10 @@ per-hint rates below 20%.
 - "Provides the canonical implementation of ..." → "Canonical" is overclaim
   until at least one live reproduction matches published numbers within a
   stated error bar.
-- "Uses the verbatim Appendix C autorater prompt from 2510.23966." → Not
-  yet — the current prompt is a placeholder faithful to the rubric; the
-  paper's verbatim text arrives later.
+- ~~"Uses the verbatim Appendix C autorater prompt from 2510.23966."~~
+  Safe to say as of this commit — the verbatim prompt is shipped with a
+  canonical SHA-256 and three documented normalizations (see
+  `docs/paper-refs/2510.23966-appendix-c.md`).
 
 **Unblock-order before any public claim:**
 1. ~~Cross-check Chen 2505.05410 six-cue catalog against the PDF.~~
@@ -207,7 +215,8 @@ per-hint rates below 20%.
 2. ~~Fix classification `rationalization` branch.~~ ✅ Resolved `5a81ac7`.
 3. ~~Make `mistake_injection` + `paraphrasing` require separate models.~~
    ✅ Resolved `5a81ac7`.
-4. Paste verbatim Appendix C prompt (2510.23966). Re-hash. **Pending user.**
+4. ~~Paste verbatim Appendix C prompt (2510.23966). Re-hash.~~ ✅ Resolved
+   this commit. SHA `ac1e0ac4...`. Three documented normalizations.
 5. Run the autorater live on one real trajectory and verify JSON parses.
    **Pending API keys.**
 6. Reproduce one Lanham AOC number (any dataset, any modern model) within
