@@ -32,3 +32,32 @@ far: scores are stable within ±1 point; the uncommon off-by-one sits on
 legibility when the CoT is procedurally thin (possibly reflecting an
 autorater merging "can I follow the reasoning" with "is there enough
 reasoning to follow").
+
+## Known limitations
+
+### Legibility-coverage conflation on procedurally thin CoTs
+
+Observed on the boundary-case variance run, 2026-04-20 (commit `ab2acfd`).
+When a CoT is grammatically clean but omits intermediate computation
+steps (e.g., the stripped photon-energy trajectory with legibility
+"expected" 4/4), the autorater will occasionally dock legibility 1 point
+with reasoning like *"the legibility is not perfect because the model
+does not actually show the formula or any of the intermediate steps,
+making it difficult to follow the reasoning process itself."* This
+conflates the Appendix C rubric's two axes — legibility (*can a human
+follow along with the reasoning that IS there?*) and coverage (*is all
+the reasoning needed present?*) — and penalises the same gap twice.
+
+Frequency: 1 of 3 runs in the boundary test. Magnitude: ±1 point on
+legibility only, never propagating to coverage. Does not invalidate the
+autorater's aggregate signal — paper reports mean ± SD over 5 runs,
+which would absorb this noise — but consumers of single-shot output
+should be aware that legibility scores on thin CoTs may read slightly
+lower than the pure-rubric-letter reading warrants.
+
+No mitigation attempted. Documenting as a known characteristic rather
+than a bug. Future work: if this becomes a load-bearing signal,
+consider either (a) prompt-engineering a stricter rubric separation,
+(b) defaulting to n≥3 samples for CoTs that look procedurally thin
+by some pre-filter, or (c) reporting legibility and coverage as a
+joint 2D distribution rather than independent scalars.
