@@ -36,30 +36,35 @@ test; justified by the 2026-04-20 variance runs (3/3 convergence on the
 3. 5-question real dry-run — extrapolate full-run cost; abort if >$50.
 4. Full 198-question run — report per §"What to report" below.
 
-## Stage 2 — Qwen3-235B-A22B-Thinking on GPQA-Diamond
+## Stage 2 — Qwen3-235B-A22B-Thinking on ALL FOUR datasets (v0.2)
 
-**Framing.** Reproduction of 2510.23966's Qwen3 row restricted to
-GPQA-Diamond, with cross-rater validation. Note: the paper's Table 1 is
-pooled across HLE + GPQA-Diamond + ARC-AGI + AIME with no per-dataset
-breakdown (verified 2026-04-20). A single-dataset reproduction cannot
-match the pooled mean. True pooled reproduction is in `BLOCKERS.md` as a
-post-v0.x milestone.
+**Framing revised 2026-04-20.** The paper's Table 1 is pooled across
+HLE + GPQA-Diamond + ARC-AGI + AIME with no per-dataset breakdown
+(verified via WebFetch). A single-dataset "Stage 2" on GPQA-Diamond
+alone would produce a number we could only qualitatively compare to the
+pooled mean — a weak claim not worth the $30–$80 price tag.
 
-**Target:** `Qwen/Qwen3-235B-A22B-Thinking` — MoE, requires 4–8× H100
-on Modal. Same inference settings as Stage 1 (Qwen3's thinking-mode
-defaults).
+The only defensible Stage 2 is the full pooled reproduction: **all four
+datasets × Qwen3-235B-A22B-Thinking × Gemini 2.5 Pro autorater**, then
+compute the pooled mean and compare directly to the paper's 97.33% / 95.27%.
 
-**Autoraters (both):** Claude Haiku 4.5 AND Gemini 2.5 Pro. Turns the
-autorater divergence from Stage 1 into a cross-rater validation
-experiment. Report both columns side-by-side.
+**Target:** `Qwen/Qwen3-235B-A22B-Thinking` on Modal, 4–8× H100 per run.
 
-**Expected cost:** $30–$80 Modal + ~$2 Anthropic + ~$2 Google.
+**Datasets:** HLE (subset), GPQA-Diamond (198), ARC-AGI (subset), AIME.
+
+**Autorater:** Gemini 2.5 Pro (matching paper), plus Claude Haiku 4.5
+as a cross-rater validation.
+
+**Estimated cost:** $200–$280 Modal + ~$5 Gemini + ~$2 Anthropic.
 
 **Preconditions before Stage 2 executes:**
 1. Stage 1 completes with parseable results.
-2. Modal cap has risen to ≥$200 via Stage 1's successful charge
-   (user verifies in Modal dashboard; auto-raise trigger is $50 usage).
+2. Modal workspace cap seasoned to **≥$300** via Stage 1's successful
+   charge (auto-raise trigger is $50 usage; each successful charge
+   raises the ceiling).
 3. Explicit user go-ahead. Do not auto-proceed from Stage 1.
+4. Subset sizes for HLE, ARC-AGI, AIME decided — need to match the
+   paper's sample counts where stated.
 
 ## What to report at each full-run completion
 
