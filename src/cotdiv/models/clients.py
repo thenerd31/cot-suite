@@ -9,9 +9,10 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 
+@runtime_checkable
 class GraderClient(Protocol):
     async def complete(self, prompt: str) -> str: ...
 
