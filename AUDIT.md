@@ -1,6 +1,6 @@
 # AUDIT.md — honest disclosure of shortcuts
 
-Last updated: 2026-04-19 · HEAD commit pending (Appendix C swap)
+Last updated: 2026-04-19 · HEAD commit `ccbd8df`
 
 > This document is an ongoing internal audit of methodological shortcuts in
 > the current implementation, maintained as the library develops toward v1.0.
@@ -27,7 +27,7 @@ the artifact is used to underwrite a claim in outreach.
 - **Qwen3-14B reproduction of 2510.23966 has not been attempted.** Modal
   CLI is installed but `modal setup` has not been run.
 - ~~**The 2510.23966 Appendix C prompt is a placeholder**~~ **Resolved
-  in commit pending.** Verbatim Appendix C prompt shipped at
+  in commit `ccbd8df`.** Verbatim Appendix C prompt shipped at
   `src/cotdiv/autoraters/prompts/emmons_zimmermann_v1.txt` with three
   mechanical normalizations (curly triple-quotes → backticks; LaTeX
   umlaut escapes → UTF-8; template placeholders preserved). Canonical
