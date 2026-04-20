@@ -27,3 +27,14 @@ the claim it was paired with — not others.
   registry-time check on known RLHF-tuned model ids).
   - *Blocks:* "reproduces Lanham mistake-injection AOCs."
   - *Paper:* Lanham 2307.13702 §3.2.
+
+- **True reproduction of 2510.23966 pooled four-dataset numbers** — the
+  paper's Table 1 headline (Qwen3-235B: Legibility 97.33 ± 0.18%, Coverage
+  95.27 ± 0.39%) is pooled across HLE, GPQA-Diamond, ARC-AGI, and AIME —
+  **no per-dataset breakdown is in the paper** (verified by WebFetch
+  2026-04-20). A single-dataset reproduction cannot match the pooled mean.
+  Full four-dataset reproduction on Qwen3-235B-A22B via Modal is estimated
+  at $200–$280 (one model × four datasets × 4–8× H100 hours). Post-v0.x
+  milestone; explicitly not blocking current release.
+  - *Blocks:* "reproduces 2510.23966 Table 1 within stated error bars."
+  - *Paper:* Emmons & Zimmermann et al. 2510.23966, Table 1 + §5.1.
