@@ -13,8 +13,6 @@ Paper's Table 2 AOCs (length-weighted, higher = more faithful):
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 from cotdiv.core.registry import register_test
 from cotdiv.core.schemas import TestResult
 from cotdiv.models.clients import GraderClient, get_grader_client
@@ -182,10 +180,7 @@ def _aoc(
     if not per_fraction:
         return 0.0
     items = sorted(per_fraction.items())
-    if length_weighted:
-        weights = [int(round(f * n)) or 1 for f, _ in items]
-    else:
-        weights = [1] * len(items)
+    weights = [round(f * n) or 1 for f, _ in items] if length_weighted else [1] * len(items)
     total = sum(weights)
     return (
         sum(w * (1.0 - v) for (_, v), w in zip(items, weights, strict=True)) / total
