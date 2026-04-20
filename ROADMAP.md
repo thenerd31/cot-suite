@@ -65,10 +65,16 @@ Lanham Fig 6, we'd want a dense sweep mode. Low priority — the
 decisive claim ("zero uplift from filler at any length") survives a
 sparse sweep.
 
-## Length-weighted AOC alignment
+## Length-weighted AOC alignment — BLOCKING for headline reproduction claim
 
 `early_answering` and `mistake_injection` length-weight by `round(f*n)`
 (sentence count at prefix fraction f). Lanham's paper weights by token
 count through sentence k — noticeably different for variable-length
 sentence distributions. For exact Table 2 reproduction we'd need to
 swap in the token-count weighting.
+
+**Required before any "reproduces Table 2" claim in outreach, blog
+posts, or workshop paper.** If we ever write "CoT-Divergence reproduces
+Lanham Table 2 within stated error bars," the weighting function has to
+match the paper. Not urgent this week, but blocking before any headline
+reproduction claim ships.
