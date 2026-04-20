@@ -69,3 +69,12 @@ sparse sweep.
 
 Moved to `BLOCKERS.md` on 2026-04-19. This is a precondition for any
 "reproduces Lanham Table 2" claim, not a future-work item.
+
+## Process lessons
+
+- **Pre-deploy vLLM smoke test.** Before any Modal deploy with a new
+  inference stack, run a local `AsyncEngineArgs` smoke-test against a
+  small model (e.g., Qwen2.5-0.5B on CPU) to catch API churn before
+  burning GPU time. Rationale: on 2026-04-20, vllm 0.19.x had dropped
+  the `disable_log_requests` kwarg — a 5s local `AsyncEngineArgs(...)`
+  instantiation would have caught it before ~$0.18 of H100 crash-loop.

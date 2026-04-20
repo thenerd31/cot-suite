@@ -76,7 +76,7 @@ class Qwen3Server:
         import os
 
         from vllm import AsyncEngineArgs, AsyncLLMEngine
-        from vllm.transformers_utils.tokenizer import get_tokenizer
+        from vllm.tokenizers import get_tokenizer  # moved from vllm.transformers_utils.tokenizer in 0.19
 
         os.environ.setdefault("HF_HOME", "/cache/hf")
 
@@ -87,7 +87,8 @@ class Qwen3Server:
             max_model_len=MAX_MODEL_LEN,
             trust_remote_code=False,
             enforce_eager=False,
-            disable_log_requests=True,
+            # `disable_log_requests=True` removed — kwarg dropped in vllm 0.19.x
+            # (was throwing TypeError on container init, 2026-04-20).
         )
         self.engine = AsyncLLMEngine.from_engine_args(engine_args)
         self.tokenizer = get_tokenizer(MODEL_ID, trust_remote_code=False)

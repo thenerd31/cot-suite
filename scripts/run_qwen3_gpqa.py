@@ -301,12 +301,14 @@ def qwen_generate_fn(*, stub: bool):
         return _stub
 
     # Lazy import so --dry-run doesn't require modal installed in the call chain.
-    from scripts.modal_qwen3_14b import Qwen3Server
+    import modal
 
-    server = Qwen3Server()
+    # Look up the class in the already-deployed app rather than re-defining it.
+    # Requires a prior `modal deploy scripts/modal_qwen3_14b.py`.
+    qwen3_server_cls = modal.Cls.from_name("cotdiv-qwen3-14b", "Qwen3Server")
+    server = qwen3_server_cls()
 
     async def _real(question: str, cfg: GenerationConfig) -> dict:
-        # Modal .remote.aio returns an awaitable.
         return await server.generate.remote.aio(
             question=question,
             temperature=cfg.temperature,
@@ -458,9 +460,12 @@ async def run_pipeline(
     summary_path = output_dir / "summary.json"
 
     rows: list[RunRow] = []
+    first_client_wall: float | None = None
+    first_server_wall: float | None = None
     t0 = time.monotonic()
     with results_path.open("w") as fh:
         for i, sample in enumerate(samples):
+            call_t0 = time.monotonic()
             row = await run_one(
                 sample,
                 cfg,
@@ -468,6 +473,9 @@ async def run_pipeline(
                 autorater=autorater,
                 autorater_prompt=autorater_prompt,
             )
+            if i == 0 and not stub:
+                first_client_wall = time.monotonic() - call_t0
+                first_server_wall = row.latency_seconds
             rows.append(row)
             fh.write(json.dumps(asdict(row)) + "\n")
             fh.flush()
@@ -475,7 +483,8 @@ async def run_pipeline(
                 f"  [{i + 1}/{len(samples)}] {sample.question_id} "
                 f"correct={row.is_correct} "
                 f"leg={row.autorater_legibility} cov={row.autorater_coverage} "
-                f"latency={row.latency_seconds:.2f}s",
+                f"latency={row.latency_seconds:.2f}s "
+                f"thinking_tokens={row.thinking_tokens}",
                 file=sys.stderr,
             )
     total_wall = time.monotonic() - t0
@@ -486,6 +495,10 @@ async def run_pipeline(
     summary["autorater_model"] = "stub" if stub else AUTORATER_MODEL
     summary["stub_mode"] = stub
     summary["generation_config"] = asdict(cfg)
+    if first_client_wall is not None and first_server_wall is not None:
+        summary["first_call_client_wall_s"] = first_client_wall
+        summary["first_call_server_wall_s"] = first_server_wall
+        summary["cold_start_approx_s"] = max(0.0, first_client_wall - first_server_wall)
     summary_path.write_text(json.dumps(summary, indent=2))
     return summary
 
