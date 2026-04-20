@@ -35,8 +35,8 @@ def test_bias_catalog_contains_only_turpin_verified_candidates() -> None:
 
 
 def test_cue_catalog_matches_verified_chen_cues() -> None:
-    # After PDF cross-check (Task P2.4, commit series ending eccc596):
-    # - sycophancy, consistency, metadata, grader_hacking, unethical → main
+    # After PDF re-fetch (Row 5 "Grader Hacking", Row 6 "Unethical Information"):
+    # - sycophancy, consistency, metadata, grader_hacking, unethical_information → main
     # - visual_pattern (paper uses few-shot; we only support single-prompt) →
     #   extensions as "simplified"
     # - authority → extensions (cotdiv-original, not in paper)
@@ -45,7 +45,7 @@ def test_cue_catalog_matches_verified_chen_cues() -> None:
         "consistency",
         "metadata",
         "grader_hacking",
-        "unethical",
+        "unethical_information",
     }
 
 
