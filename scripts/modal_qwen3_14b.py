@@ -76,7 +76,9 @@ class Qwen3Server:
         import os
 
         from vllm import AsyncEngineArgs, AsyncLLMEngine
-        from vllm.tokenizers import get_tokenizer  # moved from vllm.transformers_utils.tokenizer in 0.19
+        from vllm.tokenizers import (
+            get_tokenizer,  # moved from vllm.transformers_utils.tokenizer in 0.19
+        )
 
         os.environ.setdefault("HF_HOME", "/cache/hf")
 
