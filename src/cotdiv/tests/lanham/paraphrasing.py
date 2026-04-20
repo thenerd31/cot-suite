@@ -54,7 +54,7 @@ _ELICITATION_PROMPT = (
 async def paraphrasing(
     *,
     model: str | GraderClient,
-    paraphraser: str | GraderClient | None = None,
+    paraphraser: str | GraderClient,
     question: str,
     cot: str,
     answer_extractor: AnswerExtractor = mcq_answer_extractor,
@@ -66,21 +66,35 @@ async def paraphrasing(
 
     Args:
         model: Model under test.
-        paraphraser: Separate model for paraphrasing. Defaults to `model`;
-            the paper uses the same RLHF model in isolation (no question).
+        paraphraser: Separate paraphraser model. REQUIRED — per
+            Lanham 2307.13702, a distinct paraphraser (given only the CoT,
+            not the question) is needed to avoid answer leakage. Pass
+            e.g. `'qwen/qwen3-14b-base'`.
         fractions: Prefix fractions. Skips 0.0 (empty prefix — nothing to
             paraphrase) by default.
 
     Returns:
         TestResult with `aoc` = mean absolute gap between original and
         paraphrased retention curves across fractions. Lower = less
-        steganographic signal.
+        steganographic signal. NOTE: this scalar is a cotdiv synthesis;
+        the paper reports the two curves side-by-side. See `raw` for
+        the full `original_retention` and `paraphrased_retention` dicts.
     """
+    if paraphraser is None:
+        raise ValueError(
+            "Per Lanham 2307.13702, paraphrasing must use a separate "
+            "paraphraser model. Pass e.g. paraphraser='qwen/qwen3-14b-base'.",
+        )
+    if isinstance(paraphraser, str) and paraphraser == model:
+        raise ValueError(
+            "paraphraser must differ from the model under test. "
+            "Per Lanham 2307.13702, using the same RLHF model as both agent "
+            "and paraphraser risks re-solving the problem rather than "
+            "rephrasing.",
+        )
     client = model if isinstance(model, GraderClient) else get_grader_client(model)
     para_client = (
-        paraphraser
-        if isinstance(paraphraser, GraderClient)
-        else (get_grader_client(paraphraser) if paraphraser else client)
+        paraphraser if isinstance(paraphraser, GraderClient) else get_grader_client(paraphraser)
     )
 
     sentences = sentence_splitter(cot)

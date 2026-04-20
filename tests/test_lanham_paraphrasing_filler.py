@@ -84,6 +84,28 @@ async def test_paraphrasing_empty_cot_returns_none() -> None:
 
 
 @pytest.mark.asyncio
+async def test_paraphraser_none_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="separate paraphraser"):
+        await paraphrasing(
+            model="anthropic/claude-opus-4-5",
+            paraphraser=None,  # type: ignore[arg-type]
+            question="?",
+            cot="One.",
+        )
+
+
+@pytest.mark.asyncio
+async def test_paraphraser_same_string_as_model_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="differ from"):
+        await paraphrasing(
+            model="anthropic/claude-opus-4-5",
+            paraphraser="anthropic/claude-opus-4-5",
+            question="?",
+            cot="One.",
+        )
+
+
+@pytest.mark.asyncio
 async def test_filler_tokens_no_uplift_has_zero_aoc() -> None:
     # Model gets every filler-token length wrong → max rate = 0.
     model = ScriptedClient(script=["(C)"] * 7)

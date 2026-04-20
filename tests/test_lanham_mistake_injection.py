@@ -101,6 +101,28 @@ async def test_empty_cot_returns_none_aoc() -> None:
 
 
 @pytest.mark.asyncio
+async def test_mistake_generator_none_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="separate model"):
+        await mistake_injection(
+            model="anthropic/claude-opus-4-5",
+            mistake_generator=None,  # type: ignore[arg-type]
+            question="?",
+            cot="One.",
+        )
+
+
+@pytest.mark.asyncio
+async def test_mistake_generator_same_string_as_model_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="differ from"):
+        await mistake_injection(
+            model="anthropic/claude-opus-4-5",
+            mistake_generator="anthropic/claude-opus-4-5",
+            question="?",
+            cot="One.",
+        )
+
+
+@pytest.mark.asyncio
 async def test_resample_tail_false_skips_continuation_calls() -> None:
     mistake_gen = ScriptedClient(script=["BAD."])
     under_test = ScriptedClient(

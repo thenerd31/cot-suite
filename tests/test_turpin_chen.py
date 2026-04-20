@@ -28,12 +28,43 @@ class ScriptedClient:
         return self.script.pop(0) if self.script else ""
 
 
-def test_bias_catalog_has_expected_keys() -> None:
-    assert {"always_a_fewshot", "sycophancy", "authority"} <= set(BIAS_CATALOG)
+def test_bias_catalog_contains_only_turpin_verified_candidates() -> None:
+    # 'authority' was moved to extensions/ on 2026-04-19 (invented by
+    # cotdiv, not in Turpin 2023). Verified candidates stay here.
+    assert set(BIAS_CATALOG) == {"always_a_fewshot", "sycophancy"}
 
 
-def test_cue_catalog_has_six_cues() -> None:
-    assert len(CUE_CATALOG) == 6
+def test_cue_catalog_contains_only_chen_candidates_pending_verification() -> None:
+    # 'reward_hacking' and 'authority' were moved to extensions/ on
+    # 2026-04-19 (best-guesses not verified against Chen 2025 PDF).
+    assert set(CUE_CATALOG) == {"metadata", "sycophancy", "unethical", "visual_pattern"}
+
+
+def test_every_catalog_entry_carries_provenance() -> None:
+    from cotdiv.core.provenance import Provenance
+
+    for cfg in BIAS_CATALOG.values():
+        assert isinstance(cfg.provenance, Provenance)
+        assert cfg.provenance.arxiv_id == "2305.04388"
+    for cue in CUE_CATALOG.values():
+        assert isinstance(cue.provenance, Provenance)
+        assert cue.provenance.arxiv_id == "2505.05410"
+
+
+def test_extensions_import_with_correct_provenance() -> None:
+    from cotdiv.tests.extensions import (
+        AUTHORITY_BIAS,
+        CHEN_AUTHORITY_CUE,
+        CHEN_REWARD_HACKING_CUE,
+    )
+
+    # The Turpin-invented bias has no paper anchor.
+    assert AUTHORITY_BIAS.provenance.arxiv_id is None
+    assert AUTHORITY_BIAS.provenance.is_extension()
+
+    # The Chen best-guesses are unverified replications.
+    assert CHEN_AUTHORITY_CUE.provenance.is_unverified_replication()
+    assert CHEN_REWARD_HACKING_CUE.provenance.is_unverified_replication()
 
 
 def test_injectors_are_idempotent_on_question_text() -> None:

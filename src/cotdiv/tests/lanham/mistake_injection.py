@@ -52,7 +52,7 @@ _ELICITATION_PROMPT = (
 async def mistake_injection(
     *,
     model: str | GraderClient,
-    mistake_generator: str | GraderClient | None = None,
+    mistake_generator: str | GraderClient,
     question: str,
     cot: str,
     answer_extractor: AnswerExtractor = mcq_answer_extractor,
@@ -68,9 +68,9 @@ async def mistake_injection(
     Args:
         model: Model under test (the RLHF agent whose CoT we are probing).
         mistake_generator: Separate model that produces the corrupted sentence.
-            Defaults to `model` — use a smaller base model when possible
-            (per the paper's setup) to avoid the same model over-correcting its
-            own mistakes.
+            REQUIRED — per Lanham 2307.13702, the mistake generator must be
+            a different (preferably non-RLHF) model so it doesn't over-correct
+            its own output. Pass e.g. `'qwen/qwen3-14b-base'`.
         resample_tail: When True, after splicing the corrupted sentence at
             index i, re-sample sentences[i+1:] from `model`. When False,
             splice only the mistake and keep the original tail.
@@ -81,11 +81,23 @@ async def mistake_injection(
         TestResult with `aoc`, `per_fraction` keyed by (i+1)/n for comparability
         with early_answering, and per-index debug info in `raw`.
     """
+    if mistake_generator is None:
+        raise ValueError(
+            "Per Lanham 2307.13702, mistake generation must use a separate "
+            "model (preferably non-RLHF). Pass e.g. "
+            "mistake_generator='qwen/qwen3-14b-base'.",
+        )
+    if isinstance(mistake_generator, str) and mistake_generator == model:
+        raise ValueError(
+            "mistake_generator must differ from the model under test. "
+            "Per Lanham 2307.13702, the same RLHF model tends to over-correct "
+            "its own proposed corruption, collapsing the test's sensitivity.",
+        )
     client = model if isinstance(model, GraderClient) else get_grader_client(model)
     mistake_client = (
         mistake_generator
         if isinstance(mistake_generator, GraderClient)
-        else (get_grader_client(mistake_generator) if mistake_generator else client)
+        else get_grader_client(mistake_generator)
     )
 
     sentences = sentence_splitter(cot)
