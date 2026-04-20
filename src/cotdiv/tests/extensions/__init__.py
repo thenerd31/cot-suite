@@ -21,10 +21,12 @@ namespace only when:
 
 from cotdiv.tests.extensions.authority_bias import AUTHORITY_BIAS
 from cotdiv.tests.extensions.chen_authority_cue import CHEN_AUTHORITY_CUE
-from cotdiv.tests.extensions.chen_reward_hacking_cue import CHEN_REWARD_HACKING_CUE
+from cotdiv.tests.extensions.chen_visual_pattern_cue import (
+    CHEN_VISUAL_PATTERN_SIMPLIFIED,
+)
 
 __all__ = [
     "AUTHORITY_BIAS",
     "CHEN_AUTHORITY_CUE",
-    "CHEN_REWARD_HACKING_CUE",
+    "CHEN_VISUAL_PATTERN_SIMPLIFIED",
 ]

@@ -34,10 +34,27 @@ def test_bias_catalog_contains_only_turpin_verified_candidates() -> None:
     assert set(BIAS_CATALOG) == {"always_a_fewshot", "sycophancy"}
 
 
-def test_cue_catalog_contains_only_chen_candidates_pending_verification() -> None:
-    # 'reward_hacking' and 'authority' were moved to extensions/ on
-    # 2026-04-19 (best-guesses not verified against Chen 2025 PDF).
-    assert set(CUE_CATALOG) == {"metadata", "sycophancy", "unethical", "visual_pattern"}
+def test_cue_catalog_matches_verified_chen_cues() -> None:
+    # After PDF cross-check (Task P2.4, commit series ending eccc596):
+    # - sycophancy, consistency, metadata, grader_hacking, unethical → main
+    # - visual_pattern (paper uses few-shot; we only support single-prompt) →
+    #   extensions as "simplified"
+    # - authority → extensions (cotdiv-original, not in paper)
+    assert set(CUE_CATALOG) == {
+        "sycophancy",
+        "consistency",
+        "metadata",
+        "grader_hacking",
+        "unethical",
+    }
+
+
+def test_all_primary_cues_are_pdf_verified() -> None:
+    for cue in CUE_CATALOG.values():
+        assert cue.provenance.verified_against_pdf, (
+            f"cue {cue.name!r} is in the primary Chen namespace but not "
+            "verified_against_pdf — move to extensions/ or verify."
+        )
 
 
 def test_every_catalog_entry_carries_provenance() -> None:
@@ -55,16 +72,18 @@ def test_extensions_import_with_correct_provenance() -> None:
     from cotdiv.tests.extensions import (
         AUTHORITY_BIAS,
         CHEN_AUTHORITY_CUE,
-        CHEN_REWARD_HACKING_CUE,
+        CHEN_VISUAL_PATTERN_SIMPLIFIED,
     )
 
     # The Turpin-invented bias has no paper anchor.
     assert AUTHORITY_BIAS.provenance.arxiv_id is None
     assert AUTHORITY_BIAS.provenance.is_extension()
 
-    # The Chen best-guesses are unverified replications.
+    # Chen 'authority' is cotdiv-original (not in the paper's six cues).
     assert CHEN_AUTHORITY_CUE.provenance.is_unverified_replication()
-    assert CHEN_REWARD_HACKING_CUE.provenance.is_unverified_replication()
+
+    # Chen visual-pattern is a simplified form of a paper cue.
+    assert CHEN_VISUAL_PATTERN_SIMPLIFIED.provenance.is_unverified_replication()
 
 
 def test_injectors_are_idempotent_on_question_text() -> None:
