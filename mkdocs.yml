@@ -1,0 +1,40 @@
+site_name: cot-divergence
+site_description: Chain-of-thought faithfulness evaluation for reasoning-model agents
+site_url: https://cotdivergence.dev
+repo_url: https://github.com/cot-divergence/cot-divergence
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+    - search.suggest
+  palette:
+    - scheme: default
+      primary: indigo
+    - scheme: slate
+      primary: indigo
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Metrics:
+      - Legibility & Coverage: metrics/legibility_coverage.md
+      - Action Consistency: metrics/action_consistency.md
+      - CC-SHAP: metrics/cc_shap.md
+  - Tests:
+      - Lanham Four: tests/lanham.md
+      - Counterfactual (Turpin): tests/turpin.md
+      - Cue Injection (Chen): tests/chen.md
+  - Inspect AI: inspect.md
+  - Leaderboard: leaderboard.md
+  - References: references.md
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - admonition
+  - toc:
+      permalink: true

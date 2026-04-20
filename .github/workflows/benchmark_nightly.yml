@@ -1,0 +1,30 @@
+name: Nightly benchmark
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'cot-divergence'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          TODAY: $(date -I)
+        run: |
+          cotdiv eval faithbench --subset nightly \
+            --models claude-haiku-4-5,gpt-4o-mini,gemini-2.5-flash \
+            --output-dir "benchmarks/results/${TODAY}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nightly-results
+          path: benchmarks/results/

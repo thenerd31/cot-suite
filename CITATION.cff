@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use cot-divergence in research, please cite as below."
+title: "cot-divergence: A library for chain-of-thought faithfulness evaluation"
+authors:
+  - family-names: "CoT-Divergence contributors"
+version: 0.0.1
+date-released: 2026-04-19
+license: MIT
+repository-code: "https://github.com/cot-divergence/cot-divergence"
+url: "https://cotdivergence.dev"
