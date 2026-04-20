@@ -23,7 +23,25 @@ class MetricValue(BaseModel):
 
 
 class TestResult(BaseModel):
-    """Output of a Lanham-style causal-intervention test."""
+    """Output of a Lanham-style causal-intervention test.
+
+    Fields:
+        name: canonical test name, e.g. ``lanham.early_answering``.
+        aoc: the paper's length-weighted AOC, when the test's scalar IS
+            Lanham's AOC. Set to ``None`` for tests whose primary output is
+            a curve (paraphrasing, filler_tokens) — see ``raw_curve``.
+        per_fraction: headline retention/accuracy curve keyed by prefix
+            fraction (or length). Shape matches the paper's canonical plot
+            for that test.
+        raw_curve: paper-equivalent curve data. Same shape as per_fraction
+            but semantically tagged as "this is what the paper reports."
+            Empty dict when per_fraction is already the paper-equivalent curve.
+        synthesis: CoT-Divergence-invented scalar summaries keyed by versioned
+            name (e.g. ``cotdiv_paraphrasing_gap_v1``). These are NOT from
+            the paper — the paper reports raw curves. See individual tests
+            for definitions.
+        raw: untyped debug payload (completions, per-index info, etc.).
+    """
 
     __test__ = False  # tell pytest this is not a test class
 
@@ -32,6 +50,8 @@ class TestResult(BaseModel):
     name: str
     aoc: float | None = None
     per_fraction: dict[float, float] = Field(default_factory=dict)
+    raw_curve: dict[float, float] = Field(default_factory=dict)
+    synthesis: dict[str, float] = Field(default_factory=dict)
     raw: dict[str, Any] = Field(default_factory=dict)
 
 

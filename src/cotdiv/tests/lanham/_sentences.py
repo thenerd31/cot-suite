@@ -1,8 +1,16 @@
 """Sentence splitting helpers for Lanham-style tests.
 
-Default splitter is a conservative regex — no NLTK dependency. Callers that
-want NLTK `punkt` (as used in the original 2307.13702 code) can pass their
-own splitter into any test function.
+Two splitters ship:
+
+    - ``default_sentence_split`` — regex-based, zero dependencies. The default
+      for every Lanham test. Conservative on abbreviations.
+    - ``nltk_sentence_split`` — NLTK Punkt, matching Lanham 2307.13702's
+      original code. Requires the optional ``nltk`` install extra; the
+      punkt_tab data is downloaded lazily on first use.
+
+Callers pass whichever splitter they prefer into the ``sentence_splitter``
+argument of any Lanham test. For published-number reproductions, prefer
+``nltk_sentence_split``; for local / low-dependency runs the regex is fine.
 """
 
 from __future__ import annotations
@@ -29,6 +37,26 @@ def default_sentence_split(text: str) -> list[str]:
         return []
     pieces = _SENTENCE_BOUNDARY.split(text)
     return [p.strip() for p in pieces if p.strip()]
+
+
+def nltk_sentence_split(text: str) -> list[str]:
+    """NLTK Punkt sentence splitter — matches Lanham 2307.13702's original code.
+
+    Requires the ``[nlp]`` install extra: ``pip install 'cot-divergence[nlp]'``.
+    The ``punkt_tab`` data is downloaded lazily on first use (one-off ~40 KB).
+    """
+    try:
+        import nltk
+    except ImportError as exc:
+        raise ImportError(
+            "nltk_sentence_split requires the optional 'nlp' extra — "
+            "install with `pip install 'cot-divergence[nlp]'`.",
+        ) from exc
+    try:
+        return nltk.sent_tokenize(text)
+    except LookupError:
+        nltk.download("punkt_tab", quiet=True)
+        return nltk.sent_tokenize(text)
 
 
 Splitter = Callable[[str], list[str]]

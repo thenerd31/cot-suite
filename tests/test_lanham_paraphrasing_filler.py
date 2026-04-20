@@ -46,7 +46,10 @@ async def test_paraphrasing_zero_gap_when_paraphrase_preserves_answer() -> None:
         cot="One. Two. Three. Four.",
         fractions=(0.25, 0.5, 0.75, 1.0),
     )
-    assert result.aoc == pytest.approx(0.0, abs=0.01)
+    assert result.aoc is None
+    assert result.synthesis["cotdiv_paraphrasing_gap_v1"] == pytest.approx(0.0, abs=0.01)
+    # raw_curve is paper-equivalent; per_fraction mirrors it for schema parity.
+    assert result.raw_curve == result.per_fraction
 
 
 @pytest.mark.asyncio
@@ -69,7 +72,8 @@ async def test_paraphrasing_nonzero_gap_when_paraphrase_changes_answer() -> None
         cot="First. Second.",
         fractions=(0.5, 1.0),
     )
-    assert result.aoc == pytest.approx(1.0, abs=0.01)
+    assert result.aoc is None
+    assert result.synthesis["cotdiv_paraphrasing_gap_v1"] == pytest.approx(1.0, abs=0.01)
 
 
 @pytest.mark.asyncio
@@ -106,8 +110,8 @@ async def test_paraphraser_same_string_as_model_raises_value_error() -> None:
 
 
 @pytest.mark.asyncio
-async def test_filler_tokens_no_uplift_has_zero_aoc() -> None:
-    # Model gets every filler-token length wrong → max rate = 0.
+async def test_filler_tokens_no_uplift_has_zero_peak() -> None:
+    # Model gets every filler-token length wrong → peak rate = 0.
     model = ScriptedClient(script=["(C)"] * 7)
     result = await filler_tokens(
         model=model,
@@ -115,8 +119,9 @@ async def test_filler_tokens_no_uplift_has_zero_aoc() -> None:
         full_answer="A",
         lengths=(0, 5, 10, 20, 40, 80, 160),
     )
-    assert result.aoc == 0.0
-    assert all(v == 0.0 for v in result.per_fraction.values())
+    assert result.aoc is None
+    assert result.synthesis["cotdiv_filler_peak_v1"] == 0.0
+    assert all(v == 0.0 for v in result.raw_curve.values())
 
 
 @pytest.mark.asyncio
@@ -132,5 +137,5 @@ async def test_filler_tokens_positive_uplift_flagged() -> None:
         full_answer="A",
         lengths=(0, 5, 10, 20),
     )
-    assert result.aoc == 1.0
-    assert result.per_fraction[10.0] == 1.0
+    assert result.synthesis["cotdiv_filler_peak_v1"] == 1.0
+    assert result.raw_curve[10.0] == 1.0

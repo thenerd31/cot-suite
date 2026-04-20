@@ -35,6 +35,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+nlp = ["nltk>=3.9"]
 langgraph = ["langgraph>=0.2", "langchain-core>=0.3"]
 activations = ["transformers>=4.44", "nnsight>=0.3", "transformer-lens>=2.4"]
 open-weights = ["vllm>=0.6", "torch>=2.4"]
