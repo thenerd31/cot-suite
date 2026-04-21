@@ -58,7 +58,9 @@ dev = [
 ]
 
 [project.scripts]
-# Primary entry point (post-rename 2026-04-21).
+# Primary entry points (post-rename 2026-04-21). `cot-monitor` mirrors the
+# PyPI package name; `cotmon` is the compact shell-friendly alias.
+cot-monitor = "cotmon.cli:app"
 cotmon = "cotmon.cli:app"
 # Legacy alias kept for 90 days after rename. Emits DeprecationWarning.
 cotdiv = "cotdiv.cli:app"
