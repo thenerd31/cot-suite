@@ -1,0 +1,29 @@
+{
+  "n_total": 5,
+  "n_correct": 2,
+  "accuracy": 0.4,
+  "n_rated": 2,
+  "n_parse_failures": 0,
+  "parse_failure_ids": [],
+  "legibility_mean": 4.0,
+  "legibility_sd": 0.0,
+  "coverage_mean": 4.0,
+  "coverage_sd": 0.0,
+  "total_inference_wall_s": 216.729044673,
+  "total_thinking_tokens": 20286,
+  "wall_clock_seconds": 484.2764811250381,
+  "autorater_prompt_sha256": "ac1e0ac4044b0a64816bc3c4424e547a462e64d18cf0f5555dec7ed5b42aaa67",
+  "autorater_model": "claude-haiku-4-5",
+  "stub_mode": false,
+  "generation_config": {
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "max_tokens": 32768,
+    "seed": 0
+  },
+  "first_call_client_wall_s": 298.2746558750514,
+  "first_call_server_wall_s": 37.69175964499996,
+  "cold_start_approx_s": 260.58289623005146
+}
