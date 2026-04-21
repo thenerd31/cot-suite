@@ -566,15 +566,77 @@ def aggregate(rows: list[RunRow]) -> dict:
     }
 
 
+def _validate_resume(
+    results_path: Path,
+    samples: list[Sample],
+    start_from: int,
+) -> list[RunRow]:
+    """Read the existing results.jsonl and validate it matches samples[:start_from].
+
+    On any mismatch, raise ValueError rather than silently append. This is
+    Fix #3's row-count + question_id invariant check.
+    """
+    if not results_path.exists():
+        raise ValueError(
+            f"--start-from {start_from} specified but results.jsonl does not "
+            f"exist at {results_path}",
+        )
+    existing: list[dict] = []
+    with results_path.open() as fh:
+        for line in fh:
+            line = line.strip()
+            if line:
+                existing.append(json.loads(line))
+    if len(existing) != start_from:
+        raise ValueError(
+            f"--start-from {start_from} but results.jsonl has "
+            f"{len(existing)} rows. Refusing to resume with ambiguous boundary.",
+        )
+    for i, row in enumerate(existing):
+        if row["question_id"] != samples[i].question_id:
+            raise ValueError(
+                f"question_id mismatch at index {i}: "
+                f"results.jsonl has {row['question_id']!r}, "
+                f"current iteration would produce {samples[i].question_id!r}. "
+                "Dataset order drifted; cannot safely append.",
+            )
+    # Round-trip through RunRow so aggregate() sees the same shape on both
+    # paths. Ignore extra keys; tolerate pre-Fix-#2 rows that carry
+    # `autorater_raw` instead of `autorater_raw_response` by renaming on
+    # load.
+    field_names = {f.name for f in RunRow.__dataclass_fields__.values()}
+    preserved: list[RunRow] = []
+    for row in existing:
+        if "autorater_raw" in row and "autorater_raw_response" not in row:
+            row["autorater_raw_response"] = row.pop("autorater_raw")
+        filtered = {k: v for k, v in row.items() if k in field_names}
+        # Supply defaults for Fix #1/#2 fields added after these rows were
+        # written — pre-fix rows are treated as: not timed out, 0 retries.
+        filtered.setdefault("inference_timeout", False)
+        filtered.setdefault("inference_retry_count", 0)
+        filtered.setdefault("autorater_raw_response", None)
+        preserved.append(RunRow(**filtered))
+    return preserved
+
+
 async def run_pipeline(
     *,
     stub: bool,
     limit: int | None,
     output_dir: Path,
     cfg: GenerationConfig,
+    start_from: int = 0,
+    load_real_dataset: bool = False,
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
-    samples = load_gpqa_diamond(limit=limit, stub=stub)
+    # Dataset load axis is independent of inference stub axis:
+    #   --dry-run: both stubbed (original behavior)
+    #   --stub-inference-only: real dataset, stub inference (Fix #3 validation)
+    #   neither: both real (production runs)
+    samples = load_gpqa_diamond(
+        limit=limit,
+        stub=stub and not load_real_dataset,
+    )
 
     qwen = qwen_generate_fn(stub=stub)
     autorater = autorater_fn(stub=stub)
@@ -583,12 +645,24 @@ async def run_pipeline(
     results_path = output_dir / "results.jsonl"
     summary_path = output_dir / "summary.json"
 
-    rows: list[RunRow] = []
+    # Fix #3 2026-04-21: resume path.
+    preserved_rows: list[RunRow] = []
+    if start_from > 0:
+        preserved_rows = _validate_resume(results_path, samples, start_from)
+        print(
+            f"  [resume] validated {len(preserved_rows)} preserved rows; "
+            f"appending from index {start_from}",
+            file=sys.stderr,
+        )
+    open_mode = "a" if start_from > 0 else "w"
+
+    rows: list[RunRow] = list(preserved_rows)
     first_client_wall: float | None = None
     first_server_wall: float | None = None
     t0 = time.monotonic()
-    with results_path.open("w") as fh:
-        for i, sample in enumerate(samples):
+    with results_path.open(open_mode) as fh:
+        for i in range(start_from, len(samples)):
+            sample = samples[i]
             call_t0 = time.monotonic()
             row = await run_one(
                 sample,
@@ -597,7 +671,7 @@ async def run_pipeline(
                 autorater=autorater,
                 autorater_prompt=autorater_prompt,
             )
-            if i == 0 and not stub:
+            if i == start_from and not stub:
                 first_client_wall = time.monotonic() - call_t0
                 first_server_wall = row.latency_seconds
             rows.append(row)
@@ -608,7 +682,8 @@ async def run_pipeline(
                 f"correct={row.is_correct} "
                 f"leg={row.autorater_legibility} cov={row.autorater_coverage} "
                 f"latency={row.latency_seconds:.2f}s "
-                f"thinking_tokens={row.thinking_tokens}",
+                f"thinking_tokens={row.thinking_tokens}"
+                f"{' [timeout]' if row.inference_timeout else ''}",
                 file=sys.stderr,
             )
     total_wall = time.monotonic() - t0
@@ -635,10 +710,29 @@ def main() -> None:
         help="Stub both Qwen and autorater. Zero outbound. Validates pipeline wiring.",
     )
     parser.add_argument(
+        "--stub-inference-only",
+        action="store_true",
+        help=(
+            "Stub Qwen + autorater but LOAD THE REAL GPQA dataset. Requires "
+            "HF_TOKEN. Used for validating --start-from resume semantics "
+            "against the real dataset's question_id ordering without GPU spend."
+        ),
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
         help="Process only the first N questions (for real 5-question dry-run).",
+    )
+    parser.add_argument(
+        "--start-from",
+        type=int,
+        default=0,
+        help=(
+            "Resume from question index N. Validates results.jsonl has "
+            "exactly N rows with matching question_ids before appending. "
+            "Hard-errors on mismatch rather than silently overlapping."
+        ),
     )
     parser.add_argument(
         "--output-dir",
@@ -663,10 +757,13 @@ def main() -> None:
         seed=args.seed,
     )
 
-    if not args.dry_run and not os.environ.get("ANTHROPIC_API_KEY"):
+    fully_stubbed = args.dry_run and not args.stub_inference_only
+    stub_inference = args.dry_run or args.stub_inference_only
+
+    if not stub_inference and not os.environ.get("ANTHROPIC_API_KEY"):
         sys.stderr.write("ERROR: ANTHROPIC_API_KEY not set; either --dry-run or export key.\n")
         sys.exit(2)
-    if not args.dry_run and not os.environ.get("HF_TOKEN"):
+    if not fully_stubbed and not os.environ.get("HF_TOKEN"):
         sys.stderr.write(
             "ERROR: HF_TOKEN not set. GPQA-Diamond is a gated dataset — accept the "
             "license at https://huggingface.co/datasets/Idavidrein/gpqa then export HF_TOKEN.\n",
@@ -675,10 +772,12 @@ def main() -> None:
 
     summary = asyncio.run(
         run_pipeline(
-            stub=args.dry_run,
+            stub=stub_inference,
+            load_real_dataset=not fully_stubbed,
             limit=args.limit,
             output_dir=args.output_dir,
             cfg=cfg,
+            start_from=args.start_from,
         ),
     )
     print(json.dumps(summary, indent=2))
