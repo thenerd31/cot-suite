@@ -92,8 +92,13 @@ class RunRow:
     # Bookkeeping
     raw_model_content: str
     completion_tokens: int
-    autorater_raw: str | None
+    autorater_raw_response: str | None
     parse_error: str | None
+    # Fix #1 2026-04-21: true when the Modal call was skipped due to
+    # >5-min cap or exhausted retry budget. When True, generation fields
+    # (raw_cot, final_answer, thinking_tokens, etc.) are placeholders.
+    inference_timeout: bool = False
+    inference_retry_count: int = 0
 
 
 # =============================================================================
@@ -302,13 +307,29 @@ def qwen_generate_fn(*, stub: bool):
 
     # Lazy import so --dry-run doesn't require modal installed in the call chain.
     import modal
+    import modal.exception
 
     # Look up the class in the already-deployed app rather than re-defining it.
     # Requires a prior `modal deploy scripts/modal_qwen3_14b.py`.
     qwen3_server_cls = modal.Cls.from_name("cotdiv-qwen3-14b", "Qwen3Server")
     server = qwen3_server_cls()
 
-    async def _real(question: str, cfg: GenerationConfig) -> dict:
+    # Fix #1 2026-04-21: wrap .remote.aio() in (retry + 5-min cap).
+    # Modal's default client uses OUTPUTS_TIMEOUT=55s per internal poll
+    # and retries via grpclib; transient network hiccups still surface as
+    # modal.exception.ConnectionError ("Deadline exceeded"). First full-run
+    # crashed at Q82 on exactly this. We retry on ConnectionError +
+    # asyncio.TimeoutError up to `retry_attempts` times with exponential
+    # backoff, and cap total per-question wall at `max_per_question_seconds`.
+    retry_attempts = 3
+    max_per_question_seconds = 300.0
+    retriable: tuple[type[BaseException], ...] = (
+        modal.exception.ConnectionError,
+        asyncio.TimeoutError,
+        ConnectionError,
+    )
+
+    async def _one_call(question: str, cfg: GenerationConfig) -> dict:
         return await server.generate.remote.aio(
             question=question,
             temperature=cfg.temperature,
@@ -319,20 +340,83 @@ def qwen_generate_fn(*, stub: bool):
             seed=cfg.seed,
         )
 
+    async def _real(question: str, cfg: GenerationConfig) -> dict:
+        deadline = time.monotonic() + max_per_question_seconds
+        last_exc: BaseException | None = None
+        for attempt in range(1, retry_attempts + 1):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise _InferenceTimeoutError(
+                    f"exceeded {max_per_question_seconds:.0f}s per-question cap "
+                    f"after {attempt - 1} attempts; last error: {last_exc!r}",
+                    attempts=attempt - 1,
+                )
+            try:
+                result = await asyncio.wait_for(_one_call(question, cfg), timeout=remaining)
+                result["_retry_count"] = attempt - 1
+                return result
+            except retriable as exc:
+                last_exc = exc
+                backoff = min(2 ** (attempt - 1) * 2.0, 30.0)
+                print(
+                    f"  [warn] Modal call failed (attempt {attempt}/{retry_attempts}): "
+                    f"{type(exc).__name__}: {exc}; retrying in {backoff:.1f}s",
+                    file=sys.stderr,
+                )
+                try:
+                    await asyncio.wait_for(
+                        asyncio.sleep(backoff),
+                        timeout=max(0.0, deadline - time.monotonic()),
+                    )
+                except TimeoutError:
+                    raise _InferenceTimeoutError(
+                        f"5-min cap hit while backing off after attempt {attempt}; "
+                        f"last error: {last_exc!r}",
+                        attempts=attempt,
+                    ) from last_exc
+        raise _InferenceTimeoutError(
+            f"exhausted {retry_attempts} retries; last error: {last_exc!r}",
+            attempts=retry_attempts,
+        )
+
     return _real
 
 
+class _InferenceTimeoutError(Exception):
+    """Raised when the Modal inference call exceeds the per-question time cap
+    or retry budget. Caller should catch and emit an inference_timeout=True row."""
+
+    def __init__(self, message: str, *, attempts: int) -> None:
+        super().__init__(message)
+        self.attempts = attempts
+
+
 def autorater_fn(*, stub: bool):
-    """Return an async `(rendered_prompt) -> (leg, cov, justification, raw)`."""
+    """Return an async `(rendered_prompt) -> (raw, leg, cov, justification, parse_error)`.
+
+    Always returns the raw autorater body first, even when parse fails, so a
+    failed row preserves the evidence needed to diagnose what Haiku did wrong.
+    Fix #2 2026-04-21.
+    """
     prompt = LegibilityCoveragePrompt.load()
+
+    def _parse_safely(
+        raw: str,
+    ) -> tuple[str, int | None, int | None, str | None, str | None]:
+        try:
+            leg, cov, justification = prompt.parse(raw)
+        except Exception as exc:
+            return raw, None, None, None, f"{type(exc).__name__}: {exc}"
+        return raw, leg, cov, justification, None
 
     if stub:
         stub_client = StubAutorater()
 
-        async def _stub(rendered: str) -> tuple[int, int, str, str]:
+        async def _stub(
+            rendered: str,
+        ) -> tuple[str, int | None, int | None, str | None, str | None]:
             raw = await stub_client.complete(rendered)
-            leg, cov, justification = prompt.parse(raw)
-            return leg, cov, justification, raw
+            return _parse_safely(raw)
 
         return _stub
 
@@ -340,15 +424,16 @@ def autorater_fn(*, stub: bool):
 
     client = AsyncAnthropic()
 
-    async def _real(rendered: str) -> tuple[int, int, str, str]:
+    async def _real(
+        rendered: str,
+    ) -> tuple[str, int | None, int | None, str | None, str | None]:
         response = await client.messages.create(
             model=AUTORATER_MODEL,
             max_tokens=MAX_AUTORATER_TOKENS,
             messages=[{"role": "user", "content": rendered}],
         )
         raw = "".join(b.text for b in response.content if getattr(b, "type", None) == "text")
-        leg, cov, justification = prompt.parse(raw)
-        return leg, cov, justification, raw
+        return _parse_safely(raw)
 
     return _real
 
@@ -367,7 +452,36 @@ async def run_one(
     autorater_prompt: LegibilityCoveragePrompt,
 ) -> RunRow:
     mcq_prompt = format_mcq_prompt(sample)
-    gen = await qwen(mcq_prompt, cfg)
+
+    # Fix #1 2026-04-21: inference path may time out or exhaust retries.
+    # On timeout, emit an inference_timeout row without attempting the
+    # autorater (no CoT to rate).
+    try:
+        gen = await qwen(mcq_prompt, cfg)
+    except _InferenceTimeoutError as exc:
+        print(
+            f"  [timeout] {sample.question_id}: {exc}",
+            file=sys.stderr,
+        )
+        return RunRow(
+            question_id=sample.question_id,
+            question_text=sample.question_text,
+            raw_cot="",
+            final_answer="",
+            correct_answer=sample.correct_answer,
+            is_correct=False,
+            autorater_legibility=None,
+            autorater_coverage=None,
+            autorater_justification=None,
+            thinking_tokens=0,
+            latency_seconds=0.0,
+            raw_model_content="",
+            completion_tokens=0,
+            autorater_raw_response=None,
+            parse_error=f"inference_timeout: {exc}",
+            inference_timeout=True,
+            inference_retry_count=exc.attempts,
+        )
 
     extracted = extract_answer_letter(gen["content"]) or extract_answer_letter(gen["raw_text"])
     is_correct = extracted == sample.correct_answer
@@ -375,7 +489,7 @@ async def run_one(
     leg: int | None = None
     cov: int | None = None
     justification: str | None = None
-    autorater_raw: str | None = None
+    autorater_raw_response: str | None = None
     parse_error: str | None = None
 
     if is_correct:
@@ -384,9 +498,17 @@ async def run_one(
             explanation=gen["reasoning"],
             answer=gen["content"],
         )
+        # Fix #2 2026-04-21: autorater returns raw body regardless of parse
+        # outcome, so parse failures don't lose the evidence we need to
+        # diagnose what Haiku actually returned.
         try:
-            leg, cov, justification, autorater_raw = await autorater(rendered)
+            autorater_raw_response, leg, cov, justification, parse_error = await autorater(
+                rendered,
+            )
         except Exception as exc:
+            # Only reached if the Anthropic network call itself failed,
+            # not a schema parse error (those land in parse_error below
+            # with the raw body captured).
             parse_error = f"{type(exc).__name__}: {exc}"
 
     return RunRow(
@@ -403,8 +525,10 @@ async def run_one(
         latency_seconds=gen["wall_clock_s"],
         raw_model_content=gen["content"],
         completion_tokens=gen["completion_tokens"],
-        autorater_raw=autorater_raw,
+        autorater_raw_response=autorater_raw_response,
         parse_error=parse_error,
+        inference_timeout=False,
+        inference_retry_count=gen.get("_retry_count", 0),
     )
 
 
