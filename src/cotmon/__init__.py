@@ -1,4 +1,4 @@
-"""cot-divergence: Chain-of-thought faithfulness evaluation."""
+"""cot-monitor: Chain-of-thought monitorability and faithfulness evaluation."""
 
 from cotmon.core.registry import register_metric, register_test
 from cotmon.core.trajectory import Action, Reasoning, Trajectory, Turn

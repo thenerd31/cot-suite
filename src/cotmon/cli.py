@@ -13,7 +13,7 @@ from rich.table import Table
 
 from cotmon.core.trajectory import Trajectory
 
-app = typer.Typer(help="cot-divergence: CoT faithfulness evaluation")
+app = typer.Typer(help="cot-monitor: CoT monitorability + faithfulness evaluation")
 console = Console()
 
 
@@ -39,7 +39,7 @@ def score(
         raise typer.Exit(code=2)
 
     metric_list = [m.strip() for m in metrics.split(",") if m.strip()]
-    table = Table(title=f"cot-divergence score — {trajectory_path.name}")
+    table = Table(title=f"cot-monitor score — {trajectory_path.name}")
     table.add_column("sample")
     for m in metric_list:
         table.add_column(m)

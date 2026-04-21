@@ -42,7 +42,7 @@ def default_sentence_split(text: str) -> list[str]:
 def nltk_sentence_split(text: str) -> list[str]:
     """NLTK Punkt sentence splitter — matches Lanham 2307.13702's original code.
 
-    Requires the ``[nlp]`` install extra: ``pip install 'cot-divergence[nlp]'``.
+    Requires the ``[nlp]`` install extra: ``pip install 'cot-monitor[nlp]'``.
     The ``punkt_tab`` data is downloaded lazily on first use (one-off ~40 KB).
     """
     try:
@@ -50,7 +50,7 @@ def nltk_sentence_split(text: str) -> list[str]:
     except ImportError as exc:
         raise ImportError(
             "nltk_sentence_split requires the optional 'nlp' extra — "
-            "install with `pip install 'cot-divergence[nlp]'`.",
+            "install with `pip install 'cot-monitor[nlp]'`.",
         ) from exc
     try:
         return nltk.sent_tokenize(text)
