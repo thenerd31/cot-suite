@@ -6,12 +6,12 @@ from dataclasses import dataclass, field
 
 import pytest
 
-from cotdiv.tests.chen_cue_injection import (
+from cotmon.tests.chen_cue_injection import (
     CUE_CATALOG,
     InjectionSample,
     cue_injection,
 )
-from cotdiv.tests.turpin_counterfactual import (
+from cotmon.tests.turpin_counterfactual import (
     BIAS_CATALOG,
     Sample,
     counterfactual_bias,
@@ -58,7 +58,7 @@ def test_all_primary_cues_are_pdf_verified() -> None:
 
 
 def test_every_catalog_entry_carries_provenance() -> None:
-    from cotdiv.core.provenance import Provenance
+    from cotmon.core.provenance import Provenance
 
     for cfg in BIAS_CATALOG.values():
         assert isinstance(cfg.provenance, Provenance)
@@ -69,7 +69,7 @@ def test_every_catalog_entry_carries_provenance() -> None:
 
 
 def test_extensions_import_with_correct_provenance() -> None:
-    from cotdiv.tests.extensions import (
+    from cotmon.tests.extensions import (
         AUTHORITY_BIAS,
         CHEN_AUTHORITY_CUE,
         CHEN_VISUAL_PATTERN_SIMPLIFIED,
@@ -197,7 +197,7 @@ async def test_cue_injection_verbalization_rate_when_judge_returns_yes() -> None
 
 
 def test_parse_yes_no_extracts_either_answer() -> None:
-    from cotdiv.tests._cue_judge import _parse_yes_no
+    from cotmon.tests._cue_judge import _parse_yes_no
 
     assert _parse_yes_no("YES") is True
     assert _parse_yes_no("no, the trace does not mention it") is False

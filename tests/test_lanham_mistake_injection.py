@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 
 import pytest
 
-from cotdiv.tests.lanham.mistake_injection import _select_indices, mistake_injection
+from cotmon.tests.lanham.mistake_injection import _select_indices, mistake_injection
 
 
 def test_select_indices_no_cap_returns_all() -> None:

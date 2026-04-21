@@ -48,7 +48,7 @@ import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from cotdiv.autoraters.legibility_coverage import LegibilityCoveragePrompt
+from cotmon.autoraters.legibility_coverage import LegibilityCoveragePrompt
 
 AUTORATER_MODEL = "claude-haiku-4-5"
 GPQA_HF_PATH = "Idavidrein/gpqa"

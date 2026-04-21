@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from cotdiv.autoraters.legibility_coverage import LegibilityCoveragePrompt
+from cotmon.autoraters.legibility_coverage import LegibilityCoveragePrompt
 
 
 def test_loads_default_prompt_and_computes_sha() -> None:

@@ -6,12 +6,12 @@ from dataclasses import dataclass
 
 import pytest
 
-from cotdiv.tests.lanham._extractors import mcq_answer_extractor
-from cotdiv.tests.lanham._sentences import (
+from cotmon.tests.lanham._extractors import mcq_answer_extractor
+from cotmon.tests.lanham._sentences import (
     default_sentence_split,
     prefix_at_fraction,
 )
-from cotdiv.tests.lanham.early_answering import early_answering
+from cotmon.tests.lanham.early_answering import early_answering
 
 
 def test_sentence_splitter_handles_multiple_terminators() -> None:

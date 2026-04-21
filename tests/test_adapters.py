@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from cotdiv.adapters import from_anthropic, from_openai
+from cotmon.adapters import from_anthropic, from_openai
 
 
 def test_anthropic_thinking_block_marked_as_summary_on_claude_4() -> None:

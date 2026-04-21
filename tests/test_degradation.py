@@ -15,7 +15,7 @@ from unittest.mock import patch
 
 import pytest
 
-from cotdiv.core.trajectory import Reasoning, Trajectory, Turn
+from cotmon.core.trajectory import Reasoning, Trajectory, Turn
 
 
 def _traj(cot: str) -> Trajectory:
@@ -81,8 +81,8 @@ class _DeterministicGrader:
     [_redact_half, _translate_to_nonlatin, _replace_with_filler],
 )
 def test_legibility_coverage_drops_under_degradation(degrader) -> None:
-    from cotdiv import metrics as _  # noqa: F401 — ensure registration
-    from cotdiv import score_trajectory
+    from cotmon import metrics as _  # noqa: F401 — ensure registration
+    from cotmon import score_trajectory
 
     reference = (
         "Let me compute 17 * 23. I can break this down as 17 * 20 + 17 * 3. "
@@ -93,7 +93,7 @@ def test_legibility_coverage_drops_under_degradation(degrader) -> None:
 
     grader = _DeterministicGrader(reference)
 
-    with patch("cotdiv.autoraters.legibility_coverage.get_grader_client", return_value=grader):
+    with patch("cotmon.autoraters.legibility_coverage.get_grader_client", return_value=grader):
         full_score = score_trajectory(full, metrics=["legibility", "coverage"], runs=1)
         degr_score = score_trajectory(degraded, metrics=["legibility", "coverage"], runs=1)
 
