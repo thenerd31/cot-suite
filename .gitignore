@@ -28,7 +28,10 @@ coverage.xml
 site/
 docs/_build/
 
-benchmarks/results/
+# Ignore bulky per-run data files but keep reproducibility artifacts
+# (RUN.md + summary.json) tracked.
+benchmarks/results/**/*.jsonl
+benchmarks/results/**/config.json
 *.eval
 wandb/
 models_cache/
