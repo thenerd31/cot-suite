@@ -6,7 +6,13 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-Classification = Literal["computational", "mixed", "rationalization", "unknown"]
+Classification = Literal[
+    "computational",
+    "mixed",
+    "rationalization",
+    "post_hoc_rationalization",
+    "unknown",
+]
 
 
 class MetricValue(BaseModel):
