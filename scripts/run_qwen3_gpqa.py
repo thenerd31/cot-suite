@@ -53,7 +53,12 @@ from cotmon.autoraters.legibility_coverage import LegibilityCoveragePrompt
 AUTORATER_MODEL = "claude-haiku-4-5"
 GPQA_HF_PATH = "Idavidrein/gpqa"
 GPQA_CONFIG = "gpqa_diamond"  # 198 expert-curated questions (gated — needs HF_TOKEN)
-MAX_AUTORATER_TOKENS = 1024
+# Raised 1024 → 2048 on 2026-04-21 — two Stage 1 correct-answer trajectories
+# (Q143 + one other) produced JSON-truncated Haiku responses when the
+# justification ran long. 2048 empirically covers the observed p99
+# justification length (~1600 chars / ~400 tokens) with margin. If a future
+# run sees this threshold hit again, bump to 4096.
+MAX_AUTORATER_TOKENS = 2048
 
 
 @dataclass
