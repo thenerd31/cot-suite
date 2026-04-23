@@ -28,6 +28,18 @@ the claim it was paired with — not others.
   - *Blocks:* "reproduces Lanham mistake-injection AOCs."
   - *Paper:* Lanham 2307.13702 §3.2.
 
+- **`scripts/verify_keys.py` — one-shot preflight for external API keys.**
+  Third-time placeholder-key incident (Modal tokens 2026-04-20, Google
+  AI Studio 2026-04-21, OpenAI 2026-04-23) each cost wasted runtime,
+  log noise, and a false negative on a run that couldn't actually
+  execute. A 30-line script that makes one minimal API call to each
+  configured provider (Anthropic, OpenAI, Google AI Studio, HuggingFace,
+  Modal) and fails with a provider-specific error for placeholder /
+  expired / unauthorized keys. Should be runnable as
+  `python -m cotmon.verify_keys` or `cot-monitor verify-keys` and called
+  at the top of every spend-incurring script. v0.1.1 deliverable.
+  - *Blocks:* "runs cleanly from a fresh .env without wasted spend."
+
 - **True reproduction of 2510.23966 pooled four-dataset numbers — v0.2
   deliverable.** The paper's Table 1 headline (Qwen3-235B: Legibility
   97.33 ± 0.18%, Coverage 95.27 ± 0.39%) is pooled across HLE,
