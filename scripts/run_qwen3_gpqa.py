@@ -585,6 +585,32 @@ def aggregate(rows: list[RunRow]) -> dict:
     }
 
 
+def _recover_trailing_partial_write(results_path: Path) -> int:
+    """Trim a malformed trailing line on results.jsonl, return rows dropped.
+
+    A Modal container SIGKILL, OOM, or host crash can leave a half-written
+    final line. Detecting this at resume time is cheap: try json.loads on
+    the last non-empty line. If it raises, rewrite the file without that
+    line and log it. Well-formed lines earlier in the file are untouched.
+    """
+    if not results_path.exists():
+        return 0
+    with results_path.open() as fh:
+        lines = [line for line in fh.read().splitlines() if line.strip()]
+    if not lines:
+        return 0
+    try:
+        json.loads(lines[-1])
+        return 0
+    except json.JSONDecodeError:
+        sys.stderr.write(
+            f"  [resume] last line of {results_path} is not well-formed JSON "
+            f"(likely partial write from a crashed container); dropping it.\n",
+        )
+        results_path.write_text("\n".join(lines[:-1]) + ("\n" if lines[:-1] else ""))
+        return 1
+
+
 def _validate_resume(
     results_path: Path,
     samples: list[Sample],
@@ -600,6 +626,7 @@ def _validate_resume(
             f"--start-from {start_from} specified but results.jsonl does not "
             f"exist at {results_path}",
         )
+    _recover_trailing_partial_write(results_path)
     existing: list[dict] = []
     with results_path.open() as fh:
         for line in fh:

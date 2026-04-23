@@ -212,12 +212,25 @@ def check_huggingface() -> CheckResult:
 
 
 def check_modal() -> CheckResult:
-    """`modal token current` — exits 0 iff a valid token is configured.
+    """`modal token info` — exits 0 iff a valid token is configured.
 
     Modal tokens live in ~/.modal.toml, NOT in .env. Putting token IDs
     in .env silently overrides the toml with placeholder values (see
     .env.example — this exact incident happened on 2026-04-20).
+
+    When the script is ALREADY running inside a Modal container
+    (``MODAL_TASK_ID`` set by the Modal runtime), the SDK uses task-
+    injected credentials — there is no CLI token file, and checking
+    for one would give a spurious fail. Short-circuit to OK in that
+    case since our very presence inside the container proves Modal
+    auth is working.
     """
+    if os.environ.get("MODAL_TASK_ID"):
+        return CheckResult(
+            provider="modal", ok=True,
+            detail="running inside Modal container (MODAL_TASK_ID set); "
+                   "task-injected credentials assumed.",
+        )
     modal_toml = Path.home() / ".modal.toml"
     if not modal_toml.exists():
         return CheckResult(
