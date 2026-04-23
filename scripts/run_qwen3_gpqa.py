@@ -297,8 +297,15 @@ def _stub_pick_letter(question: str) -> str:
 # =============================================================================
 
 
-def qwen_generate_fn(*, stub: bool):
-    """Return an async `(question, cfg) -> dict` that dispatches to Modal or stub."""
+def qwen_generate_fn(*, stub: bool, modal_app: str | None = None):
+    """Return an async `(question, cfg) -> dict` that dispatches to Modal or stub.
+
+    Args:
+        stub: if True, return a fake deterministic engine (no network).
+        modal_app: name of the already-deployed Modal app whose ``Qwen3Server``
+            class to target (e.g. ``"cotdiv-qwen3-14b"``, ``"cotdiv-qwen3-8b"``).
+            Required when ``stub=False``; ignored in stub mode.
+    """
     if stub:
         stub_engine = StubQwen()
 
@@ -310,13 +317,20 @@ def qwen_generate_fn(*, stub: bool):
 
         return _stub
 
+    if not modal_app:
+        raise ValueError(
+            "qwen_generate_fn(stub=False) requires a modal_app name (e.g. "
+            "'cotdiv-qwen3-14b'). None provided.",
+        )
+
     # Lazy import so --dry-run doesn't require modal installed in the call chain.
     import modal
     import modal.exception
 
     # Look up the class in the already-deployed app rather than re-defining it.
-    # Requires a prior `modal deploy scripts/modal_qwen3_14b.py`.
-    qwen3_server_cls = modal.Cls.from_name("cotdiv-qwen3-14b", "Qwen3Server")
+    # Requires a prior `modal deploy scripts/modal_qwen3_<size>.py` — the app
+    # name is parameterized so the same driver runs against 8B / 14B / 32B.
+    qwen3_server_cls = modal.Cls.from_name(modal_app, "Qwen3Server")
     server = qwen3_server_cls()
 
     # Fix #1 2026-04-21: wrap .remote.aio() in (retry + 5-min cap).
@@ -630,6 +644,7 @@ async def run_pipeline(
     limit: int | None,
     output_dir: Path,
     cfg: GenerationConfig,
+    modal_app: str | None = None,
     start_from: int = 0,
     load_real_dataset: bool = False,
 ) -> dict:
@@ -643,7 +658,7 @@ async def run_pipeline(
         stub=stub and not load_real_dataset,
     )
 
-    qwen = qwen_generate_fn(stub=stub)
+    qwen = qwen_generate_fn(stub=stub, modal_app=modal_app)
     autorater = autorater_fn(stub=stub)
     autorater_prompt = LegibilityCoveragePrompt.load()
 
@@ -744,6 +759,16 @@ def main() -> None:
         type=Path,
         default=Path("benchmarks/results/qwen3_14b_gpqa_diamond"),
     )
+    parser.add_argument(
+        "--modal-app",
+        type=str,
+        required=True,
+        help=(
+            "Name of the deployed Modal app to target — e.g. "
+            "'cotdiv-qwen3-14b', 'cotdiv-qwen3-8b'. Required even in "
+            "stub modes; pass any string (e.g. 'stub') for --dry-run."
+        ),
+    )
     # Inference settings — default to Qwen3 HF card recommendations.
     parser.add_argument("--temperature", type=float, default=0.6)
     parser.add_argument("--top-p", type=float, default=0.95)
@@ -782,6 +807,7 @@ def main() -> None:
             limit=args.limit,
             output_dir=args.output_dir,
             cfg=cfg,
+            modal_app=args.modal_app,
             start_from=args.start_from,
         ),
     )

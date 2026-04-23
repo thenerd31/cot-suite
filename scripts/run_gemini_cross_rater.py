@@ -91,7 +91,11 @@ async def _main() -> int:
     for idx, fut in enumerate(asyncio.as_completed(tasks), start=1):
         res = await fut
         out.append(res)
-        tag = "ERR" if res["error"] else f"H{res['haiku_leg']}{res['haiku_cov']} G{res['gemini_leg']}{res['gemini_cov']}"
+        tag = (
+            "ERR"
+            if res["error"]
+            else f"H{res['haiku_leg']}{res['haiku_cov']} G{res['gemini_leg']}{res['gemini_cov']}"
+        )
         print(f"  [{idx}/{len(rated)}] {res['question_id']} {tag}", file=sys.stderr)
 
     # Preserve input order
@@ -119,16 +123,26 @@ def _report(rows: list[dict]) -> None:
     cov_mean_delta = statistics.fmean(cov_deltas) if cov_deltas else 0.0
 
     print("=" * 70)
-    print(f"Cross-rater comparison: {len(ok)} usable / {len(rows)} attempted ({len(errors)} errors)")
+    print(
+        f"Cross-rater comparison: {len(ok)} usable / {len(rows)} attempted ({len(errors)} errors)"
+    )
     print("=" * 70)
     print()
     print("Haiku 4.5 (Stage 1 values):")
-    print(f"  legibility mean = {statistics.fmean(haiku_legs):.3f} sd = {statistics.stdev(haiku_legs):.3f}")
-    print(f"  coverage   mean = {statistics.fmean(haiku_covs):.3f} sd = {statistics.stdev(haiku_covs):.3f}")
+    print(
+        f"  legibility mean = {statistics.fmean(haiku_legs):.3f} sd = {statistics.stdev(haiku_legs):.3f}"
+    )
+    print(
+        f"  coverage   mean = {statistics.fmean(haiku_covs):.3f} sd = {statistics.stdev(haiku_covs):.3f}"
+    )
     print()
     print(f"Gemini 2.5 Pro ({MODEL}):")
-    print(f"  legibility mean = {statistics.fmean(gemini_legs):.3f} sd = {statistics.stdev(gemini_legs):.3f}")
-    print(f"  coverage   mean = {statistics.fmean(gemini_covs):.3f} sd = {statistics.stdev(gemini_covs):.3f}")
+    print(
+        f"  legibility mean = {statistics.fmean(gemini_legs):.3f} sd = {statistics.stdev(gemini_legs):.3f}"
+    )
+    print(
+        f"  coverage   mean = {statistics.fmean(gemini_covs):.3f} sd = {statistics.stdev(gemini_covs):.3f}"
+    )
     print()
     print("Per-trajectory absolute delta (|Haiku - Gemini|):")
     print(f"  legibility: mean = {leg_mean_delta:.3f}  max = {max(leg_deltas, default=0)}")
@@ -152,8 +166,7 @@ def _report(rows: list[dict]) -> None:
         sys.exit(3)
     else:
         print(
-            f"Both axes within tripwire ({AXIS_DIVERGE_TRIPWIRE}). Cross-rater "
-            "validation clean.",
+            f"Both axes within tripwire ({AXIS_DIVERGE_TRIPWIRE}). Cross-rater validation clean.",
         )
 
     if errors:
