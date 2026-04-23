@@ -790,15 +790,17 @@ def main() -> None:
     fully_stubbed = args.dry_run and not args.stub_inference_only
     stub_inference = args.dry_run or args.stub_inference_only
 
-    if not stub_inference and not os.environ.get("ANTHROPIC_API_KEY"):
-        sys.stderr.write("ERROR: ANTHROPIC_API_KEY not set; either --dry-run or export key.\n")
-        sys.exit(2)
-    if not fully_stubbed and not os.environ.get("HF_TOKEN"):
-        sys.stderr.write(
-            "ERROR: HF_TOKEN not set. GPQA-Diamond is a gated dataset — accept the "
-            "license at https://huggingface.co/datasets/Idavidrein/gpqa then export HF_TOKEN.\n",
-        )
-        sys.exit(2)
+    # Preflight: verify every key we're about to spend against. --dry-run
+    # skips preflight (offline smoke test). Otherwise fail loudly up-front
+    # rather than mid-run after the first autorater / modal / HF call.
+    if not fully_stubbed:
+        from cotmon.verify_keys import require_keys
+        providers = []
+        if not stub_inference:
+            providers.append("anthropic")  # autorater
+            providers.append("modal")      # vLLM inference
+        providers.append("huggingface")    # gated GPQA-Diamond dataset
+        require_keys(providers)
 
     summary = asyncio.run(
         run_pipeline(

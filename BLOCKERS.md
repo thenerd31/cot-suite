@@ -39,6 +39,13 @@ the claim it was paired with — not others.
   `python -m cotmon.verify_keys` or `cot-monitor verify-keys` and called
   at the top of every spend-incurring script. v0.1.1 deliverable.
   - *Blocks:* "runs cleanly from a fresh .env without wasted spend."
+  - *Resolved in commit:* (pending) — `src/cotmon/verify_keys.py` ships
+    checks for Anthropic / OpenAI / HuggingFace / Modal (token info);
+    `--budget-check` degrades to warning for non-admin keys (end-user
+    sk-ant-... keys can't hit the admin billing endpoint). Wired into
+    `run_qwen3_gpqa.py`, `validate_b1_lanham.py`, `validate_b3_chen.py`,
+    `validate_b4_arcuschin.py` as import-time `require_keys(...)` calls.
+    Google AI Studio check deferred — no live Gemini runs on the queue.
 
 - **True reproduction of 2510.23966 pooled four-dataset numbers — v0.2
   deliverable.** The paper's Table 1 headline (Qwen3-235B: Legibility
