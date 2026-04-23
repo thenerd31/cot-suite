@@ -125,6 +125,28 @@ def run(
     output_dir = Path("/results") / output_subdir
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Idempotency across Modal container restarts: if the function is
+    # re-invoked after a container migration or preemption, the caller-
+    # provided ``start_from`` is stale by however many rows the previous
+    # invocation managed to write. Re-read the actual row count from
+    # the volume and start from max(user_value, actual_count). This is
+    # the 2026-04-23 crash fix — the initial invocation wrote 2 extra
+    # rows (30→32) before preemption, and the retry crashed on the
+    # `start_from=30 but file has 32` invariant check.
+    results_path = output_dir / "results.jsonl"
+    actual_rows = 0
+    if results_path.exists():
+        with results_path.open() as fh:
+            actual_rows = sum(1 for line in fh if line.strip())
+    effective_start_from = max(start_from, actual_rows)
+    if effective_start_from != start_from:
+        print(
+            f"[driver] caller passed start_from={start_from} but volume has "
+            f"{actual_rows} rows; bumping to {effective_start_from} for "
+            f"idempotent retry.",
+            flush=True,
+        )
+
     env = {
         **os.environ,
         "PYTHONPATH": "/app/src:/app",
@@ -135,7 +157,7 @@ def run(
         "python", "/app/scripts/run_qwen3_gpqa.py",
         "--modal-app", modal_app,
         "--output-dir", str(output_dir),
-        "--start-from", str(start_from),
+        "--start-from", str(effective_start_from),
     ]
     if limit is not None:
         cmd.extend(["--limit", str(limit)])
