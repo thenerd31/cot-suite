@@ -39,7 +39,7 @@ the claim it was paired with — not others.
   `python -m cotmon.verify_keys` or `cot-monitor verify-keys` and called
   at the top of every spend-incurring script. v0.1.1 deliverable.
   - *Blocks:* "runs cleanly from a fresh .env without wasted spend."
-  - *Resolved in commit:* (pending) — `src/cotmon/verify_keys.py` ships
+  - *Resolved in commit:* `8821b85` — `src/cotmon/verify_keys.py` ships
     checks for Anthropic / OpenAI / HuggingFace / Modal (token info);
     `--budget-check` degrades to warning for non-admin keys (end-user
     sk-ant-... keys can't hit the admin billing endpoint). Wired into
