@@ -37,3 +37,10 @@ wandb/
 models_cache/
 hf_cache/
 .python-version
+
+# tmux + caffeinate run logs — regenerated every run
+logs/
+
+# Raw validation outputs mirror benchmarks/results policy — RUN.md and
+# summary .json stay tracked; per-run JSONL blobs do not.
+validation/*.jsonl
