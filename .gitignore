@@ -36,3 +36,4 @@ benchmarks/results/**/config.json
 wandb/
 models_cache/
 hf_cache/
+.python-version
