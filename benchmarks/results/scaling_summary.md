@@ -55,6 +55,20 @@ Direction matches the hypothesis (smaller → more UNCLEAR) but absolute
 counts are too small to support a load-bearing claim; 32B's zero count
 is notable but rests on 185 judge outputs.
 
+## Decoupling observation — monitorability improves while accuracy plateaus
+
+**Monitorability metrics (legibility, coverage) increase monotonically
+across all three size steps while accuracy plateaus between 14B and
+32B.** The 2.29× parameter increase from 14B to 32B buys +1.01pp
+accuracy but +0.12 legibility and +0.16 coverage on the 0-4 autorater
+scale. For a downstream monitor that depends on CoT being legible and
+complete — not on the model being more correct — scale continues to
+help even after accuracy saturates. This is the data-level claim the
+README will frame as the launch headline: **CoT monitorability and
+task performance decouple at this scale**, and measuring
+monitorability directly (this library's purpose) is therefore
+complementary to measuring accuracy, not redundant with it.
+
 ## Validation status of the PHR detector (B4 Arcuschin)
 
 The PHR strict/inclusive numbers above are only interpretable if the
