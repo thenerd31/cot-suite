@@ -216,3 +216,97 @@ def main(
         limit=None if limit < 0 else limit,
     )
     print(result)
+
+
+@app.function(
+    image=image,
+    volumes={"/results": results_volume},
+    secrets=[
+        modal.Secret.from_name("hf-token"),
+        modal.Secret.from_name("anthropic-api-key"),
+    ],
+    timeout=2 * 3600,  # B1/B3 budgets are ~$2.50 each, 30-50 questions, well under 2h.
+    cpu=2,
+    memory=4096,
+)
+def run_validation(script_relpath: str, output_subpath: str) -> dict:
+    """Run an Anthropic-only validation script (B1, B3, etc.) inside Modal.
+
+    The script writes to its own hardcoded output path (typically
+    ``validation/<name>.jsonl``) within the container's workdir. After
+    the subprocess exits — success or failure — we copy that file onto
+    the results volume at ``/results/<output_subpath>`` and commit.
+    Batch-write-at-end is acceptable here because B1/B3 are short runs
+    (~5-15 min) and the crash-recovery story for them is "re-run"
+    rather than "resume".
+    """
+    import os
+    import shutil
+    import subprocess
+    import threading
+    from pathlib import Path
+
+    env = {
+        **os.environ,
+        "PYTHONPATH": "/app/src:/app",
+        "PYTHONUNBUFFERED": "1",
+    }
+
+    cmd = ["python", f"/app/{script_relpath}"]
+    print(f"[driver] invoking: {' '.join(cmd)}", flush=True)
+
+    # Heartbeat commits keep the volume queryable mid-run. The script
+    # itself writes to /app/validation/*.jsonl (the script's hardcoded
+    # path); we sync that to the volume opportunistically.
+    src_file = Path("/app/validation") / Path(output_subpath).name
+    dst_file = Path("/results") / output_subpath
+    dst_file.parent.mkdir(parents=True, exist_ok=True)
+
+    stop_event = threading.Event()
+
+    def _heartbeat_sync() -> None:
+        while not stop_event.wait(60):
+            if src_file.exists():
+                try:
+                    shutil.copy2(src_file, dst_file)
+                    results_volume.commit()
+                except Exception as exc:
+                    print(f"[heartbeat] sync failed: {type(exc).__name__}: {exc}", flush=True)
+
+    hb = threading.Thread(target=_heartbeat_sync, daemon=True)
+    hb.start()
+
+    try:
+        proc = subprocess.run(cmd, env=env, cwd="/app")
+        returncode = proc.returncode
+    finally:
+        stop_event.set()
+        if src_file.exists():
+            shutil.copy2(src_file, dst_file)
+        try:
+            results_volume.commit()
+            print(
+                f"[driver] subprocess exited {returncode}; "
+                f"output synced to {dst_file}; volume committed.",
+                flush=True,
+            )
+        except Exception as exc:
+            print(f"[driver] final commit failed: {type(exc).__name__}: {exc}", flush=True)
+
+    return {"returncode": returncode, "output_subpath": output_subpath}
+
+
+@app.local_entrypoint()
+def validation(script_relpath: str, output_subpath: str) -> None:
+    """Local entrypoint for B1/B3 and similar Anthropic-only validations.
+
+    Example:
+        modal run --detach scripts/modal_detached_driver.py::validation \\
+            --script-relpath scripts/validate_b1_lanham.py \\
+            --output-subpath validation/b1_lanham_raw.jsonl
+    """
+    result = run_validation.remote(
+        script_relpath=script_relpath,
+        output_subpath=output_subpath,
+    )
+    print(result)

@@ -1,6 +1,6 @@
-"""B1 — Lanham 2307.13702 validation on Claude Sonnet 3.5 / BBH subsets.
+"""B1 — Lanham 2307.13702 validation on Claude Sonnet 4.6 / BBH subsets.
 
-Runs ``early_answering`` and ``mistake_injection`` on Claude Sonnet 3.5 across
+Runs ``early_answering`` and ``mistake_injection`` on Claude Sonnet 4.6 across
 30 questions total (15 each from BBH ``logical_deduction_three_objects`` and
 ``sports_understanding``), and reports our length-weighted AOC numbers.
 
@@ -12,10 +12,15 @@ Runs ``early_answering`` and ``mistake_injection`` on Claude Sonnet 3.5 across
    reproducibility gap and means our numbers are NOT directly comparable
    to Lanham's Table 2.
 
-2. Model substitution. Lanham tested "Claude 1.3" (2023 vintage). We use
-   ``claude-3-5-sonnet-20241022`` as the closest current-Anthropic analogue.
-   Different training regimes, different instruction tuning — number
-   comparability is loose.
+2. Model substitution chain. Lanham tested "Claude 1.3" (2023 vintage).
+   Our first substitute was ``claude-3-5-sonnet-20241022`` (the closest
+   current-Anthropic analogue at the time of script authorship in April
+   2026); that model reached end-of-life and began returning HTTP 404 on
+   2026-04-23. Second substitute is ``claude-sonnet-4-6`` — the
+   currently-supported Sonnet tier. Framing: the validation goal is
+   "implementation produces sensible AOC numbers on a current reasoning
+   model," NOT "reproduce Lanham's published AOCs on Claude 1.3." See
+   validation/lanham_2307.13702.md for the full substitution rationale.
 
 3. Mistake-generator choice. Per BLOCKERS, a non-RLHF base model would be
    the correct choice. We use Claude Haiku 4.5 here (also RLHF-tuned) as
@@ -42,7 +47,7 @@ from pathlib import Path
 from cotmon.tests.lanham.early_answering import early_answering
 from cotmon.tests.lanham.mistake_injection import mistake_injection
 
-MODEL_UNDER_TEST = "anthropic/claude-3-5-sonnet-20241022"
+MODEL_UNDER_TEST = "anthropic/claude-sonnet-4-6"
 MISTAKE_GENERATOR = "anthropic/claude-haiku-4-5"
 N_PER_SUBTASK = 15
 MAX_INDICES = 4

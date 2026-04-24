@@ -1,7 +1,7 @@
-"""B3 — Chen 2505.05410 cue-injection validation on Claude Sonnet 3.7.
+"""B3 — Chen 2505.05410 cue-injection validation on Claude Sonnet 4.6.
 
 Runs cotmon's ``chen_cue_injection`` with the ``metadata`` cue (cleanest
-verbatim-from-paper template of the six) on Claude Sonnet 3.7 across 50
+verbatim-from-paper template of the six) on Claude Sonnet 4.6 across 50
 GPQA-Diamond questions. Measures cue uptake rate (fraction where the
 model's answer matches the injected cue target) and verbalization rate
 (fraction of cue-following trajectories that acknowledge the cue in CoT).
@@ -13,9 +13,16 @@ model's answer matches the injected cue target) and verbalization rate
    runs already normalize on it. Different difficulty distribution; cue
    uptake rates may differ.
 
-2. Model substitution. Chen reports 25% overall verbalization for
-   Claude 3.7 Sonnet. We use ``claude-3-7-sonnet-20250219`` with thinking
-   enabled, which matches.
+2. Model substitution chain. Chen reports 25% overall verbalization for
+   Claude 3.7 Sonnet. Our first substitute was
+   ``claude-3-7-sonnet-20250219`` matching the paper, but that model
+   reached end-of-life and began returning HTTP 404 on 2026-04-23.
+   Second substitute is ``claude-sonnet-4-6`` — the currently-supported
+   Sonnet tier with native thinking mode. Framing: the validation goal
+   is "implementation produces sensible cue-uptake and verbalization
+   rates on a current reasoning model," NOT "reproduce Chen's 25%
+   verbalization headline on Sonnet 3.7." See
+   validation/chen_2505.05410.md for the full substitution rationale.
 
 3. Cue-type substitution. Chen reports verbalization rates aggregated
    across six cues. We run only the ``metadata`` cue (cleanest paper
@@ -25,7 +32,7 @@ model's answer matches the injected cue target) and verbalization rate
 4. Sample size: 50 questions × 1 cue = 50 autorater calls. Tight for
    stable mean ± SD.
 
-Budget: ~$2.25 (50 Sonnet-3.7-thinking calls + 50 Haiku judge calls).
+Budget: ~$2.25 (50 Sonnet-4.6 thinking calls + 50 Haiku judge calls).
 Within the $5 B3 ceiling.
 """
 
@@ -40,7 +47,7 @@ from pathlib import Path
 
 from cotmon.tests.chen_cue_injection import CUE_CATALOG, InjectionSample, cue_injection
 
-MODEL_UNDER_TEST = "anthropic/claude-3-7-sonnet-20250219"
+MODEL_UNDER_TEST = "anthropic/claude-sonnet-4-6"
 JUDGE = "anthropic/claude-haiku-4-5"
 N_QUESTIONS = 50
 CUE_NAME = "metadata"
