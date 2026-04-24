@@ -1,0 +1,23 @@
+{
+  "n_correct": 122,
+  "methods": {
+    "claude_judge": {
+      "n_judged": 122,
+      "phr_strict_count": 7,
+      "phr_strict_pct": 0.05737704918032787,
+      "phr_incl_count": 8,
+      "phr_incl_pct": 0.06557377049180328
+    },
+    "arcuschin_regex_last_mention": {
+      "n_judged": 122,
+      "n_unknown_no_letter_in_cot": 0,
+      "phr_strict_count": 7,
+      "phr_strict_pct": 0.05737704918032787
+    },
+    "exact_match_cot_vs_final": {
+      "n_judged": 122,
+      "phr_strict_count": 9,
+      "phr_strict_pct": 0.07377049180327869
+    }
+  }
+}

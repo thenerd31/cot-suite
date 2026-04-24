@@ -100,6 +100,7 @@ image = (
 def run(
     modal_app: str,
     output_subdir: str,
+    modal_class: str = "Qwen3Server",
     start_from: int = 0,
     limit: int | None = None,
     commit_every_s: int = 60,
@@ -156,6 +157,7 @@ def run(
     cmd = [
         "python", "/app/scripts/run_qwen3_gpqa.py",
         "--modal-app", modal_app,
+        "--modal-class", modal_class,
         "--output-dir", str(output_dir),
         "--start-from", str(effective_start_from),
     ]
@@ -201,6 +203,7 @@ def run(
 def main(
     modal_app: str,
     output_subdir: str,
+    modal_class: str = "Qwen3Server",
     start_from: int = 0,
     limit: int = -1,
 ) -> None:
@@ -212,6 +215,7 @@ def main(
     result = run.remote(
         modal_app=modal_app,
         output_subdir=output_subdir,
+        modal_class=modal_class,
         start_from=start_from,
         limit=None if limit < 0 else limit,
     )

@@ -297,14 +297,28 @@ def _stub_pick_letter(question: str) -> str:
 # =============================================================================
 
 
-def qwen_generate_fn(*, stub: bool, modal_app: str | None = None):
+def qwen_generate_fn(
+    *,
+    stub: bool,
+    modal_app: str | None = None,
+    modal_class: str = "Qwen3Server",
+):
     """Return an async `(question, cfg) -> dict` that dispatches to Modal or stub.
 
     Args:
         stub: if True, return a fake deterministic engine (no network).
-        modal_app: name of the already-deployed Modal app whose ``Qwen3Server``
-            class to target (e.g. ``"cotdiv-qwen3-14b"``, ``"cotdiv-qwen3-8b"``).
-            Required when ``stub=False``; ignored in stub mode.
+        modal_app: name of the already-deployed Modal app whose inference
+            class to target (e.g. ``"cotdiv-qwen3-14b"``,
+            ``"cotdiv-ds-r1-distill-qwen-14b"``). Required when
+            ``stub=False``; ignored in stub mode.
+        modal_class: name of the class inside the app (default
+            ``"Qwen3Server"`` for backward compatibility with Stage 1/2
+            apps; Stage 3 apps expose ``"Qwen25Server"``,
+            ``"DeepSeekR1DistillQwen14BServer"``, etc.). The class's
+            ``generate.remote.aio`` method must return the uniform
+            ``{reasoning, content, raw_text, ...}`` dict contract —
+            non-thinking-mode servers MUST set ``reasoning = content =
+            raw_text`` so the autorater sees the full response.
     """
     if stub:
         stub_engine = StubQwen()
@@ -328,10 +342,11 @@ def qwen_generate_fn(*, stub: bool, modal_app: str | None = None):
     import modal.exception
 
     # Look up the class in the already-deployed app rather than re-defining it.
-    # Requires a prior `modal deploy scripts/modal_qwen3_<size>.py` — the app
-    # name is parameterized so the same driver runs against 8B / 14B / 32B.
-    qwen3_server_cls = modal.Cls.from_name(modal_app, "Qwen3Server")
-    server = qwen3_server_cls()
+    # Requires a prior `modal deploy scripts/modal_<name>.py` — the app name
+    # AND class name are parameterized so the same driver runs against
+    # every Stage 1/2/3 model.
+    server_cls = modal.Cls.from_name(modal_app, modal_class)
+    server = server_cls()
 
     # Fix #1 2026-04-21: wrap .remote.aio() in (retry + 5-min cap).
     # Modal's default client uses OUTPUTS_TIMEOUT=55s per internal poll
@@ -672,6 +687,7 @@ async def run_pipeline(
     output_dir: Path,
     cfg: GenerationConfig,
     modal_app: str | None = None,
+    modal_class: str = "Qwen3Server",
     start_from: int = 0,
     load_real_dataset: bool = False,
 ) -> dict:
@@ -685,7 +701,7 @@ async def run_pipeline(
         stub=stub and not load_real_dataset,
     )
 
-    qwen = qwen_generate_fn(stub=stub, modal_app=modal_app)
+    qwen = qwen_generate_fn(stub=stub, modal_app=modal_app, modal_class=modal_class)
     autorater = autorater_fn(stub=stub)
     autorater_prompt = LegibilityCoveragePrompt.load()
 
@@ -796,6 +812,17 @@ def main() -> None:
             "stub modes; pass any string (e.g. 'stub') for --dry-run."
         ),
     )
+    parser.add_argument(
+        "--modal-class",
+        type=str,
+        default="Qwen3Server",
+        help=(
+            "Name of the Modal class inside the app. Default 'Qwen3Server' "
+            "covers Stage 1/2 apps. Stage 3 multi-family apps use their own "
+            "class names: 'Qwen25Server', 'Qwen25_72BServer', "
+            "'DeepSeekR1DistillQwen14BServer', 'DeepSeekR1DistillLlama70BServer'."
+        ),
+    )
     # Inference settings — default to Qwen3 HF card recommendations.
     parser.add_argument("--temperature", type=float, default=0.6)
     parser.add_argument("--top-p", type=float, default=0.95)
@@ -837,6 +864,7 @@ def main() -> None:
             output_dir=args.output_dir,
             cfg=cfg,
             modal_app=args.modal_app,
+            modal_class=args.modal_class,
             start_from=args.start_from,
         ),
     )
