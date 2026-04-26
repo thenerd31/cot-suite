@@ -228,8 +228,9 @@ def main(
     secrets=[
         modal.Secret.from_name("hf-token"),
         modal.Secret.from_name("anthropic-api-key"),
+        modal.Secret.from_name("openai-api-key"),
     ],
-    timeout=2 * 3600,  # B1/B3 budgets are ~$2.50 each, 30-50 questions, well under 2h.
+    timeout=2 * 3600,  # B1/B3/B2 budgets ~$2-3 each, 30-100 questions, well under 2h.
     cpu=2,
     memory=4096,
 )

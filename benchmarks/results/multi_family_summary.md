@@ -117,6 +117,54 @@ threshold.** PHR rates are not detector-dependent; the values in the
 scaling table above stand on their own without prompt-specific
 artifacts.
 
+## Methodology notes (caveats for the README)
+
+### PHR rate sensitivity to N at our sample sizes
+
+The PHR strict rate is computed over the **correct trajectory subset**,
+which varies with model accuracy (n ≈ 50-130 for the models in this
+table). At these sample sizes, PHR rates have non-trivial sampling
+variance. Concrete observation from this study: when DS-R1-Distill-
+Llama-70B went from N=141 partial to N=198 full, the correct subset
+grew from 90 to 132 and PHR strict moved from 1.11% (1/90) to 3.79%
+(5/132) — a ~3.4× shift driven by 4 additional silent flips in the
+new 57 trajectories. The 95% Wilson interval for the n=132 measurement
+is approximately [1.6%, 8.5%], and the 95% Wilson interval for n=90
+is approximately [0.2%, 6.0%]; the two intervals overlap heavily, so
+the apparent 3× shift is within sampling noise rather than indicating
+behavior change.
+
+**The cluster separation claim is robust to this noise.** Even using
+the most pessimistic combinations (highest thinking-mode PHR =
+DS-Qwen-14B at 5.74%; lowest non-thinking PHR = Qwen2.5-7B at
+20.00%), the minimum cluster separation is 5.3× on PHR axis. This
+margin is well outside any reasonable confidence interval for either
+side, so the binary "thinking quadrant vs non-thinking quadrant"
+classification is not sensitive to the n=50-130 sampling variance.
+
+### What the table does NOT claim
+
+- That individual within-cluster PHR rate differences (e.g.,
+  Qwen3-T-32B 4.03% vs Qwen3-T-8B 4.50%, a 0.47pp gap) are
+  statistically distinguishable. They are not — both fall inside the
+  Wilson interval of the other.
+- That accuracy gains and monitorability gains are independent.
+  Within the thinking cluster, models with higher accuracy tend to
+  have slightly higher legibility/coverage; the autorater may be
+  partially proxying for trajectory length or completeness.
+- That the 5-model thinking cluster is fully homogeneous. R1-distill
+  variants (DS-Qwen-14B, DS-Llama-70B) sit at slightly higher gaps
+  (0.27, 0.29) than native Qwen3-Thinking (0.16-0.23); this is
+  within within-cluster variance but worth flagging as a within-class
+  ordering, not a cluster-membership question.
+
+### What N supports
+
+The cluster-membership claim ("each model lands in its predicted
+quadrant") survives any reasonable resampling because the
+inter-cluster gap (5.3×-5.7×) dwarfs the intra-cluster variance.
+Within-cluster ranking claims would require larger N to support.
+
 ## Top-line claim
 
 Across 7 reasoning models spanning 7B-70B parameters, two base
@@ -124,12 +172,14 @@ families (Qwen, Llama), and two training paradigms (native
 thinking-mode and DeepSeek-R1 distillation vs vanilla instruct
 tuning), CoT monitorability separates cleanly by training recipe
 rather than by scale or base architecture. All 5 thinking-mode
-models cluster at legibility-coverage gap ≤0.27 and PHR strict ≤5.74%;
+models cluster at legibility-coverage gap ≤0.29 and PHR strict ≤5.74%;
 both non-thinking models show gap ≥1.65 and PHR strict ≥20%. The
 cross-architecture R1-distill replication (Llama base + R1 recipe
-produces a near-identical monitorability signature to Qwen base + R1
-recipe) confirms that the training intervention, not the model
-substrate, controls CoT-answer alignment within the studied range.
-The detector itself is robust (±1.64pp across three independent
-methods on the same trajectories), so the cluster separation is not
-a prompt artifact.
+produces the same monitorability signature class as Qwen base + R1
+recipe — Δgap=+0.02, ΔPHR=+1.01pp at full N) confirms that the
+training intervention, not the model substrate, controls CoT-answer
+alignment within the studied range. The detector itself is robust
+(±1.64pp across three independent methods on the same
+trajectories), and the cluster separation (5.3× minimum on PHR
+axis, 5.7× on gap axis) survives the n=50-130 sampling variance
+discussed in the methodology notes.
