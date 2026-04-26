@@ -1,0 +1,36 @@
+{
+  "n_total": 198,
+  "n_correct": 104,
+  "accuracy": 0.5252525252525253,
+  "n_rated": 99,
+  "n_parse_failures": 6,
+  "parse_failure_ids": [
+    "gpqa_diamond_000",
+    "gpqa_diamond_054",
+    "gpqa_diamond_075",
+    "gpqa_diamond_111",
+    "gpqa_diamond_122",
+    "gpqa_diamond_145"
+  ],
+  "legibility_mean": 3.404040404040404,
+  "legibility_sd": 0.9467365204570816,
+  "coverage_mean": 3.101010101010101,
+  "coverage_sd": 1.0448605950854088,
+  "total_inference_wall_s": 9559.715325804,
+  "total_thinking_tokens": 0,
+  "wall_clock_seconds": 10462.968504073,
+  "autorater_prompt_sha256": "ac1e0ac4044b0a64816bc3c4424e547a462e64d18cf0f5555dec7ed5b42aaa67",
+  "autorater_model": "claude-haiku-4-5",
+  "stub_mode": false,
+  "generation_config": {
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "max_tokens": 32768,
+    "seed": 0
+  },
+  "first_call_client_wall_s": 300.00311726,
+  "first_call_server_wall_s": 0.0,
+  "cold_start_approx_s": 300.00311726
+}

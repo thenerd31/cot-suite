@@ -150,18 +150,34 @@ class DeepSeekR1DistillQwen14BServer:
 
 
 def _split_thinking(text: str) -> tuple[str, str]:
-    """Split `<think>…</think>…final` output into (reasoning, content).
+    """Split DeepSeek-R1-Distill output into (reasoning, content).
 
-    Identical to Qwen3Server's parser. DeepSeek-R1-Distill emits the
-    tags natively; if absent (rare truncation case) we return
-    (empty, full text) so the caller can detect it.
+    DeepSeek-R1-Distill chat template injects ``<think>`` into the
+    PROMPT (not the assistant output), so the model only emits
+    ``</think>`` (closing tag) followed by the final answer. The
+    original two-tag splitter returned (reasoning="", content=full)
+    on every R1-Distill row. Fix shipped 2026-04-25 (offline corrector
+    in scripts/fix_deepseek_split.py); this inline version makes
+    future inference runs correct without an offline pass.
+
+    Behavior:
+      - both ``<think>`` and ``</think>`` present → split on both
+        (Qwen3-Thinking compatibility).
+      - only ``</think>`` present (DeepSeek-R1 pattern) → reasoning
+        is everything before ``</think>``, content is everything
+        after.
+      - neither tag → return (empty, full text) so the caller can
+        detect missing thinking output.
     """
     open_tag = "<think>"
     close_tag = "</think>"
-    open_idx = text.find(open_tag)
-    close_idx = text.find(close_tag, open_idx + len(open_tag)) if open_idx != -1 else -1
-    if open_idx == -1 or close_idx == -1:
+    close_idx = text.find(close_tag)
+    if close_idx == -1:
         return "", text
-    reasoning = text[open_idx + len(open_tag) : close_idx].strip()
+    open_idx = text.find(open_tag)
+    if open_idx == -1 or open_idx >= close_idx:
+        reasoning = text[:close_idx].strip()
+    else:
+        reasoning = text[open_idx + len(open_tag) : close_idx].strip()
     content = text[close_idx + len(close_tag) :].strip()
     return reasoning, content
