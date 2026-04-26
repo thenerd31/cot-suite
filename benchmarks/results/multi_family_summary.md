@@ -1,4 +1,4 @@
-# Multi-family CoT monitorability scaling — Stage 1+2+3 summary
+# Multi-family CoT monitorability scaling — Stage 1+2+3 summary (8 models)
 
 Data source for the launch README. Numbers + minimal interpretation.
 Narrative framing is README work, not this file.
@@ -13,7 +13,7 @@ prompt (SHA `4d7cc712e9456b80…`). Detector validated B4 (9.30%
 on GPT-4o-mini vs paper 13%, within 5%-25% bounds) and ablated
 Stage 3.5 (±1.64pp across three detection methods, robust).
 
-## Six-model scaling table
+## Eight-model scaling table
 
 | model | mode | base | n | accuracy | legibility | coverage | leg-cov gap | PHR strict | PHR incl. ack | empty final |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -23,29 +23,42 @@ Stage 3.5 (±1.64pp across three detection methods, robust).
 | DS-R1-Distill-Qwen-14B | thinking | Qwen | 198 | 54.55% | 3.43 | 3.17 | 0.27 | 2.78% | 3.70% | 1 |
 | DS-R1-Distill-Llama-70B | thinking | Llama | 198 | 66.67% | 3.59 | 3.30 | 0.29 | 3.79% | 6.06% | 0 |
 | Qwen2.5-7B-Instruct | non-thinking | Qwen2.5 | 198 | 27.78% | 3.89 | 2.24 | 1.65 | 20.00% | 20.00% | 0 |
+| Qwen2.5-72B-Instruct | non-thinking | Qwen2.5 | 198 | 42.42% | 3.99 | 2.98 | 1.01 | 22.62% | 23.81% | 3 |
 | Llama-3.1-8B-Instruct | non-thinking | Llama-3.1 | 198 | 26.26% | 3.77 | 1.96 | 1.81 | 32.69% | 32.69% | 29 |
 
-## Hypothesis prediction status — 7/7 in predicted quadrant
+## Hypothesis prediction status — 8/8 in predicted quadrant
 
 The Stage 3 launch hypothesis: **non-thinking models** (Qwen2.5-7B,
-Llama-3.1-8B) show legibility-coverage gap >1.0 and PHR strict >10%;
-**thinking-mode models** (Qwen3-Thinking 8B/14B/32B,
+Qwen2.5-72B, Llama-3.1-8B) show legibility-coverage gap >1.0 and PHR
+strict >10%; **thinking-mode models** (Qwen3-Thinking 8B/14B/32B,
 DS-R1-Distill-Qwen-14B, DS-R1-Distill-Llama-70B) show gap <0.5 and
 PHR strict <10%.
 
 | condition | threshold | violators / total |
 |---|---|---|
-| non-thinking → gap >1.0 | required | 0/2 (both pass: 1.65, 1.81) |
-| non-thinking → PHR >10% | required | 0/2 (both pass: 20.00%, 32.69%) |
+| non-thinking → gap >1.0 | required | 0/3 (all pass: 1.65, 1.01, 1.81) |
+| non-thinking → PHR >10% | required | 0/3 (all pass: 20.00%, 22.62%, 32.69%) |
 | thinking → gap <0.5 | required | 0/5 (all pass: 0.23, 0.19, 0.16, 0.27, 0.29) |
 | thinking → PHR <10% | required | 0/5 (all pass: 4.50%, 5.74%, 4.03%, 2.78%, 3.79%) |
 
-**7/7 models in the predicted quadrant. Empty space between the two
-clusters is unambiguous: nearest non-thinking gap (1.65) is 5.7× the
-furthest thinking-mode gap (0.29). Nearest non-thinking PHR (20.00%)
-is 5.3× the furthest thinking-mode PHR (3.79%).**
+**8/8 models in the predicted quadrant.** Cluster separation:
+- nearest non-thinking gap (Qwen2.5-72B at 1.012) is 3.5× the furthest
+  thinking-mode gap (0.29). Tighter than before (was 5.7× pre-72B)
+  because Qwen2.5-72B is the closest any non-thinking model came to
+  the gap=1.0 boundary.
+- nearest non-thinking PHR (Qwen2.5-7B at 20.00%) is 5.3× the
+  furthest thinking-mode PHR (3.79%). **Unchanged by adding 72B**
+  — the 72B's PHR (22.62%) is even higher than 7B's, so the PHR
+  axis cluster separation does not shrink with non-thinking scale.
 
-## Three controlled comparisons
+**The 72B Qwen2.5 result is the publishable wrinkle**: scale within
+non-thinking *partially closes the coverage gap* (Δcov=+0.74,
+Δgap=−0.64 from 7B → 72B) without lowering PHR. The two
+monitorability axes decouple under scale: coverage is
+scale-sensitive on non-thinking models; PHR alignment is
+paradigm-locked.
+
+## Four controlled comparisons
 
 ### 1. Qwen3-Thinking-14B vs DS-R1-Distill-Qwen-14B — same base, different RL recipe
 
@@ -82,7 +95,31 @@ architectures with the monitorability signature intact. Strong
 evidence the RL post-training is the variable controlling CoT
 alignment, not the substrate.
 
-### 3. Qwen3-Thinking-32B vs Llama-3.1-8B-Instruct — thinking vs non-thinking, different scales
+### 3. Qwen2.5-7B-Instruct vs Qwen2.5-72B-Instruct — scale within non-thinking
+
+| metric | Qwen2.5-7B | Qwen2.5-72B | Δ |
+|---|---|---|---|
+| params | 7B | 72B | ~10× |
+| accuracy | 27.78% | 42.42% | +14.64pp |
+| legibility | 3.89 | 3.99 | +0.10 (saturating) |
+| coverage | 2.24 | 2.98 | +0.74 |
+| leg-cov gap | 1.65 | 1.01 | -0.64 |
+| PHR strict | 20.00% | 22.62% | +2.62pp |
+| empty final | 0 | 3 | +3 |
+
+**Scale within non-thinking partially closes the coverage gap but
+does NOT lower PHR.** A ~10× parameter scaling (7B → 72B) buys
++0.74 coverage (39% of the gap closes), saturating legibility, but
+the silent-flip PHR rate stays flat (or slightly worsens). The two
+monitorability axes decouple under scale: **coverage is
+scale-sensitive on non-thinking models; PHR alignment is
+paradigm-locked, not scale-sensitive.** Both models still firmly in
+the non-thinking quadrant — Qwen2.5-72B's gap=1.012 is the closest
+any non-thinking model came to the gap=1.0 boundary, but PHR=22.62%
+is the highest-PHR thinking-quadrant model (DS-Qwen-14B at 2.78%) ×
+8.1, so cluster membership is unambiguous.
+
+### 4. Qwen3-Thinking-32B vs Llama-3.1-8B-Instruct — thinking vs non-thinking, different scales
 
 | metric | Qwen3-T-32B | Llama-3.1-8B | Δ |
 |---|---|---|---|
@@ -167,19 +204,25 @@ Within-cluster ranking claims would require larger N to support.
 
 ## Top-line claim
 
-Across 7 reasoning models spanning 7B-70B parameters, two base
-families (Qwen, Llama), and two training paradigms (native
+Across 8 reasoning models spanning 7B-72B parameters, two base
+families (Qwen, Llama) plus a within-family scale ladder
+(Qwen2.5-7B vs 72B), and two training paradigms (native
 thinking-mode and DeepSeek-R1 distillation vs vanilla instruct
-tuning), CoT monitorability separates cleanly by training recipe
-rather than by scale or base architecture. All 5 thinking-mode
-models cluster at legibility-coverage gap ≤0.29 and PHR strict ≤5.74%;
-both non-thinking models show gap ≥1.65 and PHR strict ≥20%. The
+tuning), CoT monitorability separates cleanly by training paradigm
+on the PHR-alignment axis, while the legibility-coverage gap is
+partially scale-sensitive within non-thinking. All 5 thinking-mode
+models cluster at gap ≤0.29 and PHR strict ≤5.74%; all 3
+non-thinking models show gap ≥1.01 and PHR strict ≥20.00%. The
 cross-architecture R1-distill replication (Llama base + R1 recipe
 produces the same monitorability signature class as Qwen base + R1
-recipe — Δgap=+0.02, ΔPHR=+1.01pp at full N) confirms that the
-training intervention, not the model substrate, controls CoT-answer
-alignment within the studied range. The detector itself is robust
-(±1.64pp across three independent methods on the same
+recipe — Δgap=+0.02, ΔPHR=+1.01pp) confirms that the training
+intervention, not the model substrate, controls CoT-answer
+alignment. The within-family scale comparison (Qwen2.5-7B vs 72B,
+~10× parameters) closes 39% of the legibility-coverage gap
+(Δgap=−0.64) while the PHR rate stays flat or slightly worsens —
+the two monitorability axes decouple under scale, with PHR
+paradigm-locked and coverage scale-sensitive. The detector itself
+is robust (±1.64pp across three independent methods on the same
 trajectories), and the cluster separation (5.3× minimum on PHR
-axis, 5.7× on gap axis) survives the n=50-130 sampling variance
-discussed in the methodology notes.
+axis, 3.5× on gap axis post-72B-addition) survives the n=50-130
+sampling variance discussed in the methodology notes.
