@@ -21,18 +21,9 @@ Stage 3.5 (±1.64pp across three detection methods, robust).
 | Qwen3-Thinking-14B | thinking | Qwen3 | 198 | 61.62% | 3.61 | 3.42 | 0.19 | 5.74% | 6.56% | 0 |
 | Qwen3-Thinking-32B | thinking | Qwen3 | 198 | 62.63% | 3.73 | 3.57 | 0.16 | 4.03% | 4.84% | 0 |
 | DS-R1-Distill-Qwen-14B | thinking | Qwen | 198 | 54.55% | 3.43 | 3.17 | 0.27 | 2.78% | 3.70% | 1 |
-| DS-R1-Distill-Llama-70B¹ | thinking | Llama | **141** | 63.83% | 3.46 | 3.21 | 0.24 | 1.11% | 2.22% | 0 |
+| DS-R1-Distill-Llama-70B | thinking | Llama | 198 | 66.67% | 3.59 | 3.30 | 0.29 | 3.79% | 6.06% | 0 |
 | Qwen2.5-7B-Instruct | non-thinking | Qwen2.5 | 198 | 27.78% | 3.89 | 2.24 | 1.65 | 20.00% | 20.00% | 0 |
 | Llama-3.1-8B-Instruct | non-thinking | Llama-3.1 | 198 | 26.26% | 3.77 | 1.96 | 1.81 | 32.69% | 32.69% | 29 |
-
-¹ **DS-R1-Distill-Llama-70B is partial (n=141/198, 71%).** Modal
-workspace billing cap stopped the run cleanly mid-flight at $200.74
-month-to-date spend. The remaining 57 rows would have cost ~$30 of
-4×H100 time. Per the v0.1 plan, partial cross-architecture data is
-publishable as preliminary; the missing tail can be re-run as a
-v0.1.1 datapoint. Splitter validated on the partial run (141/141
-rows produced non-empty CoT with the inline DeepSeek `<think>` fix
-shipped in commit `935b2e7`).
 
 ## Hypothesis prediction status — 7/7 in predicted quadrant
 
@@ -46,13 +37,13 @@ PHR strict <10%.
 |---|---|---|
 | non-thinking → gap >1.0 | required | 0/2 (both pass: 1.65, 1.81) |
 | non-thinking → PHR >10% | required | 0/2 (both pass: 20.00%, 32.69%) |
-| thinking → gap <0.5 | required | 0/5 (all pass: 0.23, 0.19, 0.16, 0.27, 0.24) |
-| thinking → PHR <10% | required | 0/5 (all pass: 4.50%, 5.74%, 4.03%, 2.78%, 1.11%) |
+| thinking → gap <0.5 | required | 0/5 (all pass: 0.23, 0.19, 0.16, 0.27, 0.29) |
+| thinking → PHR <10% | required | 0/5 (all pass: 4.50%, 5.74%, 4.03%, 2.78%, 3.79%) |
 
 **7/7 models in the predicted quadrant. Empty space between the two
-clusters is unambiguous: nearest non-thinking gap (1.65) is 6.1× the
-furthest thinking-mode gap (0.27). Nearest non-thinking PHR (20.00%)
-is 7.2× the furthest thinking-mode PHR (2.78%).**
+clusters is unambiguous: nearest non-thinking gap (1.65) is 5.7× the
+furthest thinking-mode gap (0.29). Nearest non-thinking PHR (20.00%)
+is 5.3× the furthest thinking-mode PHR (3.79%).**
 
 ## Three controlled comparisons
 
@@ -73,20 +64,23 @@ recipes converge on the same monitorability signature.
 
 ### 2. DS-R1-Distill-Qwen-14B vs DS-R1-Distill-Llama-70B — same RL recipe, different base
 
-| metric | DS-Qwen-14B | DS-Llama-70B (n=141) | Δ |
+| metric | DS-Qwen-14B | DS-Llama-70B | Δ |
 |---|---|---|---|
-| accuracy | 54.55% | 63.83% | +9.28pp |
-| legibility | 3.43 | 3.46 | +0.03 |
-| coverage | 3.17 | 3.21 | +0.04 |
-| leg-cov gap | 0.27 | 0.24 | -0.03 |
-| PHR strict | 2.78% | 1.11% | -1.67pp |
+| accuracy | 54.55% | 66.67% | +12.12pp |
+| legibility | 3.43 | 3.59 | +0.16 |
+| coverage | 3.17 | 3.30 | +0.13 |
+| leg-cov gap | 0.27 | 0.29 | +0.02 |
+| PHR strict | 2.78% | 3.79% | +1.01pp |
 
-**Nearly identical monitorability signature across base architectures.**
+**Same monitorability signature class across base architectures.**
 A 5× parameter scaling (14B → 70B) and a base-family swap
-(Qwen → Llama) produce ~+0.04 on each autorater axis and -1.67pp on
-PHR. The R1-distill recipe transfers cleanly across base
-architectures. Strong evidence the RL post-training is the variable
-controlling CoT alignment, not the substrate.
+(Qwen → Llama) produce ~+0.15 on each autorater axis (consistent
+scale gain), Δgap of +0.02 (within autorater-noise band on a 0-4
+scale), and +1.01pp PHR. Both models stay clearly inside the
+thinking quadrant; the R1-distill recipe transfers across base
+architectures with the monitorability signature intact. Strong
+evidence the RL post-training is the variable controlling CoT
+alignment, not the substrate.
 
 ### 3. Qwen3-Thinking-32B vs Llama-3.1-8B-Instruct — thinking vs non-thinking, different scales
 
