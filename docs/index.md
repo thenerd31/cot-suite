@@ -2,11 +2,11 @@
 
 A unified Python library for **chain-of-thought monitorability and faithfulness** on reasoning-model agents.
 
-`cot-suite` operationalizes five published evaluations as paste-and-run scorers under a single CLI and Inspect AI integration: Lanham 2307.13702, Turpin 2305.04388, Chen 2505.05410, Arcuschin 2503.08679, and Emmons & Zimmermann 2510.23966. The v0.1 release ships an 8-model open-weight scaling table on GPQA-Diamond as the first measurement-side application of the bundle.
+`cot-suite` operationalizes five published evaluations as scorers under a single CLI: Lanham 2307.13702, Turpin 2305.04388, Chen 2505.05410, Arcuschin 2503.08679, and Emmons & Zimmermann 2510.23966. The v0.1 release ships an 8-model open-weight scaling demonstration on GPQA-Diamond.
 
 ## 30-second value prop
 
-> **CoT monitorability separates cleanly by training paradigm.** Across 8 reasoning models spanning 7B-72B parameters, two base families (Qwen, Llama), two training paradigms (native thinking-mode and DeepSeek-R1 distillation vs vanilla instruct tuning), all 5 thinking-mode models cluster at legibility-coverage gap ≤0.29 and post-hoc-rationalization rate ≤5.74%; all 3 non-thinking models show gap ≥1.01 and PHR ≥20.00%. **Cluster separation: 5.3× on the PHR axis, 3.5× on the gap axis, 8/8 models in their predicted quadrant.** [→ Multi-family scaling](scaling.md)
+> **Two findings.** *PHR rate is paradigm-locked:* all 5 thinking-mode models stay at ≤5.74%, all 3 non-thinking instruct models exceed 22%, with no scale rescue (Qwen2.5-72B at 22.62% vs Qwen2.5-7B at 20%). *The legibility-coverage gap is paradigm-dominated but partially scale-sensitive:* Qwen2.5-72B closes the gap to 1.012 (39% smaller than Qwen2.5-7B's 1.65 at ~10× the parameters), but does not cross into thinking-mode territory (≤0.29 across all 5 thinking-mode models). **Cluster separation: 5.3× on the PHR axis, 3.5× on the gap axis, 8/8 models in their predicted quadrant.** [→ Multi-family scaling](scaling.md)
 
 ## Install
 
@@ -22,12 +22,6 @@ pip install "cot-suite[langgraph]"    # + LangGraph middleware
 pip install "cot-suite[activations]"  # + nnsight / TransformerLens (open-weights only)
 ```
 
-The legacy distribution name still resolves until 2026-07-21:
-
-```bash
-pip install cot-divergence  # aliased to cot-suite
-```
-
 ## Five-line minimum-viable example
 
 ```python
@@ -39,7 +33,9 @@ result = score_trajectory(traj, metrics=["legibility", "coverage"], autorater="a
 print(f"legibility = {result.metrics['legibility'].value:.2f} ± {result.metrics['legibility'].stderr:.2f}")
 ```
 
-For Inspect AI users, `pip install cot-suite` auto-registers `cot_legibility_coverage` and `cot_post_hoc_rationalization` scorers via the `inspect_ai` entry-point group:
+## Built on Inspect AI
+
+`pip install cot-suite` auto-registers `cot_legibility_coverage` and `cot_post_hoc_rationalization` as Inspect scorers via the `inspect_ai` entry-point group — usable directly from `inspect eval` without any additional setup:
 
 ```bash
 inspect eval some_task.py --scorer cotsuite/cot_legibility_coverage

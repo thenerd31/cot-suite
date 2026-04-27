@@ -49,6 +49,7 @@ nav:
   - Related work: related-work.md
   - Roadmap: roadmap.md
   - Citation: citation.md
+  - Migration from cot-divergence: migration.md
 
 # Existing docs/* files are repo source artifacts (not pages). Keep
 # them in the repo but exclude from the rendered site so they don't
