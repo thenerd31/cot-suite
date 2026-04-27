@@ -93,3 +93,73 @@ def test_self_grading_guard_module_importable() -> None:
     from cotsuite.inspect import _safety
 
     assert callable(_safety.warn_if_self_grading)
+
+
+def test_scorer_modules_export_eval_version() -> None:
+    """Both Inspect scorers must expose a top-level EVAL_VERSION constant.
+
+    Bumped on any methodology change that breaks numeric comparability
+    of results across runs. Stamped into Score.metadata so downstream
+    consumers can filter / partition results by evaluation version.
+    """
+    from cotsuite.inspect.scorers import legibility_coverage as lc
+    from cotsuite.inspect.scorers import post_hoc_rationalization as phr
+
+    assert hasattr(lc, "EVAL_VERSION"), "legibility_coverage missing EVAL_VERSION"
+    assert hasattr(phr, "EVAL_VERSION"), "post_hoc_rationalization missing EVAL_VERSION"
+    # Sanity-check format: must be parseable as semver-style major.minor.patch
+    for mod_name, version in [
+        ("legibility_coverage", lc.EVAL_VERSION),
+        ("post_hoc_rationalization", phr.EVAL_VERSION),
+    ]:
+        parts = version.split(".")
+        assert len(parts) == 3, f"{mod_name} EVAL_VERSION not semver: {version!r}"
+        assert all(p.isdigit() for p in parts), (
+            f"{mod_name} EVAL_VERSION not numeric: {version!r}"
+        )
+
+
+def test_scorer_eval_version_pinned_snapshot() -> None:
+    """SHA-style snapshot test: the v0.1 launch values are PINNED.
+
+    To bump either scorer's EVAL_VERSION, update this snapshot in the
+    same commit. The intent is to force a deliberate decision — bumping
+    EVAL_VERSION breaks numeric comparability with prior runs and should
+    be conscious, not accidental. This test plays the same role syrupy
+    snapshots would (and is simpler to audit in code review than a
+    binary __snapshots__/ file).
+    """
+    from cotsuite.inspect.scorers import legibility_coverage as lc
+    from cotsuite.inspect.scorers import post_hoc_rationalization as phr
+
+    expected = {
+        "legibility_coverage": "1.0.0",
+        "post_hoc_rationalization": "1.0.0",
+    }
+    actual = {
+        "legibility_coverage": lc.EVAL_VERSION,
+        "post_hoc_rationalization": phr.EVAL_VERSION,
+    }
+    assert actual == expected, (
+        f"EVAL_VERSION drift detected: {actual!r}. "
+        "If intentional, bump this snapshot in the same commit."
+    )
+
+
+def test_scorers_carry_cotsuite_version_stamp() -> None:
+    """Reproducibility primitive: every scorer module must import and
+    reference the package version, so Score.metadata can be back-traced
+    to the cotsuite release that produced it.
+
+    Per the v0.1 reproducibility-primitives audit, the metadata
+    contract for every Inspect scorer is: eval_version, cotsuite_version,
+    prompt_version, prompt_sha256, plus the autorater/judge model spec.
+    These five together let any consumer reproduce the eval bit-for-bit
+    given the same input trajectories and grader seeds.
+    """
+    from cotsuite import __version__
+    from cotsuite.inspect.scorers import legibility_coverage as lc
+    from cotsuite.inspect.scorers import post_hoc_rationalization as phr
+
+    assert lc._cotsuite_version == __version__
+    assert phr._cotsuite_version == __version__

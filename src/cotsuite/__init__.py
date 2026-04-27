@@ -26,6 +26,7 @@ __all__ = [
     "Reasoning",
     "Trajectory",
     "Turn",
+    "__version__",
     "register_metric",
     "register_test",
     "score_trajectory",

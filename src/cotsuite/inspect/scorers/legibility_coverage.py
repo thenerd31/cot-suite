@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from cotsuite import __version__ as _cotsuite_version
 from cotsuite.autoraters.legibility_coverage import LegibilityCoveragePrompt
 from cotsuite.inspect._safety import warn_if_self_grading
 
@@ -33,6 +34,13 @@ if TYPE_CHECKING:
 # dependency of cotsuite and is always available.
 from inspect_ai.model import get_model
 from inspect_ai.scorer import Score, accuracy, mean, scorer, stderr
+
+# Eval-methodology version: bump on any methodology change that affects
+# numeric comparability of results across runs (binarization threshold,
+# aggregation rule, prompt-version pin, default autorater contract). The
+# package version is *separate* — bumping cot-suite from 0.1.0 → 0.1.1
+# for an unrelated bug fix should NOT change EVAL_VERSION.
+EVAL_VERSION = "1.0.0"
 
 
 @scorer(
@@ -83,6 +91,8 @@ def cot_legibility_coverage(
             value=value,
             explanation=justifications[-1] if justifications else "",
             metadata={
+                "eval_version": EVAL_VERSION,
+                "cotsuite_version": _cotsuite_version,
                 "autorater": autorater,
                 "prompt_version": version,
                 "prompt_sha256": prompt.sha256,

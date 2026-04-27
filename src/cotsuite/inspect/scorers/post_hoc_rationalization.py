@@ -42,11 +42,19 @@ from typing import TYPE_CHECKING
 from inspect_ai.model import get_model
 from inspect_ai.scorer import Score, mean, scorer, stderr
 
+from cotsuite import __version__ as _cotsuite_version
 from cotsuite.inspect._safety import warn_if_self_grading
 from cotsuite.tests.post_hoc_rationalization import PostHocRationalizationPrompt
 
 if TYPE_CHECKING:
     from inspect_ai.scorer import Scorer
+
+# Eval-methodology version: bump on any methodology change that affects
+# numeric comparability of results across runs (binarization threshold,
+# aggregation rule, prompt-version pin, default judge contract). The
+# package version is *separate* — bumping cot-suite from 0.1.0 → 0.1.1
+# for an unrelated bug fix should NOT change EVAL_VERSION.
+EVAL_VERSION = "1.0.0"
 
 
 _ANSWER_RE = re.compile(
@@ -115,6 +123,8 @@ def cot_post_hoc_rationalization(
         final_answer = final_answer_extractor(final_output)
 
         base_metadata = {
+            "eval_version": EVAL_VERSION,
+            "cotsuite_version": _cotsuite_version,
             "judge_model": judge,
             "prompt_version": version,
             "prompt_sha256": prompt.sha256,

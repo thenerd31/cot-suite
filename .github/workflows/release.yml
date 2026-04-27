@@ -1,0 +1,100 @@
+name: Release
+
+# Triggered by pushing a v* tag (e.g. v0.1.0). The tag drives both
+# the version (via hatch-vcs) and the trigger. To cut a release:
+#
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# Trusted-publisher PyPI: configure on https://pypi.org/manage/account/publishing/
+# with publisher = thenerd31/cot-suite, workflow = release.yml, env = pypi.
+# No long-lived API token in repo secrets — auth is OIDC at job time.
+#
+# Sigstore attestations are produced via pypa/gh-action-pypi-publish v1.10+
+# which signs the artifacts with the workflow's OIDC identity and uploads
+# the attestation bundle alongside the sdist + wheel on PyPI.
+#
+# All inputs to `run:` blocks are from the trusted GitHub-runner env
+# (GITHUB_REF_NAME, github.token) — no user-controlled fields like
+# issue titles or commit messages flow into shell commands.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build sdist + wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # hatch-vcs needs tags
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build
+      - name: build
+        run: python -m build
+      - name: verify PEP 440 compliance (no local-version segment)
+        run: |
+          ls dist/
+          python -c "
+          import pathlib
+          for f in pathlib.Path('dist').iterdir():
+              assert '+' not in f.name, f'local-version segment in {f.name}'
+          print('all artifacts PEP 440 compliant')
+          "
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-pypi:
+    name: Publish to PyPI (trusted publisher + Sigstore attestations)
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/cot-suite
+    permissions:
+      id-token: write       # OIDC for trusted publisher
+      attestations: write   # Sigstore attestations
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: true
+
+  github-release:
+    name: GitHub Release
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            dist/*
