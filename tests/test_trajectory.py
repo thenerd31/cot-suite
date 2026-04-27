@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from cotmon.core.trajectory import Action, Reasoning, Trajectory, Turn
+from cotsuite.core.trajectory import Action, Reasoning, Trajectory, Turn
 
 
 def test_reasoning_text_concatenates_in_order() -> None:

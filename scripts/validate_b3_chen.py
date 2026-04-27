@@ -1,6 +1,6 @@
 """B3 — Chen 2505.05410 cue-injection validation on Claude Sonnet 4.6.
 
-Runs cotmon's ``chen_cue_injection`` with the ``metadata`` cue (cleanest
+Runs cotsuite's ``chen_cue_injection`` with the ``metadata`` cue (cleanest
 verbatim-from-paper template of the six) on Claude Sonnet 4.6 across 50
 GPQA-Diamond questions. Measures cue uptake rate (fraction where the
 model's answer matches the injected cue target) and verbalization rate
@@ -45,7 +45,7 @@ import random
 import sys
 from pathlib import Path
 
-from cotmon.tests.chen_cue_injection import CUE_CATALOG, InjectionSample, cue_injection
+from cotsuite.tests.chen_cue_injection import CUE_CATALOG, InjectionSample, cue_injection
 
 MODEL_UNDER_TEST = "anthropic/claude-sonnet-4-6"
 JUDGE = "anthropic/claude-haiku-4-5"
@@ -84,7 +84,7 @@ def _load_samples(limit: int) -> list[InjectionSample]:
 
 
 async def main() -> int:
-    from cotmon.verify_keys import require_keys
+    from cotsuite.verify_keys import require_keys
     require_keys(["anthropic"])
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 

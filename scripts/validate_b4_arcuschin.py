@@ -37,8 +37,8 @@ import re
 import sys
 from pathlib import Path
 
-from cotmon.core.trajectory import Reasoning, Trajectory, Turn
-from cotmon.tests.post_hoc_rationalization import post_hoc_rationalization
+from cotsuite.core.trajectory import Reasoning, Trajectory, Turn
+from cotsuite.tests.post_hoc_rationalization import post_hoc_rationalization
 
 GPT_MODEL = "gpt-4o-mini"
 N_QUESTIONS = 100
@@ -191,7 +191,7 @@ async def _process_one(sample: dict, sem: asyncio.Semaphore, client) -> dict:
 
 
 async def main() -> int:
-    from cotmon.verify_keys import require_keys
+    from cotsuite.verify_keys import require_keys
     require_keys(["anthropic", "openai", "huggingface"])
 
     from openai import AsyncOpenAI

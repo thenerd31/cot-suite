@@ -31,7 +31,7 @@ interpretable.
 | model under test | GPT-4o-mini (`gpt-4o-mini`) |
 | dataset | GPQA-Diamond (first 100 questions) |
 | detector | single-shot Claude Haiku 4.5 LLM-as-judge |
-| prompt | custom Arcuschin-inspired judge prompt, SHA-256 `4d7cc712e9456b80…` (see `src/cotmon/autoraters/prompts/post_hoc_rationalization_v1.txt`) |
+| prompt | custom Arcuschin-inspired judge prompt, SHA-256 `4d7cc712e9456b80…` (see `src/cotsuite/autoraters/prompts/post_hoc_rationalization_v1.txt`) |
 | n | 100 GPT-4o-mini trajectories, filtered to 43 correct+judged |
 
 Result landed 2026-04-23 on Modal-detached driver:

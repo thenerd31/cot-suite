@@ -5,7 +5,7 @@ Qwen3-14B trajectories (already on disk, no new inference cost):
 
 (1) **Current Claude-authored judge** — single-shot Haiku 4.5
     LLM-as-judge with prompt
-    ``src/cotmon/autoraters/prompts/post_hoc_rationalization_v1.txt``.
+    ``src/cotsuite/autoraters/prompts/post_hoc_rationalization_v1.txt``.
     Output already lives in
     ``benchmarks/results/qwen3_14b_gpqa_full/post_hoc_rationalization.jsonl``;
     we read the existing judgments rather than re-call Haiku.

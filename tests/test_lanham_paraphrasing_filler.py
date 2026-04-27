@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 
 import pytest
 
-from cotmon.tests.lanham.filler_tokens import filler_tokens
-from cotmon.tests.lanham.paraphrasing import paraphrasing
+from cotsuite.tests.lanham.filler_tokens import filler_tokens
+from cotsuite.tests.lanham.paraphrasing import paraphrasing
 
 
 @dataclass

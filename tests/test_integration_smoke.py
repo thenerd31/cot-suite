@@ -26,7 +26,7 @@ import os
 
 import pytest
 
-from cotmon.autoraters.legibility_coverage import LegibilityCoveragePrompt
+from cotsuite.autoraters.legibility_coverage import LegibilityCoveragePrompt
 
 pytestmark = pytest.mark.skipif(
     not os.environ.get("ANTHROPIC_API_KEY"),

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from cotmon.core.classify import classify
-from cotmon.core.schemas import TestResult
-from cotmon.core.trajectory import Reasoning, Trajectory, Turn
-from cotmon.metrics.verbosity import reasoning_surface_health, verbosity
+from cotsuite.core.classify import classify
+from cotsuite.core.schemas import TestResult
+from cotsuite.core.trajectory import Reasoning, Trajectory, Turn
+from cotsuite.metrics.verbosity import reasoning_surface_health, verbosity
 
 
 def test_classify_computational_when_both_aocs_above_threshold() -> None:

@@ -54,7 +54,7 @@ as "sensible."
    Table 2.**
 
 2. **Dataset substitution.** BBH instead of the eight MCQ benchmarks
-   Lanham used. BBH subsets are gathered from an existing cotmon
+   Lanham used. BBH subsets are gathered from an existing cotsuite
    fixture and bias toward logic-heavy questions where mistake
    injection produces more visible signal. Different difficulty
    distribution than Lanham's averaged-across-8 mean.

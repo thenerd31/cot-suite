@@ -20,7 +20,7 @@ import statistics
 import sys
 from pathlib import Path
 
-from cotmon.autoraters.legibility_coverage import LegibilityCoveragePrompt
+from cotsuite.autoraters.legibility_coverage import LegibilityCoveragePrompt
 
 RESULTS_PATH = Path("benchmarks/results/qwen3_14b_gpqa_full/results.jsonl")
 OUT_PATH = Path("benchmarks/results/qwen3_14b_gpqa_full/gemini_cross_rater.jsonl")

@@ -27,7 +27,7 @@ bias) — see "Our numbers" below. Run landed 2026-04-26 via
 
 | axis | This repo (v0.1) |
 |---|---|
-| implementation | `src/cotmon/tests/turpin_counterfactual.py` |
+| implementation | `src/cotsuite/tests/turpin_counterfactual.py` |
 | manipulations supported | `always_a` (fixed bias target '(A)'), extensible to others |
 | few-shot scaffolding | 3 toy exemplars only — **not** the paper's 13 BBH task prompts |
 | verbalization detector | LLM-as-judge (`_cue_judge.judges_verbalizes`), not human annotation |

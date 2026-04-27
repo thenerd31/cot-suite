@@ -3,13 +3,13 @@ requires = ["hatchling>=1.24"]
 build-backend = "hatchling.build"
 
 [project]
-name = "cot-monitor"
+name = "cot-suite"
 version = "0.1.0"
 description = "Chain-of-thought monitorability and faithfulness evaluation for reasoning-model agents."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "cot-monitor contributors" }]
+authors = [{ name = "cot-suite contributors" }]
 keywords = [
   "ai-safety",
   "chain-of-thought",
@@ -58,20 +58,24 @@ dev = [
 ]
 
 [project.scripts]
-# Primary entry points (post-rename 2026-04-21). `cot-monitor` mirrors the
-# PyPI package name; `cotmon` is the compact shell-friendly alias.
+# Primary entry points (post-rename 2026-04-26). `cot-suite` mirrors
+# the PyPI distribution name; `cotsuite` is the compact alias.
+cot-suite = "cotsuite.cli:app"
+cotsuite = "cotsuite.cli:app"
+# Legacy aliases kept for 90 days after each rename. Each emits a
+# DeprecationWarning on first import. Removal target: 2026-07-26.
 cot-monitor = "cotmon.cli:app"
 cotmon = "cotmon.cli:app"
-# Legacy alias kept for 90 days after rename. Emits DeprecationWarning.
+# Even older legacy alias from the pre-cot-monitor era (2026-04-21).
 cotdiv = "cotdiv.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/thenerd31/cot-divergence"
-Repository = "https://github.com/thenerd31/cot-divergence"
-Issues = "https://github.com/thenerd31/cot-divergence/issues"
+Homepage = "https://github.com/thenerd31/cot-suite"
+Repository = "https://github.com/thenerd31/cot-suite"
+Issues = "https://github.com/thenerd31/cot-suite/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/cotmon", "src/cotdiv"]
+packages = ["src/cotsuite", "src/cotmon", "src/cotdiv"]
 
 [tool.ruff]
 line-length = 100
@@ -99,7 +103,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "-ra --strict-markers --cov=cotdiv --cov-report=term-missing"
+addopts = "-ra --strict-markers --cov=cotsuite --cov-report=term-missing"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [

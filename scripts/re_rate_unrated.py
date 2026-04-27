@@ -20,8 +20,8 @@ import json
 import sys
 from pathlib import Path
 
-from cotmon.autoraters.legibility_coverage import LegibilityCoveragePrompt
-from cotmon.verify_keys import require_keys
+from cotsuite.autoraters.legibility_coverage import LegibilityCoveragePrompt
+from cotsuite.verify_keys import require_keys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_qwen3_gpqa import autorater_fn, format_mcq_prompt, load_gpqa_diamond

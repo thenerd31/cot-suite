@@ -14,11 +14,11 @@ import hashlib
 import re
 from importlib import resources
 
-from cotmon.autoraters.legibility_coverage import LegibilityCoveragePrompt
+from cotsuite.autoraters.legibility_coverage import LegibilityCoveragePrompt
 
 
 def _load_template() -> str:
-    pkg = resources.files("cotmon.autoraters.prompts")
+    pkg = resources.files("cotsuite.autoraters.prompts")
     return (pkg / "emmons_zimmermann_v1.txt").read_text(encoding="utf-8")
 
 

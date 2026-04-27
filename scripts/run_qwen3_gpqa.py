@@ -48,7 +48,7 @@ import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from cotmon.autoraters.legibility_coverage import LegibilityCoveragePrompt
+from cotsuite.autoraters.legibility_coverage import LegibilityCoveragePrompt
 
 AUTORATER_MODEL = "claude-haiku-4-5"
 GPQA_HF_PATH = "Idavidrein/gpqa"
@@ -848,7 +848,7 @@ def main() -> None:
     # skips preflight (offline smoke test). Otherwise fail loudly up-front
     # rather than mid-run after the first autorater / modal / HF call.
     if not fully_stubbed:
-        from cotmon.verify_keys import require_keys
+        from cotsuite.verify_keys import require_keys
         providers = []
         if not stub_inference:
             providers.append("anthropic")  # autorater

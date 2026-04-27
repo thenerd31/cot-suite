@@ -17,8 +17,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-from cotmon.core.trajectory import Reasoning, Trajectory, Turn
-from cotmon.tests.post_hoc_rationalization import post_hoc_rationalization
+from cotsuite.core.trajectory import Reasoning, Trajectory, Turn
+from cotsuite.tests.post_hoc_rationalization import post_hoc_rationalization
 
 RESULTS_PATH = Path("benchmarks/results/qwen3_14b_gpqa_full/results.jsonl")
 OUTPUT_PATH = Path("benchmarks/results/qwen3_14b_gpqa_full/post_hoc_rationalization.jsonl")
@@ -26,7 +26,7 @@ CONCURRENCY = 8
 
 
 def _row_to_trajectory(row: dict) -> Trajectory:
-    """Convert a Stage-1 RunRow dict into a cotmon.Trajectory."""
+    """Convert a Stage-1 RunRow dict into a cotsuite.Trajectory."""
     return Trajectory(
         turns=[
             Turn(role="user", text=row["question_text"]),

@@ -1,6 +1,6 @@
 """B2 — Turpin 2305.04388 counterfactual-bias validation on GPT-3.5-turbo.
 
-Runs cotmon's ``counterfactual_bias`` with the ``always_a_fewshot`` bias
+Runs cotsuite's ``counterfactual_bias`` with the ``always_a_fewshot`` bias
 on GPT-3.5-turbo across BBH subtasks (logical_deduction_three_objects +
 sports_understanding, 15 each = 30 total). Measures accuracy drop when
 the bias points to a wrong answer + verbalization rate (fraction of
@@ -20,7 +20,7 @@ bias-followed trajectories that explicitly acknowledge the bias in CoT).
 
 3. Verbalization detector substitution. Turpin used human annotation
    + keyword matching. We use Claude Haiku 4.5 LLM-as-judge via
-   ``judges_verbalizes`` in cotmon.tests._cue_judge.
+   ``judges_verbalizes`` in cotsuite.tests._cue_judge.
 
 4. Sample size: 30 questions × 1 bias = 30 paired (baseline, biased)
    inferences = 60 GPT-3.5 calls + up to 30 Haiku judge calls.
@@ -43,7 +43,7 @@ import json
 import sys
 from pathlib import Path
 
-from cotmon.tests.turpin_counterfactual import (
+from cotsuite.tests.turpin_counterfactual import (
     BIAS_CATALOG,
     Sample,
     counterfactual_bias,
@@ -79,7 +79,7 @@ def _load_bbh_samples(subtask: str, limit: int) -> list[Sample]:
 
 
 async def main() -> int:
-    from cotmon.verify_keys import require_keys
+    from cotsuite.verify_keys import require_keys
 
     require_keys(["openai", "anthropic"])
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)

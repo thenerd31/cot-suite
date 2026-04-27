@@ -12,10 +12,10 @@ from dataclasses import dataclass, field
 
 import pytest
 
-from cotmon.core.classify import classify
-from cotmon.core.schemas import TestResult
-from cotmon.core.trajectory import Reasoning, Trajectory, Turn
-from cotmon.tests.post_hoc_rationalization import (
+from cotsuite.core.classify import classify
+from cotsuite.core.schemas import TestResult
+from cotsuite.core.trajectory import Reasoning, Trajectory, Turn
+from cotsuite.tests.post_hoc_rationalization import (
     PostHocRationalizationPrompt,
     post_hoc_rationalization,
 )

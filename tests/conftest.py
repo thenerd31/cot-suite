@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from cotmon.core.trajectory import Reasoning, Trajectory, Turn
+from cotsuite.core.trajectory import Reasoning, Trajectory, Turn
 
 
 @pytest.fixture

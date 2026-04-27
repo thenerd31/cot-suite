@@ -1,8 +1,9 @@
-"""Verify the ``cotdiv`` → ``cotmon`` deprecation shim works.
+"""Verify the ``cotdiv`` → ``cotsuite`` deprecation shim works.
 
-Installed 2026-04-21 with the cot-divergence → cot-monitor rename. Exists
-to guarantee existing user imports (``from cotdiv.X import Y``) continue
-to work for 90 days post-rename.
+Original install: 2026-04-21 (cot-divergence → cot-monitor rename).
+Updated 2026-04-26 to skip the intermediate cotmon shim and alias
+directly to cotsuite. Exists to guarantee existing user imports
+(``from cotdiv.X import Y``) continue to work for 90 days post-rename.
 """
 
 from __future__ import annotations
@@ -30,18 +31,18 @@ def test_importing_cotdiv_emits_deprecation_warning() -> None:
         assert dep_warnings, "expected DeprecationWarning on cotdiv import"
         msg = str(dep_warnings[0].message)
         assert "cotdiv" in msg
-        assert "cotmon" in msg
+        assert "cotsuite" in msg
 
 
-def test_cotdiv_trajectory_is_same_class_as_cotmon_trajectory() -> None:
+def test_cotdiv_trajectory_is_same_class_as_cotsuite_trajectory() -> None:
     import cotdiv.core.trajectory as cd
 
-    import cotmon.core.trajectory as cm
+    import cotsuite.core.trajectory as cs
 
-    assert cd.Trajectory is cm.Trajectory
-    assert cd.Reasoning is cm.Reasoning
-    assert cd.Turn is cm.Turn
-    assert cd.Action is cm.Action
+    assert cd.Trajectory is cs.Trajectory
+    assert cd.Reasoning is cs.Reasoning
+    assert cd.Turn is cs.Turn
+    assert cd.Action is cs.Action
 
 
 def test_deep_submodule_imports_via_cotdiv() -> None:
@@ -68,12 +69,12 @@ def test_top_level_cotdiv_reexports() -> None:
     assert cotdiv.__version__
 
 
-def test_cotdiv_and_cotmon_share_registry() -> None:
+def test_cotdiv_and_cotsuite_share_registry() -> None:
     # A metric registered via one path should be visible via the other —
     # they're the same module object after aliasing.
     import cotdiv.core.registry as cd
 
-    import cotmon.core.registry as cm
+    import cotsuite.core.registry as cs
 
-    assert cd.list_metrics() == cm.list_metrics()
-    assert cd.list_tests() == cm.list_tests()
+    assert cd.list_metrics() == cs.list_metrics()
+    assert cd.list_tests() == cs.list_tests()

@@ -44,8 +44,8 @@ import re
 import sys
 from pathlib import Path
 
-from cotmon.tests.lanham.early_answering import early_answering
-from cotmon.tests.lanham.mistake_injection import mistake_injection
+from cotsuite.tests.lanham.early_answering import early_answering
+from cotsuite.tests.lanham.mistake_injection import mistake_injection
 
 MODEL_UNDER_TEST = "anthropic/claude-sonnet-4-6"
 MISTAKE_GENERATOR = "anthropic/claude-haiku-4-5"
@@ -85,7 +85,7 @@ def _load_bbh(subtask: str, limit: int) -> list[dict]:
 
 async def _gen_cot(client_name: str, prompt: str) -> tuple[str, str]:
     """One Sonnet-3.5 call producing (reasoning, final_letter)."""
-    from cotmon.models.clients import get_grader_client
+    from cotsuite.models.clients import get_grader_client
 
     client = get_grader_client(client_name)
     raw = await client.complete(prompt)
@@ -157,7 +157,7 @@ async def _process_one(sample: dict, sem: asyncio.Semaphore) -> dict:
 
 
 async def main() -> int:
-    from cotmon.verify_keys import require_keys
+    from cotsuite.verify_keys import require_keys
     require_keys(["anthropic"])
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)

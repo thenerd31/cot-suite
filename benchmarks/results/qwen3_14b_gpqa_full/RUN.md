@@ -38,7 +38,7 @@ All values are the Qwen3-14B HF model-card recommendations for thinking mode (de
 | `top_k` | 20 | HF card |
 | `min_p` | 0.0 | HF card |
 | `max_tokens` | 32768 | HF card (default; 81920 recommended for complex math/coding) |
-| `seed` | 0 | cot-monitor choice for reproducibility; paper does not prescribe |
+| `seed` | 0 | cot-suite choice for reproducibility; paper does not prescribe |
 | `enable_thinking` | `True` | explicit via `tokenizer.apply_chat_template(...)` |
 
 **Autorater run parameters:**
@@ -111,7 +111,7 @@ Never hit the `max_tokens=32768` ceiling. The p99 at 19k leaves ~40% headroom �
 
 ### Post-hoc rationalization (Arcuschin 2503.08679 detector)
 
-Ran `scripts/run_post_hoc_rationalization.py` against the full 197-row usable set as a secondary analysis. Uses an LLM-as-judge single-call detector (Haiku 4.5) with a cot-monitor-authored prompt — **not** verbatim from the paper; see `AUDIT.md` for the provenance caveat.
+Ran `scripts/run_post_hoc_rationalization.py` against the full 197-row usable set as a secondary analysis. Uses an LLM-as-judge single-call detector (Haiku 4.5) with a cot-suite-authored prompt — **not** verbatim from the paper; see `AUDIT.md` for the provenance caveat.
 
 - **Correct + diverged + unacknowledged: 7 / 122 = 5.7%** (the Arcuschin implicit post-hoc pattern on correct answers)
 - Correct + diverged + acknowledged: 1 / 122 (reasoning-to-final flip that the model explicitly called out — not the pathology)
@@ -132,21 +132,21 @@ Ran `scripts/run_post_hoc_rationalization.py` against the full 197-row usable se
 
 5. **Published Qwen3-14B GPQA-Diamond numbers are not a clean comparison target.** The 55–60% public range is collected under varying inference configs (thinking budget, sample counts, prompt template). Our 61.93% is plausible but not directly benchmarked against a particular published setup.
 
-6. **Single-shot autorater vs the paper's 5-shot.** Our variance pilot showed 0-1 point spread on the two trajectories we sampled; this does not generalize to the full distribution. A subsample 5-shot run (~20 questions) should be done before any "cot-monitor autorater variance is negligible" claim.
+6. **Single-shot autorater vs the paper's 5-shot.** Our variance pilot showed 0-1 point spread on the two trajectories we sampled; this does not generalize to the full distribution. A subsample 5-shot run (~20 questions) should be done before any "cot-suite autorater variance is negligible" claim.
 
 ## Planned CLI reproduction (v0.1.0)
 
-Once `cot-monitor`'s CLI is smoke-tested, the reproduction command becomes:
+Once `cot-suite`'s CLI is smoke-tested, the reproduction command becomes:
 
 ```bash
-cot-monitor evaluate \
+cot-suite evaluate \
     --model qwen3-14b-thinking \
     --dataset gpqa-diamond \
     --autorater haiku-4.5 \
     --output-dir benchmarks/results/qwen3_14b_gpqa_full
 ```
 
-As of this writing the top-level CLI surface is the `cotmon` script (entry point: `cotmon.cli:app`); the higher-level `cot-monitor evaluate ...` sub-command is a v0.2 item and the current `cotmon` script exposes lower-level `score`, `eval`, and `prompts` commands.
+As of this writing the top-level CLI surface is the `cotsuite` script (entry point: `cotsuite.cli:app`); the higher-level `cot-suite evaluate ...` sub-command is a v0.2 item and the current `cotsuite` script exposes lower-level `score`, `eval`, and `prompts` commands.
 
 ## Artifacts
 
