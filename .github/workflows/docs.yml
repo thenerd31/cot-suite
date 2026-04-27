@@ -1,0 +1,66 @@
+name: Docs
+
+# Builds and deploys the MkDocs Material site to GitHub Pages on every
+# push to main, plus on workflow_dispatch for manual republishes. Uses
+# the Pages-native deployment path (configure-pages + deploy-pages),
+# not `mkdocs gh-deploy`, so artifacts go through GitHub's official
+# build provenance pipeline.
+#
+# Repo settings prerequisite: Settings → Pages → Source = "GitHub
+# Actions" (not "Deploy from a branch"). The first successful deploy
+# also requires Settings → Environments → github-pages to be created
+# automatically by the deploy-pages action.
+#
+# All `${{ }}` expressions in this workflow reference action outputs
+# or system context only — no user-controlled fields like issue titles
+# or commit messages flow into shell commands.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One concurrent deploy at a time; cancel in-progress runs from older
+# pushes so only the most-recent main commit's site is published.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build MkDocs site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # hatch-vcs needs tags for version derivation
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install MkDocs Material
+        run: pip install mkdocs-material
+      - name: Build site (strict mode)
+        run: mkdocs build --strict
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
