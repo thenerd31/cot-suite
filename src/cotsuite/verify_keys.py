@@ -166,7 +166,7 @@ def check_openai() -> CheckResult:
 
 
 def check_huggingface() -> CheckResult:
-    """whoami endpoint. Validates HF_TOKEN for gated-dataset access (GPQA)."""
+    """Whoami endpoint. Validates HF_TOKEN for gated-dataset access (GPQA)."""
     key = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_HUB_TOKEN")
     if _looks_like_placeholder(key):
         return CheckResult(

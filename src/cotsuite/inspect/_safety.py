@@ -23,8 +23,7 @@ _WARNED_PAIRS: set[tuple[str, str]] = set()
 
 
 def warn_if_self_grading(grader_model: Model, scorer_name: str) -> None:
-    """Warn (once per process per scorer) if grader resolves to the eval's
-    primary model.
+    """Warn (once per process per scorer) if grader is the eval's primary model.
 
     Inspect's ``get_model(role="grader")`` returns the model the user
     specified via ``-M grader=<spec>`` on the CLI. If they forgot, it

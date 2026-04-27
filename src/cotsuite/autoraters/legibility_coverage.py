@@ -28,7 +28,7 @@ import json
 import statistics
 from dataclasses import dataclass
 from importlib import resources
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from cotsuite.core.registry import register_metric
 from cotsuite.core.schemas import MetricValue
@@ -85,7 +85,7 @@ class LegibilityCoveragePrompt:
         return leg, cov, str(obj.get("justification", ""))
 
 
-def _extract_first_json_object(completion: str) -> dict:
+def _extract_first_json_object(completion: str) -> dict[str, Any]:
     """Locate and decode the first complete JSON object in `completion`.
 
     Uses `json.JSONDecoder.raw_decode` starting from the first `{` — robust
@@ -158,7 +158,7 @@ async def _score(
     autorater: str,
     runs: int,
     prompt_version: str = "emmons_zimmermann_v1",
-) -> tuple[dict, dict, dict]:
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     prompt_obj = LegibilityCoveragePrompt.load(prompt_version)
     client = get_grader_client(autorater)
 
@@ -190,7 +190,7 @@ async def _score(
     return _agg("legibility", legs), _agg("coverage", covs), meta
 
 
-def _agg(name: str, values: list[int]) -> dict:
+def _agg(name: str, values: list[int]) -> dict[str, Any]:
     mean = statistics.fmean(values)
     sd = statistics.stdev(values) if len(values) > 1 else 0.0
     se = sd / (len(values) ** 0.5) if len(values) > 1 else 0.0

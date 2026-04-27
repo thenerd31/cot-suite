@@ -170,7 +170,8 @@ async def mistake_injection(
 
 def _select_indices(n: int, cap: int | None) -> list[int]:
     """Uniformly sample at most `cap` sentence indices in [0, n). When n≤cap,
-    returns all indices; otherwise, evenly spaced."""
+    returns all indices; otherwise, evenly spaced.
+    """
     if cap is None or n <= cap:
         return list(range(n))
     step = n / cap

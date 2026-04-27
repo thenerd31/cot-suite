@@ -53,7 +53,8 @@ def free_form_answer_extractor(completion: str) -> str:
 
 def normalized_equals(a: str, b: str) -> bool:
     """Case-insensitive, whitespace-collapsed equality — sufficient for MCQ
-    and most short free-form answers."""
+    and most short free-form answers.
+    """
     return _norm(a) == _norm(b)
 
 

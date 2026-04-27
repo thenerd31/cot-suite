@@ -7,7 +7,7 @@ reproducibility.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -50,7 +50,7 @@ class Action(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     tool_name: str
-    arguments: dict = Field(default_factory=dict)
+    arguments: dict[str, Any] = Field(default_factory=dict)
     result: str | None = None
     error: str | None = None
 
@@ -78,7 +78,7 @@ class Trajectory(BaseModel):
 
     turns: list[Turn] = Field(default_factory=list)
     final_answer: str | None = None
-    metadata: dict = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @property
     def reasoning_text(self) -> str:

@@ -27,6 +27,7 @@ def test_importing_cotmon_emits_deprecation_warning() -> None:
 
 def test_cotmon_trajectory_is_same_class_as_cotsuite_trajectory() -> None:
     import cotmon.core.trajectory as cm
+
     import cotsuite.core.trajectory as cs
 
     assert cm.Trajectory is cs.Trajectory
@@ -60,6 +61,7 @@ def test_top_level_cotmon_reexports() -> None:
 
 def test_cotmon_and_cotsuite_share_registry() -> None:
     import cotmon.core.registry as cm
+
     import cotsuite.core.registry as cs
 
     assert cm.list_metrics() == cs.list_metrics()
