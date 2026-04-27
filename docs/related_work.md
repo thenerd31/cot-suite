@@ -99,10 +99,17 @@ for non-reasoning DeepSeek. They argue reward-model training partly
 - Non-reasoning: **Qwen-2.5-72B-Instruct**, Gemini-2.0-flash-exp,
   DeepSeek-V3, Claude-3.5-Sonnet, GPT-4o, Grok-2-Preview,
   Llama-3.3-70B-Instruct.
-- Distilled-from-R1: **DeepSeek-R1-Distill-Llama-70B** (their wording
-  "Llama-70B distilled on DeepSeek R1" matches our checkpoint
-  pending exact-HF-name confirmation), DeepSeek-R1-Distill-Qwen-1.5B
-  / 14B / 32B.
+- Distilled-from-R1: paper describes "DeepSeek released models
+  distilled on 800k CoTs from DeepSeek R1" with the Llama-70B and
+  Qwen-32B variants. The 800k-CoT figure matches DeepSeek's
+  official R1-distill release announcement, so the paper's
+  "Distilled Llama-70B" is almost certainly
+  `deepseek-ai/DeepSeek-R1-Distill-Llama-70B` (our exact
+  checkpoint), but the paper does not cite the HF name explicitly
+  — verified via WebFetch on the HTML version 2026-04-26. Treat as
+  "almost-certainly-same checkpoint with slightly under-specified
+  paper-side attribution." Also tested: Distilled Qwen-32B,
+  DeepSeek-R1-Distill-Qwen-1.5B / 14B.
 
 **Datasets:** **MMLU only.** No GPQA, no GPQA-Diamond. Direct
 confirmation.
@@ -297,8 +304,12 @@ can still actively guide the answer.
 Llama-3.1-8B-Instruct, Qwen3-32B (3 of our 8 models exactly).
 
 **Datasets:** CommonsenseQA, StrategyQA, MUSR (3 variants), LSAT (3
-variants), GPQA (448 examples — likely the **Main** set, not Diamond
-which is 198). Confirm before claiming GPQA-Diamond overlap.
+variants), **GPQA-Main (448 examples, Appendix J)** — verified via
+WebFetch 2026-04-26. The methods section §2.2 says only "GPQA, a
+graduate-level science dataset" without specifying the split, but
+the 448-example count in Appendix J matches GPQA-Main's 448-example
+test set exactly (GPQA-Diamond is 198, GPQA-Extended is 546).
+**No GPQA-Diamond overlap.**
 
 **Methods/metrics:** Confidence-trajectory PHR detection (novel,
 adjacent to Arcuschin's restoration-error idea); cue-injection
@@ -308,10 +319,14 @@ legibility/coverage.
 **Where our results compare/extend:**
 
 - **Direct comparables (3 exact checkpoints):** Qwen2.5-7B-Instruct,
-  Llama-3.1-8B-Instruct, Qwen3-32B. Our GPQA-Diamond results vs their
-  soft-reasoning (CommonsenseQA / StrategyQA / MUSR / LSAT) results
-  on the same three checkpoints is the cleanest cross-domain
-  comparison available.
+  Llama-3.1-8B-Instruct, Qwen3-32B. Our GPQA-Diamond results vs
+  their multi-dataset (CommonsenseQA / StrategyQA / MUSR / LSAT /
+  GPQA-Main) results on the same three checkpoints is the
+  cleanest cross-benchmark comparison available. **Domain shift
+  on top of dataset shift** — they cover soft-reasoning + GPQA-Main;
+  we cover GPQA-Diamond only. So the cross-comparison is "harder
+  benchmark on the science axis" rather than a pure domain
+  swap.
 - **Their finding to test against:** distilled models change answers
   65% under cue injection (much more than non-distilled). On
   GPQA-Diamond, do our DeepSeek-R1-Distill variants
@@ -358,7 +373,7 @@ soft-reasoning rather than GPQA-Diamond.
 | OpenAI 2512.18311 | ✅ §6.2 |
 | Korbak 2507.11473 | n/a |
 | Schoen 2509.15541 | partial (GPQA generally; not explicitly Diamond) |
-| Lewis-Lim 2508.19827 | likely no (448 examples ≠ Diamond's 198) |
+| Lewis-Lim 2508.19827 | ❌ — confirmed GPQA-Main (448 ex), not Diamond (198 ex) |
 
 ### Model-overlap matrix (our 8 models × the 6 prior works)
 
@@ -371,7 +386,7 @@ checkpoint but not exact match. ❌ = not tested.
 | Qwen3-Thinking-14B | ❌ | ❌ | ❌ | ❌ |
 | Qwen3-Thinking-32B | ❌ | ❌ | ❌ | ✅ (Qwen3-32B) |
 | DS-R1-Distill-Qwen-14B | ❌ | ✅ (MMLU) | ❌ | ❌ |
-| DS-R1-Distill-Llama-70B | ❌ | ✅ (MMLU, pending HF-name confirmation) | ❌ | ❌ |
+| DS-R1-Distill-Llama-70B | ❌ | ⚠ (MMLU; HF name not cited but description matches our checkpoint) | ❌ | ❌ |
 | Qwen2.5-7B-Instruct | ❌ | ❌ | ❌ | ✅ |
 | Qwen2.5-72B-Instruct | ✅ (BBH+MMLU+GPQA-D) | ✅ (MMLU) | ❌ | ❌ |
 | Llama-3.1-8B-Instruct | ❌ | ❌ | ❌ | ✅ |
@@ -431,15 +446,28 @@ prior paper's evaluation.
 
 ## Open items to verify before launch
 
-- [ ] Confirm OpenAI 2512.18311's "memorization / hallucination /
-      faithful three-archetype taxonomy" framing — paper text says
-      intervention / process / outcome-property. May be a different
-      OpenAI paper or section we didn't reach.
-- [ ] Confirm Chua & Evans tested the exact HF checkpoint
-      `deepseek-ai/DeepSeek-R1-Distill-Llama-70B` (their wording
-      "Llama-70B distilled on DeepSeek R1" is consistent but not
-      decisive).
-- [ ] Confirm Lewis-Lim's 448-example "GPQA" slice is the Main
-      set, not Diamond.
-- [ ] Compute g-mean² on our existing TPR/TNR data and add to
-      `multi_family_summary.md` if the refactor is < 1hr.
+- [x] **OpenAI 2512.18311 three-archetype taxonomy** — verified
+      independently 2026-04-26 by user: paper says **intervention /
+      process / outcome-property** (NOT memorization / hallucination
+      / faithful as stated in the launch plan). Doc framing in §3
+      above is correct as written.
+- [x] **Chua & Evans R1-Distill-Llama-70B exact identity** —
+      verified via WebFetch 2026-04-26. Paper text describes
+      "DeepSeek released models distilled on 800k CoTs from
+      DeepSeek R1" with Llama-70B variant. The 800k-CoT figure
+      matches DeepSeek's official R1-distill release announcement,
+      so it's almost certainly
+      `deepseek-ai/DeepSeek-R1-Distill-Llama-70B` (our checkpoint),
+      but the paper does not cite the HF name explicitly. Doc §2
+      framing softened to reflect this attribution gap.
+- [x] **Lewis-Lim 448-example "GPQA" slice** — verified via
+      WebFetch 2026-04-26. 448 = GPQA-Main test set size; Diamond is
+      198. Paper §2.2 says "GPQA, a graduate-level science dataset"
+      without specifying split, but Appendix J has the count.
+      Confirmed GPQA-Main, not GPQA-Diamond. Doc §6 framing updated;
+      cross-paper synthesis table updated. **We do NOT have direct
+      GPQA-Diamond overlap with Lewis-Lim** — only same-checkpoint
+      overlap on a different benchmark.
+- [ ] **Compute g-mean² on our existing TPR/TNR data and add to
+      `multi_family_summary.md`.** Effort estimate pending the
+      Priority 3 inspect_ai_integration_assessment.md.
