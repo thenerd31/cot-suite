@@ -29,9 +29,7 @@ def test_entry_point_registered() -> None:
     matches = [ep for ep in eps if ep.name == "cotsuite"]
     assert matches, "cotsuite entry-point not registered under group=inspect_ai"
     ep = matches[0]
-    assert ep.value == "cotsuite.inspect", (
-        f"expected cotsuite.inspect, got {ep.value!r}"
-    )
+    assert ep.value == "cotsuite.inspect", f"expected cotsuite.inspect, got {ep.value!r}"
 
 
 def test_entry_point_loadable() -> None:
@@ -114,9 +112,7 @@ def test_scorer_modules_export_eval_version() -> None:
     ]:
         parts = version.split(".")
         assert len(parts) == 3, f"{mod_name} EVAL_VERSION not semver: {version!r}"
-        assert all(p.isdigit() for p in parts), (
-            f"{mod_name} EVAL_VERSION not numeric: {version!r}"
-        )
+        assert all(p.isdigit() for p in parts), f"{mod_name} EVAL_VERSION not numeric: {version!r}"
 
 
 def test_scorer_eval_version_pinned_snapshot() -> None:

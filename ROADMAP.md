@@ -131,6 +131,18 @@ later versions extend.
 Moved to `BLOCKERS.md` on 2026-04-19. This is a precondition for any
 "reproduces Lanham Table 2" claim, not a future-work item.
 
+## CI hygiene — pending
+
+- **Bump GitHub Actions to Node.js 24 runtime** before June 2026.
+  The `actions/checkout@v4`, `actions/setup-python@v5`,
+  `actions/upload-artifact@v4`, `actions/download-artifact@v4`, and
+  `codecov/codecov-action@v4` pins all run on the deprecating
+  Node.js 20 runtime. CI logs already show deprecation warnings on
+  every run. Current pin → next-major mapping (verify before bumping):
+  `actions/checkout@v5`, `actions/setup-python@v6`,
+  `actions/upload-artifact@v5`, `actions/download-artifact@v5`,
+  `codecov/codecov-action@v5`. Single small PR.
+
 ## Process lessons
 
 - **Pre-deploy vLLM smoke test.** Before any Modal deploy with a new
