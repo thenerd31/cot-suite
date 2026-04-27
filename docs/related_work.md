@@ -672,6 +672,28 @@ is reserved for papers with direct method overlap or model overlap.
   opportunity" thesis is correct — if CoT becomes unmonitorable,
   what fallback do you have? Out of scope for cot-suite.
 
+- **Nishimura-Gasparian & Parikh (METR) —
+  https://metr.org/blog/2026-04-01-fine-tuning-cot-controllability/
+  — "Fine-tuning experiments on CoT controllability"** (April 1,
+  2026). METR's stress-test of Yueh-Han Chen et al.'s CoT-Control
+  benchmark (§7): can supervised fine-tuning give models more
+  control over what their CoT verbalizes? Method: ~950-example LoRA
+  SFT (rank 32, lr 1e-4, single epoch) using prompts from the
+  Multilingual Thinking dataset paired with ReasonIF instructions,
+  evaluated on GPT-OSS-20B / GPT-OSS-120B / Qwen-3-8B / Qwen-3-32B.
+  Headline: average CoT-Control compliance rises from 2.9% → 8.8%
+  across the four fine-tuned models, with per-model variation
+  visible in the bar chart (GPT-OSS-120B approximately 4.5% → ~11%).
+  Mixed signal — small SFT pressure increases controllability, but
+  more examples does not monotonically improve, and some fine-tuned
+  variants performed *worse* than base. **Significance:**
+  CoT-Control (§7) is being actively stress-tested by METR within
+  weeks of publication, validating it as the right intentional-
+  controllability benchmark to cite. Out of scope for cot-suite as
+  an evaluation library (we measure base-model behavior, not
+  fine-tuned variants), but a fresh datapoint that strengthens the
+  §7 framing.
+
 ### Activation-level / mechanistic monitorability
 
 - **McGuinness, Serrano, Bailey, Emmons — arXiv 2512.11949 —
@@ -875,6 +897,32 @@ results:
 All 9 arXiv IDs in §9 resolve to existing papers with matching
 content. Five attribution / title corrections were applied based
 on verification.
+
+### Post-launch fact-checks (2026-04-27 follow-up)
+
+Three additional verifications surfaced from a manual social-media
+scan after the initial sweep landed:
+
+- **Neural Chameleons authorship re-verification.** A Dec 17 2025
+  tweet from Alex Serrano (the second author) appeared to claim
+  lead authorship. Re-fetched arXiv 2512.11949 author ordering on
+  2026-04-27: McGuinness is unambiguously first author with no
+  equal-contribution footnote; Serrano is second. The §9 attribution
+  "McGuinness, Serrano, Bailey, Emmons" is correct as written.
+- **Hobbhahn 2504.12170.** Surfaced as "Hobbhahn full report" via
+  social media; verified on 2026-04-27 to be Stix, Pistillo,
+  Sastry, **Hobbhahn**, Ortega, Balesni, Hallensleben,
+  Goldowsky-Dill, Sharkey — "AI Behind Closed Doors: A Primer on
+  The Governance of Internal Deployment" (April 16, 2025). This is
+  an internal-deployment-governance paper (Hobbhahn 4th of 9
+  authors); off-scope for cot-suite (governance, not CoT-
+  monitorability methodology). Not added to §9.
+- **METR CoT-Control SFT post.** Surfaced via Korbak's social-media
+  reference; verified at
+  https://metr.org/blog/2026-04-01-fine-tuning-cot-controllability/
+  on 2026-04-27. Active stress-test of Yueh-Han Chen et al.'s
+  CoT-Control benchmark (§7) within weeks of its publication.
+  Added to §9 under "intentional / steganographic unfaithfulness".
 
 ### Stale / superseded items
 
