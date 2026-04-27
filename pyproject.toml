@@ -69,6 +69,14 @@ cotmon = "cotmon.cli:app"
 # Even older legacy alias from the pre-cot-monitor era (2026-04-21).
 cotdiv = "cotdiv.cli:app"
 
+[project.entry-points.inspect_ai]
+# Inspect AI auto-discovers external scorer/solver/task packages via
+# this entry-point group. Importing ``cotsuite.inspect`` fires every
+# `@scorer(...)` decorator and populates Inspect's process-global
+# registry, so `inspect eval some_task --scorer cotsuite/cot_legibility_coverage`
+# works after `pip install cot-suite` without further setup.
+cotsuite = "cotsuite.inspect"
+
 [project.urls]
 Homepage = "https://github.com/thenerd31/cot-suite"
 Repository = "https://github.com/thenerd31/cot-suite"

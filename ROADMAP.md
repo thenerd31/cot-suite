@@ -65,6 +65,67 @@ Lanham Fig 6, we'd want a dense sweep mode. Low priority — the
 decisive claim ("zero uplift from filler at any length") survives a
 sparse sweep.
 
+## Inspect AI integration milestones
+
+Driven by `docs/inspect_ai_integration_assessment.md`. v0.1 ships
+**Scope A** (standalone CLI + 2 Inspect scorers + entry-point);
+later versions extend.
+
+### v0.1 (shipped 2026-04-26)
+
+- `cotsuite.inspect.scorers.cot_legibility_coverage` — Emmons &
+  Zimmermann legibility/coverage autorater as Inspect Scorer.
+- `cotsuite.inspect.scorers.cot_post_hoc_rationalization` — per-
+  trajectory PHR detector (NOT Arcuschin's full pair-construction
+  IPHR methodology — strict subset; documented).
+- `[project.entry-points.inspect_ai] cotsuite = "cotsuite.inspect"`
+  — `inspect eval` discovers both scorers without further setup.
+- `cotsuite.inspect._safety.warn_if_self_grading` — UserWarning
+  when grader role resolves to the eval's primary model.
+- `tests/test_inspect_integration.py` — 6 smoke tests for entry-
+  point loading + registry name correctness.
+
+### v0.1.1
+
+- **g-mean² adoption** (OpenAI 2512.18311). Verified formula:
+  `gmean2 = tpr * tnr` over (arm × correctness × monitor signal)
+  triples. NOT directly computable from current cot-suite outputs;
+  requires a binarization scheme on 0-4 Likert autorater outputs
+  + a ground-truth proxy. Pre-work: 4-8 h methodology design;
+  implementation: 2-4 h. Defer until methodology is locked.
+
+### v0.2 (4-6 weeks post-launch)
+
+- Port the remaining 4 metrics to Inspect Scorers:
+  - Lanham early-answering (~6-10 h, cleanest of the four)
+  - Lanham mistake-injection (~8-12 h, second grader role for
+    the mistake generator)
+  - Turpin counterfactual-bias (~12-18 h, needs Solver+Scorer
+    pair pattern because the accuracy-drop is a cross-sample
+    aggregate)
+  - Chen cue-injection (~10-14 h, same Solver+Scorer pair
+    pattern as Turpin)
+- Confirm the post-2026-05-08 `inspect_evals` registry layout
+  before opening any upstream PR (per inspect_evals PR #1538 by
+  Scott-Simmons).
+
+### v0.2.1+
+
+- Open one `inspect_evals` PR — recommend legibility/coverage
+  first, since it has the tightest reproduction story and is
+  already implemented end-to-end.
+- Use that review feedback to shape the remaining four metric
+  PRs.
+
+### Out of scope (probably forever)
+
+- **Native Inspect-only architecture** (Scope C from the
+  assessment). The standalone CLI's "score a pre-existing
+  trajectory JSONL" workflow doesn't fit Inspect's eval-time-
+  generation model. Replacing it would throw away expensive
+  recorded outputs (Stage 1+2+3 multi-family results,
+  ~$200 of compute).
+
 ## Length-weighted AOC alignment — promoted to `BLOCKERS.md`
 
 Moved to `BLOCKERS.md` on 2026-04-19. This is a precondition for any
