@@ -2,8 +2,9 @@
 
 cot-suite operationalizes CoT-monitorability evaluations from a set of
 existing papers and runs them on a multi-family open-weights scaling
-table. This document positions our v0.1 results relative to the six
-most-related prior works as of 2026-04-26. The framing throughout: we
+table. This document positions our v0.1 results relative to the eight
+most-related prior works as of 2026-04-27, plus a recent-literature
+sweep covering October 2025–April 2026. The framing throughout: we
 are doing **replication + tooling + open-weight scaling**, not novel
 methodology — the methodologies are Lanham, Turpin, Chen, Arcuschin,
 Emmons & Zimmermann; we wire them into one library and apply them
@@ -100,16 +101,18 @@ for non-reasoning DeepSeek. They argue reward-model training partly
   DeepSeek-V3, Claude-3.5-Sonnet, GPT-4o, Grok-2-Preview,
   Llama-3.3-70B-Instruct.
 - Distilled-from-R1: paper describes "DeepSeek released models
-  distilled on 800k CoTs from DeepSeek R1" with the Llama-70B and
-  Qwen-32B variants. The 800k-CoT figure matches DeepSeek's
-  official R1-distill release announcement, so the paper's
-  "Distilled Llama-70B" is almost certainly
-  `deepseek-ai/DeepSeek-R1-Distill-Llama-70B` (our exact
-  checkpoint), but the paper does not cite the HF name explicitly
-  — verified via WebFetch on the HTML version 2026-04-26. Treat as
-  "almost-certainly-same checkpoint with slightly under-specified
-  paper-side attribution." Also tested: Distilled Qwen-32B,
-  DeepSeek-R1-Distill-Qwen-1.5B / 14B.
+  distilled on 800k CoTs from DeepSeek R1" with Llama-70B and
+  Qwen-32B variants (Section 4 / Appendix A.1). **The paper does
+  not specify a HuggingFace model identifier, snapshot date, or
+  commit SHA for the Llama-70B distilled model** — verified via
+  WebFetch of the v3 HTML on 2026-04-27. Whether their Llama-70B is
+  the canonical `deepseek-ai/DeepSeek-R1-Distill-Llama-70B` or a
+  different distillation cannot be determined from the paper. Our
+  DS-R1-Distill-Llama-70B GPQA-Diamond run is on the canonical HF
+  checkpoint regardless — so for our positioning purposes, our
+  exact-named checkpoint is unambiguously novel. Also tested:
+  Distilled Qwen-32B, DeepSeek-R1-Distill-Qwen-1.5B / 14B (same
+  identity ambiguity).
 
 **Datasets:** **MMLU only.** No GPQA, no GPQA-Diamond. Direct
 confirmation.
@@ -126,12 +129,14 @@ confirmation.
 
 **Where our results compare/extend:**
 
-- **Direct comparables (3 exact checkpoints):**
-  - DeepSeek-R1-Distill-Llama-70B
-  - DeepSeek-R1-Distill-Qwen-14B
-  - Qwen2.5-72B-Instruct
-  This is the strongest model-overlap among the 6 prior works. **Same
-  three checkpoints, harder benchmark (GPQA-Diamond vs MMLU).**
+- **Direct comparables (2 exact + 1 ambiguous):**
+  - Qwen2.5-72B-Instruct (exact match — explicitly named)
+  - DeepSeek-R1-Distill-Qwen-14B (exact match — explicitly named)
+  - "Distilled Llama-70B" (ambiguous — paper does not specify HF
+    identifier, see above). Our run is on the canonical
+    `deepseek-ai/DeepSeek-R1-Distill-Llama-70B`.
+  Two exact-checkpoint matches plus one underspecified-attribution
+  match. **Harder benchmark (GPQA-Diamond vs MMLU)** for all three.
 - **Extension: GPQA-Diamond instead of MMLU.** If our PHR + leg-cov
   signals on these checkpoints survive the harder benchmark, this
   replicates and strengthens Chua & Evans. If the thinking-vs-
@@ -155,14 +160,9 @@ not materially decrease monitorability at current frontier scale**;
 asserts a Pareto frontier where smaller-model-with-higher-reasoning-
 effort beats larger-model-with-low-effort on monitorability per cost.
 
-> **Caveat on the v0.1-spec-as-stated three-archetype framing.** The
-> launch plan referred to OpenAI's three archetypes as "memorization
-> / hallucination / faithful." The paper's actual three archetypes
-> per §2 are **(1) intervention evaluations, (2) process evaluations,
-> (3) outcome-property evaluations**. The memorization / hallucination
-> / faithful trichotomy may be from a different OpenAI paper or
-> section we didn't reach. Flag for verification before citing the
-> trichotomy framing in the launch README.
+The three archetypes per §2 are **(1) intervention evaluations,
+(2) process evaluations, (3) outcome-property evaluations** —
+verified directly from the paper (see open-items §c).
 
 **Models tested:** GPT-5 Thinking, OpenAI o3, o3-mini, o4-mini,
 Claude 3.7 Sonnet (Thinking), Kimi K2 Thinking, plus open-weight
@@ -179,11 +179,14 @@ capability scaling.
 
 **Where our results compare/extend:**
 
-- **Adopt their g-mean² metric.** It's the cleanest single-number
-  summary in the field and they're the gold-standard reference.
-  Computing g-mean² on our existing data is a small refactor (we
-  already have TPR/TNR from cue-injection runs). Worth landing in
-  v0.1 to enable direct numeric comparison with their tables.
+- **Adopt their g-mean² metric for v0.1.1** — pending the
+  binarization-scheme + ground-truth-proxy methodology decision
+  flagged in `docs/inspect_ai_integration_assessment.md`. Computing
+  g-mean² on our existing v0.1 data is **not** a small refactor: it
+  requires picking a threshold to binarize the 0-4 Likert autorater
+  scores into TPR/TNR inputs and a ground-truth proxy for monitor
+  flagging. The assessment doc estimates 4-8h methodology design +
+  2-4h implementation. Defer until methodology is locked.
 - **Direct-ish comparable: DeepSeek-R1-0528-Qwen3-8B.** Their only
   open-weight model. Same Qwen3-8B base as our Qwen3-Thinking-8B
   but a different post-training recipe (R1-distill of the 0528
@@ -222,9 +225,10 @@ cot-suite**. The library is a direct operationalization of their
 recommendation (1) "develop effective evaluations of CoT
 monitorability." We position cot-suite as the missing tooling layer
 between the Korbak position paper and the Meek / OpenAI individual
-evaluations: a unified library that bundles Lanham + Turpin + Chen +
-Arcuschin + Emmons & Zimmermann under one CLI, runs them
-consistently across model families, and reports a single
+evaluations: the **first PyPI-installable bundle of Lanham
+2307.13702, Turpin 2305.04388, Chen 2505.05410, Arcuschin 2503.08679,
+and Emmons & Zimmermann 2510.23966 under a unified CLI**, run
+consistently across model families and reported as a single
 multi-family scaling table. The 8-model multi-family scaling result
 in `benchmarks/results/multi_family_summary.md` is exactly the kind
 of "track monitorability across training conditions" data Korbak's
@@ -345,6 +349,123 @@ legibility/coverage.
 
 ---
 
+## 7. Yueh-Han Chen et al. — arXiv 2603.05706 — "Reasoning Models Struggle to Control their Chains of Thought"
+
+**Summary.** Anthropic + UK AISI + MATS collaboration (Yueh-Han Chen,
+McCarthy, Lee, He, Kivlichan, Baker, Carroll, Korbak — March 2026).
+Introduces **CoT-Control**, an evaluation suite that asks not "is the
+CoT faithful?" but "*can the model intentionally control what its
+CoT verbalizes?*" along three axes: **Information Suppression**
+(omit a fact the model uses), **Information Addition** (verbalize
+content the model does not actually use), and **Stylistic Control**
+(format / tone / language). The threat model is steganographic /
+adversarial: a deceptively-aligned model that wants to act on
+information without exposing it in CoT. Headline numbers: Claude
+Sonnet 4.5 manages 2.7% successful CoT control vs 61.9% on output-
+only control (gap of ~59pp); DeepSeek R1 manages 0.1% on CoT, the
+weakest of all tested models. **Conclusion: current frontier
+reasoning models cannot reliably hide reasoning content in CoT even
+when explicitly instructed to** — a *positive* monitorability
+finding, complementary to Korbak's "fragile opportunity" thesis.
+
+**Models tested:** Closed frontier (Claude Sonnet 4.5, GPT-5, Gemini
+2.5 Pro, etc.) plus open-weight **Qwen3-14B**, **Qwen3-32B**, and
+DeepSeek R1.
+
+**Direct overlaps with our scaling table:** Qwen3-14B and Qwen3-32B
+(both base models for our Qwen3-Thinking-14B / Qwen3-Thinking-32B
+checkpoints — same weights, same family, although CoT-Control runs
+them via Anthropic API / OpenRouter rather than local Modal).
+
+**Datasets:** Custom CoT-Control task suite — synthetic prompts
+designed to induce specific CoT/output content gaps. Not GPQA,
+not MMLU.
+
+**Methods/metrics:** Per-controllability-type success rate
+(binary: did the model successfully suppress / add / restyle CoT
+content under the instruction). LLM-as-judge for content
+verification. Code: https://github.com/YuehHanChen/CoTControl
+(single-paper companion repo, no PyPI distribution).
+
+**Where our results compare/extend:**
+
+- **Different threat model, complementary finding.** CoT-Control
+  measures *intentional* unfaithfulness ("can the model do it on
+  purpose?"); cot-suite measures *structural* unfaithfulness
+  ("does the CoT track the computation by default?"). A model
+  that scores low on CoT-Control (cannot intentionally hide CoT
+  content) *and* low on PHR-strict (does not unconsciously
+  rationalize) is doubly monitorable. Our PHR-strict ≤5.74% on
+  Qwen3-Thinking-14B/32B + their <5% intentional-control success
+  on Qwen3-14B/32B compose into the same conclusion: **at this
+  scale, in this family, monitorability is robust under both
+  unintentional and intentional pressure.**
+- **Direct co-authorship overlap on the open-weight scaling
+  axis.** Korbak (Korbak 2507.11473) and Baker (named on the
+  March 2026 monitoring-obfuscation work 2503.11926) appear on
+  CoT-Control's author list. Their next-paper choice of Qwen3-14B/
+  32B as the open-weight test points validates the model selection
+  for our scaling table — those are the right open checkpoints to
+  probe in 2026.
+- **Lineage note.** CoT-Control does not implement Lanham AOCs,
+  Turpin / Chen cue-injection, Arcuschin PHR, or Emmons-Zimmermann
+  legibility/coverage. It is a sibling evaluation in the
+  monitorability portfolio, not a competitor to cot-suite's bundle.
+
+---
+
+## 8. ASTRAL Group — arXiv 2603.28590 — "MonitorBench: A Comprehensive Benchmark for Chain-of-Thought Monitorability in Large Language Models"
+
+**Summary.** A 1,514-instance benchmark across 19 tasks in 7
+categories, designed to characterize when CoT can be used to
+monitor decision-critical factors driving model behavior. Two
+**stress-test settings** are layered on top of the base instances:
+*direct concealment* (model instructed to hide the decision-
+critical factor) and *monitor-aware evasion* (model instructed to
+defeat a downstream CoT monitor). Like CoT-Control, this is an
+*intentional* unfaithfulness probe; unlike CoT-Control, it is
+positioned as a stand-alone benchmark with curated instances rather
+than a methodology evaluated on existing tasks. Code:
+https://github.com/ASTRAL-Group/MonitorBench (15 stars, 10 commits,
+MIT license).
+
+**Models tested:** Per repo + abstract — frontier closed + a
+selection of open-weight reasoning models. Not enumerated in the
+abstract; full list in §3 of the paper.
+
+**Datasets:** 1,514 novel instances (synthetic + curated), not
+sourced from MMLU / GPQA / BBH / Turpin's BBH subsets.
+
+**Methods/metrics:** Stress-test concealment success rate plus
+monitor-detection rate, computed under the two stress settings.
+**Does not implement** Lanham AOCs (early answering / mistake
+injection / paraphrasing / filler tokens), Turpin counterfactual
+bias, Chen six-cue injection, Arcuschin IPHR pair construction, or
+Emmons-Zimmermann legibility/coverage autorater. The bibliography
+cites Lanham 2307.13702, Chen 2505.05410, Arcuschin 2503.08679,
+Emmons 2510.23966, and Korbak 2507.11473 as related work but does
+not port their methods. Turpin 2305.04388 is not cited.
+
+**Distribution.** Verified absent from PyPI (`monitorbench` returns
+404 from the PyPI JSON API on 2026-04-27). Repo has `requirements.txt`
+only — no `pyproject.toml` or `setup.py`. Designed to be cloned and
+run locally, not pip-installed.
+
+**Where this leaves cot-suite's positioning.** MonitorBench is the
+closest thing in the field to a "comprehensive monitorability
+benchmark" published as a stand-alone artifact. It is **not** the
+**first PyPI-installable bundle of Lanham 2307.13702, Turpin
+2305.04388, Chen 2505.05410, Arcuschin 2503.08679, and Emmons &
+Zimmermann 2510.23966 under a unified CLI** — different category.
+Its
+1,514-instance benchmark could in principle be ingested as a new
+*dataset* for cot-suite's existing scorers in v0.2 (interesting
+follow-up: do MonitorBench's stress-test instances expose additional
+PHR / leg-cov signal vs the original Lanham/Turpin/Chen/Arcuschin
+test data?).
+
+---
+
 ## Cross-paper synthesis
 
 ### Open-weight scaling gap
@@ -357,6 +478,8 @@ legibility/coverage.
 | Korbak 2507.11473 | n/a (position) | n/a | n/a |
 | Schoen 2509.15541 | closed frontier only | n/a | frontier-only |
 | Lewis-Lim 2508.19827 | mostly sub-32B open-weight | Qwen2.5-7B-Instruct | 7B-32B |
+| Yueh-Han Chen 2603.05706 | closed frontier + Qwen3-14B/32B + R1 | Qwen3-14B | 14B-32B (open) |
+| MonitorBench 2603.28590 | mixed closed + open reasoning | not enumerated in abstract | unenumerated |
 | **cot-suite v0.1** | **8 open-weight** | **Qwen2.5-7B-Instruct** | **7B-72B with intermediate rungs** |
 
 **No prior work covers the 7B-72B range with Qwen-base, Llama-base,
@@ -374,22 +497,24 @@ soft-reasoning rather than GPQA-Diamond.
 | Korbak 2507.11473 | n/a |
 | Schoen 2509.15541 | partial (GPQA generally; not explicitly Diamond) |
 | Lewis-Lim 2508.19827 | ❌ — confirmed GPQA-Main (448 ex), not Diamond (198 ex) |
+| Yueh-Han Chen 2603.05706 | ❌ custom CoT-Control task suite |
+| MonitorBench 2603.28590 | ❌ 1,514 novel curated instances |
 
 ### Model-overlap matrix (our 8 models × the 6 prior works)
 
 ✅ = paper tested this exact checkpoint. ⚠ = adjacent / similar
 checkpoint but not exact match. ❌ = not tested.
 
-| our model | Meek | Chua&Ev | OpenAI | Lewis-Lim |
-|---|---|---|---|---|
-| Qwen3-Thinking-8B | ❌ | ❌ | ⚠ (R1-Distill-Qwen3-8B, different recipe) | ❌ |
-| Qwen3-Thinking-14B | ❌ | ❌ | ❌ | ❌ |
-| Qwen3-Thinking-32B | ❌ | ❌ | ❌ | ✅ (Qwen3-32B) |
-| DS-R1-Distill-Qwen-14B | ❌ | ✅ (MMLU) | ❌ | ❌ |
-| DS-R1-Distill-Llama-70B | ❌ | ⚠ (MMLU; HF name not cited but description matches our checkpoint) | ❌ | ❌ |
-| Qwen2.5-7B-Instruct | ❌ | ❌ | ❌ | ✅ |
-| Qwen2.5-72B-Instruct | ✅ (BBH+MMLU+GPQA-D) | ✅ (MMLU) | ❌ | ❌ |
-| Llama-3.1-8B-Instruct | ❌ | ❌ | ❌ | ✅ |
+| our model | Meek | Chua&Ev | OpenAI | Lewis-Lim | CoT-Control |
+|---|---|---|---|---|---|
+| Qwen3-Thinking-8B | ❌ | ❌ | ⚠ (R1-Distill-Qwen3-8B, different recipe) | ❌ | ❌ |
+| Qwen3-Thinking-14B | ❌ | ❌ | ❌ | ❌ | ✅ (Qwen3-14B) |
+| Qwen3-Thinking-32B | ❌ | ❌ | ❌ | ✅ (Qwen3-32B) | ✅ (Qwen3-32B) |
+| DS-R1-Distill-Qwen-14B | ❌ | ✅ (MMLU) | ❌ | ❌ | ❌ |
+| DS-R1-Distill-Llama-70B | ❌ | ⚠ (MMLU; tested *a* Llama-70B distilled on R1 CoTs but did not specify HF identifier — distillation identity ambiguous) | ❌ | ❌ | ❌ |
+| Qwen2.5-7B-Instruct | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Qwen2.5-72B-Instruct | ✅ (BBH+MMLU+GPQA-D) | ✅ (MMLU) | ❌ | ❌ | ❌ |
+| Llama-3.1-8B-Instruct | ❌ | ❌ | ❌ | ✅ | ❌ |
 
 (Korbak and Schoen have no model-list overlap and are omitted from
 the matrix — they're cited for framing/downstream-context, not for
@@ -400,32 +525,41 @@ works on any benchmark): Qwen3-Thinking-8B, Qwen3-Thinking-14B. Both
 sit in the under-explored 8B-14B thinking-mode range.
 
 **Our most-leveraged datapoint: DS-R1-Distill-Llama-70B on
-GPQA-Diamond.** Chua & Evans tested this checkpoint on MMLU; we
-test it on a harder benchmark (GPQA-Diamond) with our full
-multi-metric pipeline. This is the single strongest "replication +
-extension" datapoint in our table.
+GPQA-Diamond.** Chua & Evans tested *a* Llama-70B distilled on
+DeepSeek R1 CoTs on MMLU; whether it is the canonical
+`deepseek-ai/DeepSeek-R1-Distill-Llama-70B` or a different
+distillation is not specified in the paper (see §2). Our run is on
+the canonical HF checkpoint, evaluated on GPQA-Diamond, with our
+full multi-metric pipeline — so for our positioning purposes our
+exact-named-checkpoint result is unambiguously novel regardless of
+how their checkpoint identity resolves.
 
 ### Methodological lineage
 
 | metric | originating paper | used by | cot-suite v0.1 |
 |---|---|---|---|
-| Early-answering AOC | Lanham 2307.13702 | (none of the 6) | ✅ (B1) |
-| Mistake-injection AOC | Lanham 2307.13702 | (none of the 6) | ✅ (B1) |
+| Early-answering AOC | Lanham 2307.13702 | (none of the 8) | ✅ (B1) |
+| Mistake-injection AOC | Lanham 2307.13702 | (none of the 8) | ✅ (B1) |
 | Cue-injection faithfulness | Turpin 2305.04388, Chen 2505.05410 | Meek, Chua&Ev, Lewis-Lim | ✅ (B2, B3) |
-| Implicit PHR | Arcuschin 2503.08679 | (cited by Meek; not run) | ✅ (B4) |
-| Legibility / coverage | Emmons & Zimmermann 2510.23966 | (cited by Meek; not run) | ✅ (Stage 1/2/3 autorater) |
+| Implicit PHR | Arcuschin 2503.08679 | (cited by Meek + MonitorBench; not run) | ✅ (B4) |
+| Legibility / coverage | Emmons & Zimmermann 2510.23966 | (cited by Meek + MonitorBench; not run) | ✅ (Stage 1/2/3 autorater) |
 | Verbosity | Meek 2510.27378 | Meek only | ❌ v0.2 |
 | Confidence-trajectory PHR | Lewis-Lim 2508.19827 | Lewis-Lim only | ❌ v0.2 |
-| g-mean² monitorability | OpenAI 2512.18311 | OpenAI only | ❌ recommend v0.1 add |
+| g-mean² monitorability | OpenAI 2512.18311 | OpenAI only | ❌ recommend v0.1.1 add |
+| Intentional CoT-control success rate | Yueh-Han Chen 2603.05706 | CoT-Control only | ❌ different threat model — out of scope |
+| Stress-test concealment under instruction | MonitorBench 2603.28590 | MonitorBench only | ❌ different threat model — out of scope |
 
-**cot-suite v0.1 is the only library that bundles Lanham +
-Turpin + Chen + Arcuschin + Emmons-Zimmermann under a single CLI.**
-That is the tooling-layer contribution distinct from any individual
-prior paper's evaluation.
+**cot-suite v0.1 is the first PyPI-installable bundle of Lanham
+2307.13702, Turpin 2305.04388, Chen 2505.05410, Arcuschin
+2503.08679, and Emmons & Zimmermann 2510.23966 under a unified
+CLI.** That is the tooling-layer contribution distinct from
+any individual prior paper's evaluation. See §11 for the
+competing-bundle check and the lit-sweep methodology behind this
+claim.
 
 ---
 
-## Suggested READme positioning
+## Suggested README positioning
 
 1. Lead with Korbak as the motivating position paper.
 2. Cite Meek, Chua & Evans, OpenAI 2512.18311 as the closest
@@ -436,11 +570,16 @@ prior paper's evaluation.
 4. Cite Schoen as downstream-safety motivation, no numeric
    comparison.
 5. **DS-R1-Distill-Llama-70B on GPQA-Diamond is the headline novel
-   datapoint** relative to all 6 prior works (Chua & Evans tested
-   this checkpoint only on MMLU).
-6. **Adopt OpenAI's g-mean² metric** for v0.1 if a small refactor
-   suffices — biggest legibility win for cross-paper comparison at
-   lowest engineering cost.
+   datapoint** relative to all 8 prior works. Chua & Evans tested
+   *a* Llama-70B distilled on R1 CoTs on MMLU but did not specify
+   HF identifier; our run is on the canonical HF checkpoint with
+   the full multi-metric pipeline on a harder benchmark.
+6. **Adopt OpenAI's g-mean² metric** for v0.1.1 — biggest legibility
+   win for cross-paper comparison at lowest engineering cost.
+7. Reference CoT-Control 2603.05706 and MonitorBench 2603.28590 as
+   *complementary* monitorability evaluations with different threat
+   models (intentional / stress-test concealment); position cot-suite
+   as the structural-faithfulness bundle, not a competitor to either.
 
 ---
 
@@ -452,14 +591,18 @@ prior paper's evaluation.
       / faithful as stated in the launch plan). Doc framing in §3
       above is correct as written.
 - [x] **Chua & Evans R1-Distill-Llama-70B exact identity** —
-      verified via WebFetch 2026-04-26. Paper text describes
-      "DeepSeek released models distilled on 800k CoTs from
-      DeepSeek R1" with Llama-70B variant. The 800k-CoT figure
-      matches DeepSeek's official R1-distill release announcement,
-      so it's almost certainly
-      `deepseek-ai/DeepSeek-R1-Distill-Llama-70B` (our checkpoint),
-      but the paper does not cite the HF name explicitly. Doc §2
-      framing softened to reflect this attribution gap.
+      verified via WebFetch of the v3 HTML on 2026-04-27. Paper
+      describes "DeepSeek released models distilled on 800k CoTs
+      from DeepSeek R1" with Llama-70B variant (Section 4 / Appendix
+      A.1) but provides **no HuggingFace identifier, no snapshot
+      date, no commit SHA, no model-card link**. Whether their
+      Llama-70B distillation is the canonical
+      `deepseek-ai/DeepSeek-R1-Distill-Llama-70B` or a different
+      distillation cannot be determined from the paper. Doc §2
+      framing committed to: "their checkpoint identity is
+      ambiguous; our exact-named checkpoint is unambiguously novel
+      regardless." Same identity ambiguity applies to their
+      Distilled Qwen-32B / 14B / 1.5B references.
 - [x] **Lewis-Lim 448-example "GPQA" slice** — verified via
       WebFetch 2026-04-26. 448 = GPQA-Main test set size; Diamond is
       198. Paper §2.2 says "GPQA, a graduate-level science dataset"
@@ -471,3 +614,272 @@ prior paper's evaluation.
 - [ ] **Compute g-mean² on our existing TPR/TNR data and add to
       `multi_family_summary.md`.** Effort estimate pending the
       Priority 3 inspect_ai_integration_assessment.md.
+- [x] **MonitorBench 2603.28590 positioning** — verified
+      2026-04-27. Not on PyPI (`monitorbench` returns 404 from JSON
+      API). No `pyproject.toml`/`setup.py` in repo. Bibliography
+      cites Lanham/Chen/Arcuschin/Emmons/Korbak but does not port
+      their methods — stress-test paradigm is novel
+      ("direct concealment" + "monitor-aware evasion"). 1,514 novel
+      curated instances, not sourced from prior eval data.
+      Conclusion: not a competing PyPI bundle. cot-suite v0.1's
+      "first PyPI-installable bundle of Lanham 2307.13702, Turpin
+      2305.04388, Chen 2505.05410, Arcuschin 2503.08679, and
+      Emmons & Zimmermann 2510.23966 under a unified CLI" claim
+      survives.
+
+---
+
+## 9. Adjacent monitorability research (Oct 2025–Apr 2026 sweep)
+
+The recent-literature sweep surfaced these papers as **adjacent**
+to cot-suite's bundle — relevant to the broader monitorability
+agenda but not direct prior art for any of the five wrapped
+methodologies. Treatments are paragraph-length; full §1-8 treatment
+is reserved for papers with direct method overlap or model overlap.
+
+### Intentional / steganographic unfaithfulness
+
+- **Baker, Huizinga, Gao et al. — arXiv 2503.11926 — "Monitoring
+  Reasoning Models for Misbehavior and the Risks of Promoting
+  Obfuscation"** (March 14, 2025, OpenAI; Bowen Baker first
+  author). Shows that monitoring frontier reasoning models
+  (e.g. o3-mini) for reward hacking via a CoT monitor (a separate
+  LLM observing the model's chain of thought) is more effective
+  than action-only monitoring, but training against the monitor
+  produces obfuscated CoTs that defeat detection while the
+  misbehavior persists. Charter result for the "Goodharting CoT
+  monitors" risk Korbak warns about. Threat model is RL-induced
+  obfuscation, not the inference-time concealment cot-suite
+  measures.
+
+- **Lee, Yueh-Han Chen, Korbak — arXiv 2602.22303 — "Training
+  Agents to Self-Report Misbehavior"** (February 25, 2026; Bruce
+  W. Lee, Chen Yueh-Han, Tomek Korbak). Proposes self-incrimination
+  training: agents emit a visible signal when they covertly
+  misbehave, instead of relying on alignment training to prevent
+  the misbehavior. Sibling result to CoT-Control: instead of
+  probing the model's *ability* to control CoT, probes whether
+  targeted training can *reverse* concealment defaults. Out of
+  scope for cot-suite (we measure base-model behavior, not
+  post-training behavior of a self-report-trained variant).
+
+- **Storf, Barton-Cooper, Peters-Gill, Hobbhahn — arXiv 2603.00829
+  — "Constitutional Black-Box Monitoring for Scheming in LLM
+  Agents"** (February 28, 2026; Hobbhahn last author, Apollo
+  Research). Black-box behavioral monitoring approach for
+  scheming detection that does not depend on CoT legibility.
+  Defensive posture under the assumption Korbak's "fragile
+  opportunity" thesis is correct — if CoT becomes unmonitorable,
+  what fallback do you have? Out of scope for cot-suite.
+
+### Activation-level / mechanistic monitorability
+
+- **McGuinness, Serrano, Bailey, Emmons — arXiv 2512.11949 —
+  "Neural Chameleons: Language Models Can Learn to Hide Their
+  Thoughts from Unseen Activation Monitors"** (December 12, 2025;
+  Emmons last author). Investigates whether language models can
+  learn to evade *previously unseen* activation monitors — a
+  steganography-at-the-activation-level threat model. Conceptual
+  follow-up to Emmons & Zimmermann 2510.23966 (the
+  surface-CoT autorater paper cot-suite ports). We flag this as
+  the highest-priority candidate to inform a future cot-suite v0.2
+  activation-level scorer (gated on the optional `activations`
+  extra: nnsight + transformer-lens).
+
+### Bias and motivated-reasoning extensions
+
+- **Arcuschin, Chanin, Garriga-Alonso, Camburu — arXiv 2602.10117
+  — "Biases in the Blind Spot: Detecting What LLMs Fail to
+  Mention"** (February 10, 2026; Arcuschin first author).
+  Introduces the concept of *unverbalized biases* — internal
+  biases that influence the model's answer but never surface in
+  its CoT — and notes that monitoring via stated reasoning is
+  unreliable because of these blind-spot biases. Sibling paper to
+  the IPHR detector cot-suite ports (Arcuschin 2503.08679); could
+  become an additional detector in v0.2.
+
+- **Venhoff, Arcuschin, Torr, Conmy, Nanda — arXiv 2510.07364 —
+  "Base Models Know How to Reason, Thinking Models Learn When"**
+  (October 8, 2025; Arcuschin second author). Hybrid-model
+  experiments showing that thinking models like DeepSeek R1
+  primarily learn *when* to deploy reasoning mechanisms that
+  already exist in the base model, rather than acquiring new
+  capabilities. Methodologically tangential to monitorability,
+  but informs the post-training-shapes-faithfulness intuition
+  underlying our scaling-table interpretation.
+
+- **Howe & Carroll — arXiv 2510.17057 — "The Ends Justify the
+  Thoughts: RL-Induced Motivated Reasoning in LLM CoTs"**
+  (October 20, 2025; Nikolaus Howe and Micah Carroll). Probes a
+  different unfaithfulness failure mode — the model rationalizes
+  toward a desired conclusion rather than constructing an answer
+  — under post-hoc instructions that conflict with learned
+  behaviors. Adjacent to PHR but distinct construct.
+
+- **Qiu, Carroll, Allen — arXiv 2601.20299 — "Truthfulness Despite
+  Weak Supervision: Evaluating and Training LLMs Using Peer
+  Prediction"** (January 28, 2026; Tianyi Alex Qiu first author,
+  Carroll second). Mechanism-design / peer-prediction approach to
+  the evaluator-capability gap — eliciting honest answers when
+  the evaluator cannot verify ground truth. Affects the broader
+  monitorability agenda but not cot-suite's specific bundle.
+
+### Safe RL / training-time monitorability
+
+- **Kaufmann, Lindner, Zimmermann, Shah — arXiv 2603.30036 —
+  "Aligned, Orthogonal or In-conflict: When can we safely optimize
+  Chain-of-Thought?"** (March 31, 2026; Max Kaufmann first
+  author). Conceptual framework predicting when CoT optimization
+  preserves vs degrades monitorability, validated empirically.
+  Pairs with Korbak's recommendation (3) ("if monitorability
+  degrades during training, prefer the earlier checkpoint"). Out
+  of scope for cot-suite as an evaluation library (we measure, we
+  don't train).
+
+---
+
+## 10. Deployment context (Dec 2025 AISI work)
+
+Two December 2025 UK-AISI deployment-monitoring papers appeared in
+the sweep. Neither is a methodology evaluation, but both are
+relevant context for *how* cot-suite-style evaluations would be
+consumed in production safety work.
+
+- **Lindner, Griffin, Korbak, Zimmermann, Irving, Farquhar, Cooney —
+  arXiv 2512.22154 — "Practical Challenges of Control Monitoring in
+  Frontier AI Deployments"** (December 2025). UK AISI's framework
+  for deploying CoT monitoring in production: latency budgets,
+  monitor-model selection, escalation policies, alert volume
+  management. Cites Korbak 2507.11473 throughout. cot-suite is
+  positioned as the kind of *measurement* tooling such a deployment
+  framework consumes — measure monitorability per checkpoint, feed
+  results into deployment-time policy decisions.
+
+- **Stickland, Michelfeit, Mani, Griffin, Matthews, Korbak, Inglis,
+  Makins, Cooney — arXiv 2512.13526 — "Async Control"**
+  (December 2025). Asynchronous multi-agent control mechanisms
+  tested in software-engineering environments. Not CoT-faithfulness
+  per se — control-protocol research. Mentioned for completeness:
+  the December 2025 AISI burst included this alongside the
+  monitoring-deployment paper.
+
+---
+
+## 11. Lit-sweep methodology and competing-bundle check
+
+### Sweep coverage (Oct 2025–Apr 2026)
+
+To validate that the eight prior works in §1-8 are genuinely the
+closest related work — and that no competing PyPI bundle exists —
+the following sweep was completed on 2026-04-27.
+
+**Author searches** (arXiv author-query API): Korbak, Baker,
+Emmons, Zimmermann, Yanda Chen, Owain Evans, Hobbhahn, Benton,
+Arcuschin, Carroll, Bowman, Yueh-Han Chen, Lindner, Lee. Lanham,
+Turpin, Perez, Kivlichan covered transitively via co-authorship on
+the above sweeps.
+
+**Topic searches**: "chain-of-thought monitorability",
+"CoT monitoring/faithfulness", "post-hoc rationalization",
+"reasoning model alignment evaluation", "monitorability
+evaluation", "CoT controllability", "AI control monitoring".
+
+**Org pages**: Anthropic alignment publications, OpenAI alignment
+publications, Apollo Research, UK AISI, METR, Constellation,
+Redwood Research.
+
+**Not re-fetched but verified covered transitively**: Schoen
+(Apollo, picked up via Hobbhahn / org page), Meek
+(picked up via topic + GitHub Actions repo metadata), Chua & Evans
+(picked up via Owain Evans author search).
+
+### Competing-bundle check
+
+The "first PyPI-installable bundle of Lanham 2307.13702, Turpin
+2305.04388, Chen 2505.05410, Arcuschin 2503.08679, and Emmons &
+Zimmermann 2510.23966 under a unified CLI" claim was verified
+against three negative controls:
+
+1. **PyPI direct probe.** 13 candidate package names probed via
+   PyPI JSON API on 2026-04-27 — all 404:
+   `cot-faithfulness`, `cot-monitor`, `cot-eval`, `cotfaith`,
+   `faithfulness-eval`, `cot-tools`, `chainofthought-eval`,
+   `cot-bench`, `monitorability-eval`, `cot-faith`,
+   `chain-of-thought-eval`, `cotbench`, `cot-suite-bench`. Plus
+   `monitorbench` 404, confirming MonitorBench is not pip-installed.
+
+2. **GitHub topic search** for "cot faithfulness evaluation".
+   Surfaced 7 single-paper companion repositories — none bundle
+   multiple papers' methodologies, all have 0-2 GitHub stars:
+   - gmy2013/COT_Faithfulness_Evaluation
+   - shakibyzn/persian-faithful-cot
+   - fengrui128/visual-cot-eval
+   - DenizErenArici/alignment-pipeline-tr-en
+   - timholm/cot-audit
+   - sunnypark12/PromptScope
+   - skhanzad/AriadneXAI
+
+3. **Comprehensive-benchmark check.** OpenAI's
+   `monitorability-evals` repo is the companion to 2512.18311 only
+   (intervention/process/outcome-property data; not a bundle of
+   prior methods). MonitorBench 2603.28590 (§8) is a stand-alone
+   1,514-instance benchmark with novel stress-test methodology;
+   does not implement the five wrapped methodologies (verified via
+   bibliography + methodology section). CoT-Control 2603.05706
+   (§7) is a single-paper companion repo, no PyPI distribution.
+
+**Verdict:** as of 2026-04-27, no other artifact constitutes a
+**PyPI-installable bundle of Lanham 2307.13702, Turpin 2305.04388,
+Chen 2505.05410, Arcuschin 2503.08679, and Emmons & Zimmermann
+2510.23966 under a unified CLI**. The closest comparable artifacts
+are MonitorBench (different category — single benchmark, no PyPI)
+and CoT-Control (different threat model — intentional control
+success rate, single-paper companion).
+
+### Per-paper arXiv verification (§9)
+
+Every adjacent-research paper in §9 was independently verified by
+WebFetch on 2026-04-27. For each, the abstract page was fetched
+and the cited title + author list cross-checked. Verification
+results:
+
+- 2503.11926 — Baker et al., "Monitoring Reasoning Models for
+  Misbehavior and the Risks of Promoting Obfuscation" — verified.
+- 2602.22303 — Lee, Yueh-Han Chen, Korbak, "Training Agents to
+  Self-Report Misbehavior" — verified.
+- 2603.00829 — Storf, Barton-Cooper, Peters-Gill, Hobbhahn,
+  "Constitutional Black-Box Monitoring for Scheming in LLM
+  Agents" — verified (Hobbhahn is last author, not first;
+  attribution corrected in §9).
+- 2512.11949 — McGuinness, Serrano, Bailey, Emmons, "Neural
+  Chameleons: Language Models Can Learn to Hide Their Thoughts
+  from Unseen Activation Monitors" — verified (Emmons is last
+  author, not first; attribution corrected in §9).
+- 2602.10117 — Arcuschin, Chanin, Garriga-Alonso, Camburu,
+  "Biases in the Blind Spot: Detecting What LLMs Fail to
+  Mention" — verified (title corrected from "Blind Spot Biases").
+- 2510.07364 — Venhoff, Arcuschin, Torr, Conmy, Nanda, "Base
+  Models Know How to Reason, Thinking Models Learn When" —
+  verified (Arcuschin is second author, not first; attribution
+  corrected in §9).
+- 2510.17057 — Howe & Carroll, "The Ends Justify the Thoughts:
+  RL-Induced Motivated Reasoning in LLM CoTs" — verified.
+- 2601.20299 — Qiu, Carroll, Allen, "Truthfulness Despite Weak
+  Supervision: Evaluating and Training LLMs Using Peer
+  Prediction" — verified (Carroll is second author, not first;
+  attribution corrected in §9).
+- 2603.30036 — Kaufmann, Lindner, Zimmermann, Shah, "Aligned,
+  Orthogonal or In-conflict: When can we safely optimize Chain-
+  of-Thought?" — verified.
+
+All 9 arXiv IDs in §9 resolve to existing papers with matching
+content. Five attribution / title corrections were applied based
+on verification.
+
+### Stale / superseded items
+
+The recent-literature sweep did not surface any prior paper or
+implementation that supersedes the v0.1 framing. The eight
+prior works in §1-8 remain the right anchor set; the §9-10
+adjacent-research and deployment-context sections capture the
+sweep's marginal additions.
