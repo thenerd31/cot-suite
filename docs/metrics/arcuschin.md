@@ -4,7 +4,9 @@
 
 **What it measures.** Per-trajectory implicit post-hoc rationalization (PHR): does the chain-of-thought's logical conclusion match the model's emitted final answer, and if not, does the final output acknowledge the flip? A *strict-PHR* trajectory is one where the CoT argues for one answer and the model emits another **without** acknowledging the divergence — the smoking gun for the model rationalizing toward an answer it had already decided on.
 
-**Module:** `cotsuite.tests.post_hoc_rationalization`. Validation status: **B4 ✓** — 9.30% strict PHR on GPT-4o-mini vs the paper's reported ~13%, within the paper's 5-25% band. Detector ablated Stage 3.5 (±1.64pp across three independent detection methods).
+**Module:** `cotsuite.tests.post_hoc_rationalization`.
+
+**Validation status:** B4 ✓ — 9.30% strict PHR on GPT-4o-mini vs paper's reported ~13% on the same checkpoint (±3.7pp). Within the paper's cross-model variance band (5-25%). **Unchanged across the 2026-04-27 parser fix** — `validate_b4_arcuschin.py` used a strict primary regex (`Final Answer:\s*...`) with the buggy loose regex only as a fallback; all GPT-4o-mini outputs matched the strict primary, so the fallback never fired. Detector ablated Stage 3.5 (±1.64pp across three independent detection methods given the parsed final answer; **cross-parser ablation deferred to v0.1.1** — see "Detector ablation reframing" below).
 
 ## What this scorer is NOT
 
@@ -59,16 +61,16 @@ result = await post_hoc_rationalization(
 - **Per-trajectory subset only** — see "What this scorer is NOT" above.
 - **Judge model dependency.** The CoT-conclusion extraction is LLM-judged. Stage 3.5 ablation showed:
 
-| Detection method | PHR strict on Qwen3-14B (n=122 correct trajectories) |
+| Detection method | PHR strict on Qwen3-14B v1 (n=122 correct trajectories) |
 |---|---|
 | Claude-authored Haiku judge | 5.74% |
 | Arcuschin regex last-mention | 5.74% |
 | Exact-match leading-letter | 7.38% |
 
-  Max spread 1.64pp, well within the ±2pp robustness threshold. The judge is not load-bearing.
+  Max spread 1.64pp. **Robustness across detection methods given the parsed final answer.** This ablation does NOT span the parsing pipeline — all three methods consume the same upstream `final_answer` field, so they share any parser-layer failure mode (which is exactly what surfaced in the 2026-04-27 answer-extractor parser-bug discovery; see [`AUDIT.md`](https://github.com/thenerd31/cot-suite/blob/main/AUDIT.md)). The v0.1 parser fix harmonized both pipelines on `cotsuite.parsing.extract_answer_letter`. **Cross-parser ablation deferred to v0.1.1** — adding a fourth detection method that re-parses from `raw_text` independently. The corrected v2 PHR rates are reported in [scaling results](../scaling.md).
 
 - **Empty-reasoning unscorable.** Trajectories with no reasoning text return `value=NaN` with a `skip_reason="empty_reasoning"` metadata flag rather than a forced 0/1 label.
-- **No-final-answer unscorable.** Trajectories where the final-answer extractor returns the empty string (e.g. the model never committed to a letter) return `value=NaN` with `skip_reason="no_final_answer"`.
+- **No-final-answer unscorable.** Trajectories where the final-answer extractor returns the empty string (e.g. the model never committed to a letter) return `value=NaN` with `skip_reason="no_final_answer"`. Under the v2 parser, this is the honest unscorable signal — the previous loose regex hallucinated letters from prose, producing spurious labels.
 
 ## Inspect AI integration (v0.1, shipped)
 

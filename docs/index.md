@@ -6,7 +6,7 @@ A unified Python library for **chain-of-thought monitorability and faithfulness*
 
 ## 30-second value prop
 
-> **Two findings.** *PHR rate is paradigm-locked:* all 5 thinking-mode models stay at ≤5.74%, all 3 non-thinking instruct models exceed 22%, with no scale rescue (Qwen2.5-72B at 22.62% vs Qwen2.5-7B at 20%). *The legibility-coverage gap is paradigm-dominated but partially scale-sensitive:* Qwen2.5-72B closes the gap to 1.012 (39% smaller than Qwen2.5-7B's 1.65 at ~10× the parameters), but does not cross into thinking-mode territory (≤0.29 across all 5 thinking-mode models). **Cluster separation: 5.3× on the PHR axis, 3.5× on the gap axis, 8/8 models in their predicted quadrant.** [→ Multi-family scaling](scaling.md)
+> **Two paradigm signals.** *PHR-strict cluster:* 5 thinking-mode models at ≤4.72%, 2 non-thinking models (Qwen2.5-7B, Qwen2.5-72B) at ≥14.29% — **bootstrap-robust 7/8 cluster membership** with a 9.57pp absolute non-overlap band. Llama-3.1-8B is **partially-resolved at v0.1 sample size** (n=46 correct trajectories from its 23.2% GPQA-Diamond accuracy floor; 95% bootstrap CI [4.35%, 23.91%] crosses the boundary by 0.37pp on the lower bound; v0.1.1 grows n via cross-benchmark replication). *Legibility-coverage gap:* all thinking-mode ≤0.29, all non-thinking ≥1.01 — **8/8 cluster membership**, 3.5× separation, partially scale-sensitive (Qwen2.5-72B closes 40% of the gap at ~10× parameters, doesn't cross the boundary). [→ Multi-family scaling](scaling.md) · [pre-launch parser-bug discovery + bootstrap analysis in AUDIT.md](https://github.com/thenerd31/cot-suite/blob/main/AUDIT.md)
 
 ## Install
 

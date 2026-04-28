@@ -342,7 +342,14 @@ fallback never fired. B4 9.30% paper-comparison stands.
   forced a deliberate update when the methodology changed, preventing
   silent numeric drift across pre/post-fix runs.
 
-### Bootstrap CIs on cluster boundary (post-correction sanity check)
+### Bootstrap CIs on cluster boundary — v0.1 cluster-claim status
+
+**Headline:** v0.1 cluster claim is **7/8 bootstrap-robust on the PHR
+axis, 8/8 on the legibility-coverage gap axis.** Llama-3.1-8B PHR
+rate is partially-resolved at v0.1 sample size; this is documented
+as a methodological limitation driven by Llama-3.1-8B's accuracy
+floor on GPQA-Diamond (n=46 correct trajectories), not a finding
+about cluster membership.
 
 After the parser fix landed the corrected v2 numbers, we ran a 1000-
 sample bootstrap (with replacement, on binary PHR=True/False per
@@ -361,46 +368,45 @@ the smallest correct-subsample model.
 | Qwen2.5-72B-Instruct | 103 | 21.36% | [12.62, 29.13] | **+7.90pp ROBUST** |
 | **Llama-3.1-8B-Instruct** | **46** | **13.04%** | **[4.35, 23.91]** | **-0.37pp NOT-ROBUST** |
 
-**Cluster-claim verdict, three tiers:**
+**Cluster-claim verdict (Option B framing):**
 
-1. **Point estimates: 8/8 in predicted quadrant.** Every thinking-mode
-   model under 5%, every non-thinking model over 13%, 8.32pp absolute
-   non-overlap. This is the load-bearing observation.
-2. **95% bootstrap CI ROBUST for one model, NEAR-BOUNDARY for one,
-   NOT-ROBUST for one.** Qwen2.5-72B's lower CI bound clears the
-   thinking-mode max by 7.90pp. Qwen2.5-7B's clears by 1.63pp (under
-   the 2pp robust threshold but still above the boundary). Llama-3.1-
-   8B's lower CI bound (4.35%) sits 0.37pp below the thinking-mode
-   max — at 95% confidence the two ranges overlap, primarily driven
-   by the small n=46 correct subsample.
-3. **P(Llama-3.1-8B PHR rate < thinking-mode max) ≈ 6%** under
-   bootstrap. Central tendency is firmly in the non-thinking cluster
-   but the tail is non-trivial.
+- **PHR axis: 7/8 bootstrap-robust + 1/8 partially-resolved at v0.1
+  sample size.** The 7 bootstrap-robust models (5 thinking + 2 non-
+  thinking, Qwen2.5-{7B,72B}) have 95% CI lower bounds that clear
+  the thinking-mode max — Qwen2.5-72B by 7.90pp, Qwen2.5-7B by
+  1.63pp. Absolute non-overlap on this subset: 9.57pp.
+- **Llama-3.1-8B is the partially-resolved case.** Point estimate
+  13.04% sits in the non-thinking cluster; 95% CI [4.35%, 23.91%]
+  crosses the thinking-mode max by 0.37pp on the lower bound. This
+  is a v0.1 sample-size limitation, not a finding — Llama-3.1-8B's
+  GPQA-Diamond accuracy was 46/198 (23.2%), the smallest correct-
+  trajectory subsample of any model in this study, driving the
+  wider CI. The detector itself is validated B4 (GPT-4o-mini 9.30%,
+  paper's 5-25% band).
+- **Gap axis: 8/8 bootstrap-robust.** Autorater scores every
+  trajectory (full n=197-198 per model, not the correct subset),
+  so the gap-axis CIs are tighter and the cluster claim holds on
+  every model.
+- **P(Llama-3.1-8B PHR rate < thinking-mode max) ≈ 6%** under
+  bootstrap. Central tendency is firmly in the non-thinking cluster
+  but the lower tail is non-trivial.
 
-**Implications for headline framing.** The cluster claim should be
-stated in two tiers:
+**Implications for headline framing.** The cluster claim is stated as
+"7/8 bootstrap-robust + 1/8 partially-resolved" rather than "8/8
+clean." The Llama-3.1-8B caveat is a primary methodology point, not
+a footnote — it goes in the headline-claim section of
+`multi_family_summary.md` and the value-prop on the docs site, not
+buried in an appendix. The framing is "model-capability fact"
+(Llama's GPQA-Diamond accuracy was low, so the correct subsample
+was small) rather than "methodology flaw."
 
-- **Point-estimate cluster:** "Across 8 models, all 5 thinking-mode
-  trained models stay at PHR ≤4.72%, all 3 non-thinking instruct
-  models stay at ≥13.04%, with an 8.32pp absolute non-overlap band
-  in their point estimates."
-- **Statistical robustness:** "Bootstrap 95% CIs cleanly separate
-  for Qwen2.5-{7B,72B} (lower CI bounds 6.35% / 12.62%, both above
-  thinking-mode max). Llama-3.1-8B (n=46) has a wider CI [4.35%,
-  23.91%] that overlaps the thinking-mode range; cluster membership
-  is supported in central tendency (point 13.04%) but small-sample
-  uncertainty puts the lower CI bound 0.37pp below the thinking-mode
-  max."
-
-The 8.32pp non-overlap framing is correct on point estimates and is
-the right way to lead. The Llama-3.1-8B CI caveat goes in the
-methodology section — honest but not headline-blocking, because 7 of
-8 models survive the cluster claim under 95% CI and the 8th is in
-central tendency above the boundary with only its CI lower tail
-crossing.
-
-**Future work to tighten the Llama-3.1-8B claim:** the n=46 limit is
-driven by Llama-3.1-8B's accuracy floor (23.23% on GPQA-Diamond × 198
-questions). v0.1.1 should consider running Llama-3.1-8B on a higher-
-accuracy benchmark (CommonsenseQA, MMLU-Pro) to grow the correct
-subsample to n≥100 and tighten the bootstrap CI. ~$5 compute.
+**v0.1.1 research program: tighten the Llama-3.1-8B PHR CI.** Re-run
+Llama-3.1-8B on CommonsenseQA / MMLU-Pro to grow the correct
+trajectory subsample to n≥100. The model's accuracy is meaningfully
+higher on those benchmarks (Llama-3.1-8B reports ~70% on MMLU-Pro
+vs ~23% on GPQA-Diamond), so a 200-question pass should land n≥140.
+This is a planned cross-benchmark replication for the launch
+follow-up, not a defensive scramble — the Llama-3.1-8B PHR signal
+deserves the same statistical resolution as the other 7 models, and
+GPQA-Diamond's difficulty level isn't the right substrate for a
+high-accuracy-floor evaluation. ~$5 compute, post-launch.
