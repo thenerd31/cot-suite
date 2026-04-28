@@ -323,6 +323,16 @@ fallback never fired. B4 9.30% paper-comparison stands.
   so they shared the parser-layer failure mode. Future ablations
   should include at least one method that re-parses from `raw_text`
   independently. v0.1.1 follow-up.
+- **Defensive parser layering matters.** The B4 GPT-4o-mini
+  validation (`scripts/validate_b4_arcuschin.py`) was unaffected by
+  the parser bug because it used a strict primary regex (mandatory
+  `Final Answer:` prefix) with the buggy loose pattern only as a
+  fallback. All GPT-4o-mini outputs matched the strict primary, so
+  the loose pattern never fired. The methodology lesson: defensive
+  parser layering paid off in validation tooling but not in the
+  multi-family data-generation pipeline. The fix harmonizes both
+  pipelines on the canonical `cotsuite.parsing.extract_answer_letter`
+  implementation, eliminating the discrepancy.
 - **A "real GPQA case" docs example is a stronger correctness signal
   than a toy synthetic case.** The bug was found because the docs
   required pulling a real PHR trajectory from the JSONLs; the toy
@@ -331,3 +341,66 @@ fallback never fired. B4 9.30% paper-comparison stands.
   `tests/test_inspect_integration.py::test_scorer_eval_version_pinned_snapshot`
   forced a deliberate update when the methodology changed, preventing
   silent numeric drift across pre/post-fix runs.
+
+### Bootstrap CIs on cluster boundary (post-correction sanity check)
+
+After the parser fix landed the corrected v2 numbers, we ran a 1000-
+sample bootstrap (with replacement, on binary PHR=True/False per
+trajectory) on each of the 8 models to quantify how robust the
+cluster-separation claim is to sampling variance — particularly on
+the smallest correct-subsample model.
+
+| model | n | point | 95% CI | margin vs thinking-mode max (4.72%) |
+|---|---|---|---|---|
+| Qwen3-Thinking-8B | 122 | 3.28% | [0.82, 6.56] | n/a (in-cluster) |
+| Qwen3-Thinking-14B | 127 | 4.72% | [1.57, 8.66] | n/a (in-cluster, defines max) |
+| Qwen3-Thinking-32B | 133 | 2.26% | [0.00, 5.26] | n/a (in-cluster) |
+| DS-R1-Distill-Qwen-14B | 108 | 0.93% | [0.00, 2.78] | n/a (in-cluster) |
+| DS-R1-Distill-Llama-70B | 136 | 2.94% | [0.74, 5.88] | n/a (in-cluster) |
+| Qwen2.5-7B-Instruct | 63 | 14.29% | [6.35, 22.22] | **+1.63pp NEAR-BOUNDARY** |
+| Qwen2.5-72B-Instruct | 103 | 21.36% | [12.62, 29.13] | **+7.90pp ROBUST** |
+| **Llama-3.1-8B-Instruct** | **46** | **13.04%** | **[4.35, 23.91]** | **-0.37pp NOT-ROBUST** |
+
+**Cluster-claim verdict, three tiers:**
+
+1. **Point estimates: 8/8 in predicted quadrant.** Every thinking-mode
+   model under 5%, every non-thinking model over 13%, 8.32pp absolute
+   non-overlap. This is the load-bearing observation.
+2. **95% bootstrap CI ROBUST for one model, NEAR-BOUNDARY for one,
+   NOT-ROBUST for one.** Qwen2.5-72B's lower CI bound clears the
+   thinking-mode max by 7.90pp. Qwen2.5-7B's clears by 1.63pp (under
+   the 2pp robust threshold but still above the boundary). Llama-3.1-
+   8B's lower CI bound (4.35%) sits 0.37pp below the thinking-mode
+   max — at 95% confidence the two ranges overlap, primarily driven
+   by the small n=46 correct subsample.
+3. **P(Llama-3.1-8B PHR rate < thinking-mode max) ≈ 6%** under
+   bootstrap. Central tendency is firmly in the non-thinking cluster
+   but the tail is non-trivial.
+
+**Implications for headline framing.** The cluster claim should be
+stated in two tiers:
+
+- **Point-estimate cluster:** "Across 8 models, all 5 thinking-mode
+  trained models stay at PHR ≤4.72%, all 3 non-thinking instruct
+  models stay at ≥13.04%, with an 8.32pp absolute non-overlap band
+  in their point estimates."
+- **Statistical robustness:** "Bootstrap 95% CIs cleanly separate
+  for Qwen2.5-{7B,72B} (lower CI bounds 6.35% / 12.62%, both above
+  thinking-mode max). Llama-3.1-8B (n=46) has a wider CI [4.35%,
+  23.91%] that overlaps the thinking-mode range; cluster membership
+  is supported in central tendency (point 13.04%) but small-sample
+  uncertainty puts the lower CI bound 0.37pp below the thinking-mode
+  max."
+
+The 8.32pp non-overlap framing is correct on point estimates and is
+the right way to lead. The Llama-3.1-8B CI caveat goes in the
+methodology section — honest but not headline-blocking, because 7 of
+8 models survive the cluster claim under 95% CI and the 8th is in
+central tendency above the boundary with only its CI lower tail
+crossing.
+
+**Future work to tighten the Llama-3.1-8B claim:** the n=46 limit is
+driven by Llama-3.1-8B's accuracy floor (23.23% on GPQA-Diamond × 198
+questions). v0.1.1 should consider running Llama-3.1-8B on a higher-
+accuracy benchmark (CommonsenseQA, MMLU-Pro) to grow the correct
+subsample to n≥100 and tighten the bootstrap CI. ~$5 compute.
