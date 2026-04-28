@@ -126,3 +126,46 @@ models.
    motivated the `base`-row persistence invariant (now enforced by
    `tests/test_b4_persistence.py`), but mid-run crash recovery still
    needs row-by-row appends. Not critical for a 15-minute run.
+
+---
+
+## Parser fix re-run (2026-04-27)
+
+Following the answer-extractor parser-bug discovery on 2026-04-27 (see
+`AUDIT.md`), B4 validation was re-run against the corrected parser
+(`cotsuite.parsing.extract_answer_letter`).
+
+**Result: 9.30% strict PHR rate, UNCHANGED.** Strict-PHR question_ids
+unchanged: `gpqa_diamond_009`, `gpqa_diamond_056`, `gpqa_diamond_066`,
+`gpqa_diamond_070`. Re-judge count: 0 trajectories — the corrected
+parser produced the same `final_answer` as the buggy parser on all
+100 GPT-4o-mini outputs.
+
+**Why B4 was unaffected.** `scripts/validate_b4_arcuschin.py` uses a
+strict primary regex (`Final Answer:\s*\(?([A-Da-d])\)?`) with the
+buggy loose regex only as a fallback. Every GPT-4o-mini output
+matched the strict primary, so the buggy fallback never fired. The
+bug affected only `scripts/run_qwen3_gpqa.py` (which used the loose
+regex as its primary path) and the v0.1 Inspect AI scorer (which
+used a similarly loose regex). B4 escaped the bug by construction.
+
+**Validation status holds.** GPT-4o-mini at 9.30% strict-PHR remains
+within Arcuschin's reported 5-25% band, bracketing the paper's ~13%
+figure on GPT-4o-mini specifically. The detector is still
+directionally validated.
+
+**Cross-parser ablation deferred to v0.1.1.** The Stage 3.5 detector
+ablation (Claude judge / Arcuschin regex / exact-match) consumes the
+same upstream `final_answer` field regardless of detection method, so
+it does not protect against parser-layer bugs. A v0.1.1 follow-up
+should add a fourth detection method that re-parses from `raw_text`
+independently — see the "Detector ablation reframing" section in
+`benchmarks/results/multi_family_summary.md`.
+
+**Note on downstream scaling claims.** The corrected v2 scaling-table
+PHR rates (Qwen3-Thinking-{8B,14B,32B}: 3.28% / 4.72% / 2.26%; full
+8-model table in `benchmarks/results/multi_family_summary.md`)
+supersede the v1 numbers cited above in the "Downstream claims this
+validation unlocks" section. The thinking-mode rates remain below
+GPT-4o-mini's 9.30%, consistent with Arcuschin's cross-model variance
+finding.

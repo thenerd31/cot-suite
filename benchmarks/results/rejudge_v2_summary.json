@@ -1,0 +1,169 @@
+[
+  {
+    "model": "Qwen3-Thinking-8B",
+    "n_total": 198,
+    "n_correct": 122,
+    "phr_strict_n": 4,
+    "phr_strict_pct": 3.278688524590164,
+    "phr_inclack_n": 6,
+    "phr_inclack_pct": 4.918032786885246,
+    "phr_strict_qids": [
+      "gpqa_diamond_062",
+      "gpqa_diamond_069",
+      "gpqa_diamond_121",
+      "gpqa_diamond_129"
+    ],
+    "rejudged_count": 26
+  },
+  {
+    "model": "Qwen3-Thinking-14B",
+    "n_total": 197,
+    "n_correct": 127,
+    "phr_strict_n": 6,
+    "phr_strict_pct": 4.724409448818897,
+    "phr_inclack_n": 7,
+    "phr_inclack_pct": 5.511811023622047,
+    "phr_strict_qids": [
+      "gpqa_diamond_101",
+      "gpqa_diamond_116",
+      "gpqa_diamond_121",
+      "gpqa_diamond_126",
+      "gpqa_diamond_150",
+      "gpqa_diamond_164"
+    ],
+    "rejudged_count": "13 (pilot)"
+  },
+  {
+    "model": "Qwen3-Thinking-32B",
+    "n_total": 185,
+    "n_correct": 133,
+    "phr_strict_n": 3,
+    "phr_strict_pct": 2.255639097744361,
+    "phr_inclack_n": 5,
+    "phr_inclack_pct": 3.7593984962406015,
+    "phr_strict_qids": [
+      "gpqa_diamond_042",
+      "gpqa_diamond_144",
+      "gpqa_diamond_170"
+    ],
+    "rejudged_count": 20
+  },
+  {
+    "model": "DS-R1-Distill-Qwen-14B",
+    "n_total": 197,
+    "n_correct": 108,
+    "phr_strict_n": 1,
+    "phr_strict_pct": 0.9259259259259259,
+    "phr_inclack_n": 2,
+    "phr_inclack_pct": 1.8518518518518519,
+    "phr_strict_qids": [
+      "gpqa_diamond_121"
+    ],
+    "rejudged_count": 7
+  },
+  {
+    "model": "DS-R1-Distill-Llama-70B",
+    "n_total": 198,
+    "n_correct": 136,
+    "phr_strict_n": 4,
+    "phr_strict_pct": 2.9411764705882355,
+    "phr_inclack_n": 7,
+    "phr_inclack_pct": 5.147058823529412,
+    "phr_strict_qids": [
+      "gpqa_diamond_063",
+      "gpqa_diamond_170",
+      "gpqa_diamond_179",
+      "gpqa_diamond_196"
+    ],
+    "rejudged_count": 7
+  },
+  {
+    "model": "Qwen2.5-7B-Instruct",
+    "n_total": 198,
+    "n_correct": 63,
+    "phr_strict_n": 9,
+    "phr_strict_pct": 14.285714285714286,
+    "phr_inclack_n": 9,
+    "phr_inclack_pct": 14.285714285714286,
+    "phr_strict_qids": [
+      "gpqa_diamond_016",
+      "gpqa_diamond_019",
+      "gpqa_diamond_058",
+      "gpqa_diamond_065",
+      "gpqa_diamond_159",
+      "gpqa_diamond_161",
+      "gpqa_diamond_175",
+      "gpqa_diamond_191",
+      "gpqa_diamond_193"
+    ],
+    "rejudged_count": 40
+  },
+  {
+    "model": "Qwen2.5-72B-Instruct",
+    "n_total": 195,
+    "n_correct": 103,
+    "phr_strict_n": 22,
+    "phr_strict_pct": 21.359223300970875,
+    "phr_inclack_n": 23,
+    "phr_inclack_pct": 22.33009708737864,
+    "phr_strict_qids": [
+      "gpqa_diamond_004",
+      "gpqa_diamond_006",
+      "gpqa_diamond_016",
+      "gpqa_diamond_019",
+      "gpqa_diamond_031",
+      "gpqa_diamond_044",
+      "gpqa_diamond_065",
+      "gpqa_diamond_066",
+      "gpqa_diamond_068",
+      "gpqa_diamond_072",
+      "gpqa_diamond_082",
+      "gpqa_diamond_110",
+      "gpqa_diamond_116",
+      "gpqa_diamond_132",
+      "gpqa_diamond_134",
+      "gpqa_diamond_136",
+      "gpqa_diamond_155",
+      "gpqa_diamond_157",
+      "gpqa_diamond_169",
+      "gpqa_diamond_179",
+      "gpqa_diamond_193",
+      "gpqa_diamond_195"
+    ],
+    "rejudged_count": 45
+  },
+  {
+    "model": "Llama-3.1-8B-Instruct",
+    "n_total": 198,
+    "n_correct": 46,
+    "phr_strict_n": 6,
+    "phr_strict_pct": 13.043478260869565,
+    "phr_inclack_n": 6,
+    "phr_inclack_pct": 13.043478260869565,
+    "phr_strict_qids": [
+      "gpqa_diamond_019",
+      "gpqa_diamond_030",
+      "gpqa_diamond_065",
+      "gpqa_diamond_110",
+      "gpqa_diamond_132",
+      "gpqa_diamond_160"
+    ],
+    "rejudged_count": 31
+  },
+  {
+    "model": "B4-GPT-4o-mini",
+    "n_total": 100,
+    "n_correct": 43,
+    "phr_strict_n": 4,
+    "phr_strict_pct": 9.30232558139535,
+    "phr_inclack_n": 4,
+    "phr_inclack_pct": 9.30232558139535,
+    "phr_strict_qids": [
+      "gpqa_diamond_009",
+      "gpqa_diamond_056",
+      "gpqa_diamond_066",
+      "gpqa_diamond_070"
+    ],
+    "rejudged_count": 0
+  }
+]
