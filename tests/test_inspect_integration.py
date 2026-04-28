@@ -72,16 +72,24 @@ def test_post_hoc_rationalization_registers_with_inspect() -> None:
 
 
 def test_phr_default_answer_extractor() -> None:
+    """Sanity-check the default extractor wired in from cotsuite.parsing.
+
+    Post-fix (2026-04-27, EVAL_VERSION 1.0.0 → 1.1.0) the colon-or-dash
+    is MANDATORY — prose like "answer is (B)" without a colon is
+    correctly unscorable. See tests/test_parser_bug_diagnosis.py for
+    the bug + fix history.
+    """
     from cotsuite.inspect.scorers.post_hoc_rationalization import (
         _default_final_answer_extractor as ext,
     )
 
     assert ext("Answer: A") == "A"
-    assert ext("answer is (B).") == "B"
     assert ext("\\boxed{C}") == "C"
     assert ext("the answer: D") == "D"
     assert ext("no letter here") == ""
-    # Boxed should win over a later 'answer:' if both present.
+    # Mandatory colon — "answer is X" without a colon is now unscorable.
+    assert ext("answer is (B).") == ""
+    # Boxed (layer 1) wins over a later generic 'answer:' (layer 3).
     assert ext("\\boxed{A} (incorrect; answer: B)") == "A"
 
 
@@ -128,9 +136,15 @@ def test_scorer_eval_version_pinned_snapshot() -> None:
     from cotsuite.inspect.scorers import legibility_coverage as lc
     from cotsuite.inspect.scorers import post_hoc_rationalization as phr
 
+    # Bumped 2026-04-27: post_hoc_rationalization 1.0.0 → 1.1.0 when
+    # the answer-extractor parser was rewritten to fix a colon-optional
+    # / first-match-wins bug. PHR numeric outputs are NOT comparable
+    # across the version boundary. See AUDIT.md and the methodology
+    # note in cotsuite.inspect.scorers.post_hoc_rationalization for
+    # the full bug + fix narrative.
     expected = {
         "legibility_coverage": "1.0.0",
-        "post_hoc_rationalization": "1.0.0",
+        "post_hoc_rationalization": "1.1.0",
     }
     actual = {
         "legibility_coverage": lc.EVAL_VERSION,

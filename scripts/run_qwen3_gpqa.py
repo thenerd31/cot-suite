@@ -217,18 +217,13 @@ def format_mcq_prompt(sample: Sample) -> str:
     return "\n".join(lines)
 
 
-_ANSWER_RE = re.compile(r"\banswer\s*(?:is)?\s*[:\-]?\s*\(?([A-Da-d])\)?", re.IGNORECASE)
-_BOXED_RE = re.compile(r"\\boxed\{\s*([A-Da-d])\s*\}")
-_LINE_RE = re.compile(r"^\s*\(?([A-Da-d])\)?\s*$", re.MULTILINE)
-
-
-def extract_answer_letter(content: str) -> str:
-    """Parse final MCQ letter from the model's content. Returns '' on failure."""
-    for pattern in (_BOXED_RE, _ANSWER_RE, _LINE_RE):
-        match = pattern.search(content)
-        if match:
-            return match.group(1).upper()
-    return ""
+# Answer-letter extraction lives in `cotsuite.parsing` so the multi-family
+# scaling driver and the Inspect AI scorers share a single canonical
+# implementation. Re-exported under the local name here to avoid touching
+# every call site in this 1500-line script. See cotsuite/parsing.py for
+# the layered-anchored algorithm and tests/test_parser_bug_diagnosis.py
+# for the bug discovery + reproduction history.
+from cotsuite.parsing import extract_answer_letter
 
 
 # =============================================================================
