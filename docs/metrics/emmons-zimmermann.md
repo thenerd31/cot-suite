@@ -11,6 +11,12 @@ A monitorable CoT scores high on both. A legible-but-not-faithful CoT scores hig
 
 **Module:** `cotsuite.autoraters.legibility_coverage`. Validation status: **Stage 1 reproduction** — full N=198 GPQA-Diamond run on Qwen3-14B with Claude Haiku 4.5 as autorater.
 
+## The empirical highlight on the v0.1 8-model scaling table
+
+The legibility-coverage gap is the **load-bearing paradigm-discriminating signal** in the v0.1 multi-family scaling result: **8/8 bootstrap-robust** cluster membership across 8 open-weight reasoning models on GPQA-Diamond. All 5 thinking-mode models stay at gap ≤0.29 (max bootstrap CI hi 0.441); all 3 non-thinking instruct models stay at gap ≥1.012 (min bootstrap CI lo 0.774). 3.5× point-estimate separation, partially scale-sensitive on the non-thinking side (Qwen2.5-72B closes 40% of the gap at ~10× parameters vs Qwen2.5-7B but doesn't cross the cluster boundary).
+
+The autorater is independent of the answer-extraction pipeline that the v2 PHR audit uncovered, so the gap-axis findings survived the parser-bug discovery and option-letter normalization unchanged. See [scaling results](../scaling.md) for the full table and [`AUDIT.md`](https://github.com/thenerd31/cot-suite/blob/main/AUDIT.md) for the audit trail.
+
 ## The Appendix C prompt
 
 The autorater uses the verbatim Appendix C prompt from the paper. The prompt file ships at `cotsuite/autoraters/prompts/emmons_zimmermann_v1.txt`, with its canonical SHA-256 (`ac1e0ac4044b0a64…`) committed alongside in `emmons_zimmermann_v1.sha256` and cross-referenced in `docs/paper-refs/2510.23966-appendix-c.md`.

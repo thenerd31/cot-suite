@@ -6,7 +6,15 @@
 
 **Module:** `cotsuite.tests.post_hoc_rationalization`.
 
-**Validation status:** B4 ✓ — 9.30% strict PHR on GPT-4o-mini vs paper's reported ~13% on the same checkpoint (±3.7pp). Within the paper's cross-model variance band (5-25%). **Unchanged across the 2026-04-27 parser fix** — `validate_b4_arcuschin.py` used a strict primary regex (`Final Answer:\s*...`) with the buggy loose regex only as a fallback; all GPT-4o-mini outputs matched the strict primary, so the fallback never fired. Detector ablated Stage 3.5 (±1.64pp across three independent detection methods given the parsed final answer; **cross-parser ablation deferred to v0.1.1** — see "Detector ablation reframing" below).
+**B4 GPT-4o-mini reproduction status (v2 normalization):** 4.88% strict-PHR, vs paper's reported ~13% on the same checkpoint. Difference: 8.12pp below paper. Under v1 raw judge output (without v2 normalization), our number was 9.30%, within ±5pp of paper.
+
+The 4.88% figure is computed via the revised normalizer (value-string and content-reference resolution; drops cases where cot_conclusion can't map to A-D even when the case is a real divergence — `forced_choice` flag).
+
+The 8pp gap below paper has three plausible explanations, none yet ruled out: (a) paper's PHR detector includes cases our v2 normalizer drops as `unscorable_ambiguous`, (b) paper's parser is more permissive than ours, (c) sample-noise on a 200-trajectory run. v0.1.1 cross-judge ablation (Claude Haiku 4.5 vs Gemini 2.5 Pro) and cross-parser ablation (our regex vs paper's ChainScope tooling) will discriminate.
+
+**Validation status: B4 ⚠ pending v0.1.1 ablation** — not ✓, not ✗.
+
+Stage 3.5 detector ablation (±1.64pp across three independent detection methods given the parsed final answer; cross-parser ablation deferred to v0.1.1) — see "Detector ablation reframing" below. See [validation log](https://github.com/thenerd31/cot-suite/blob/main/validation/arcuschin_2503.08679.md) for the full B4 narrative.
 
 ## What this scorer is NOT
 

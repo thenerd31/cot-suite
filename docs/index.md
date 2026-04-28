@@ -6,7 +6,13 @@ A unified Python library for **chain-of-thought monitorability and faithfulness*
 
 ## 30-second value prop
 
-> **Two paradigm signals.** *PHR-strict cluster:* 5 thinking-mode models at ≤4.72%, 2 non-thinking models (Qwen2.5-7B, Qwen2.5-72B) at ≥14.29% — **bootstrap-robust 7/8 cluster membership** with a 9.57pp absolute non-overlap band. Llama-3.1-8B is **partially-resolved at v0.1 sample size** (n=46 correct trajectories from its 23.2% GPQA-Diamond accuracy floor; 95% bootstrap CI [4.35%, 23.91%] crosses the boundary by 0.37pp on the lower bound; v0.1.1 grows n via cross-benchmark replication). *Legibility-coverage gap:* all thinking-mode ≤0.29, all non-thinking ≥1.01 — **8/8 cluster membership**, 3.5× separation, partially scale-sensitive (Qwen2.5-72B closes 40% of the gap at ~10× parameters, doesn't cross the boundary). [→ Multi-family scaling](scaling.md) · [pre-launch parser-bug discovery + bootstrap analysis in AUDIT.md](https://github.com/thenerd31/cot-suite/blob/main/AUDIT.md)
+> **Two paradigm-discriminating signals on 8 open-weight reasoning models** (GPQA-Diamond, post three layers of pre-launch audit):
+>
+> *PHR-strict cluster (7/8 bootstrap-robust + 1/8 partially-resolved):* 5 thinking-mode models at ≤3.28%, 2 non-thinking Qwen2.5 instruct models at ≥14.29%. **11pp gap between thinking-mode max (3.28%) and non-thinking-Qwen2.5 min (14.29%); Llama-3.1-8B at 6.67% sits between clusters with a 95% bootstrap CI overlapping both ([0.00%, 15.56%], n_scorable=45 due to Llama's 23.2% GPQA-Diamond accuracy floor); v0.1.1 cross-benchmark replication will resolve.** [→ Full bootstrap analysis](scaling.md#llama-31-8b-cluster-membership)
+>
+> *Legibility-coverage gap (8/8 bootstrap-robust):* all thinking ≤0.29, all non-thinking ≥1.01, 3.5× separation. Partially scale-sensitive on non-thinking side (Qwen2.5-72B closes 40% of the gap at ~10× parameters but doesn't cross the cluster boundary). Autorater-based, independent of the answer-extraction pipeline.
+>
+> The PHR figures reflect three layers of pre-launch audit: (1) parser bug in answer extraction (caught 2026-04-27); (2) judge labeling artifacts resolved via option-letter normalization; (3) the first normalizer was over-aggressive — revised after manual case adjudication on Qwen3-Thinking-14B + Qwen2.5-72B. Full audit trail in [AUDIT.md](https://github.com/thenerd31/cot-suite/blob/main/AUDIT.md). [→ Multi-family scaling](scaling.md)
 
 ## Install
 

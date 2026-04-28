@@ -28,9 +28,7 @@ coverage.xml
 site/
 docs/_build/
 
-# Ignore bulky per-run data files but keep reproducibility artifacts
-# (RUN.md + summary.json) tracked.
-benchmarks/results/**/*.jsonl
+# Per-run config dumps (large, redundant with summary.json + RUN.md).
 benchmarks/results/**/config.json
 *.eval
 wandb/
@@ -45,6 +43,11 @@ logs/
 # Should never be committed; the version comes from VCS.
 src/cotsuite/_version.py
 
-# Raw validation outputs mirror benchmarks/results policy — RUN.md and
-# summary .json stay tracked; per-run JSONL blobs do not.
-validation/*.jsonl
+# Note (2026-04-28): benchmarks/results/**/*.jsonl and validation/*.jsonl
+# are NOW COMMITTED for audit-trail-by-git-clone — reviewers run
+# scripts/verify_headline.py --all against published JSONLs to
+# reproduce per-model headline rates. Path B policy committed: v1
+# raw + v1 PHR + v2 PHR + B4 trajectories. results_v2.jsonl is
+# regenerable from results.jsonl + cotsuite.parsing in seconds via
+# scripts/materialize_v2_normalized.py — not committed (saves ~38MB).
+benchmarks/results/**/results_v2.jsonl

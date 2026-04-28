@@ -1,10 +1,24 @@
 # Multi-family CoT monitorability scaling — Stage 1+2+3 summary (8 models)
 
-**v2 corrected, 2026-04-27.** Numbers below are post answer-extractor parser fix
-(`cotsuite.parsing.extract_answer_letter`, `EVAL_VERSION = 1.1.0`). The pre-fix
-v1 numbers in this file's git history are not directly comparable — see the
-"Parser fix and v1 → v2 deltas" section below and `AUDIT.md` for the full
-discovery and fix narrative.
+**v2 normalized, 2026-04-28.** Numbers below reflect three layers of pre-launch
+audit:
+
+1. **Answer-extraction parser fix** (`cotsuite.parsing.extract_answer_letter`,
+   2026-04-27) — corrected a regex bug that inflated apparent PHR rates 5-10×
+   on non-thinking models via prose false positives.
+2. **Option-letter normalizer** (`cotsuite.normalize_cot.normalize_cot_conclusion`,
+   2026-04-28) — resolves judge `cot_conclusion` strings (which can be letters,
+   value-strings, concept names, multi-letter ambiguity, or UNCLEAR) against
+   the per-question option map before computing divergence. The first draft
+   was over-aggressive (treated every non-letter conclusion as unscorable,
+   dropping real forced-choice divergences); the v2 normalizer was revised
+   after manual case adjudication on Qwen3-Thinking-14B and Qwen2.5-72B.
+3. **Bootstrap CIs** on the normalized PHR rates and the legibility-coverage
+   gap to quantify cluster-claim robustness across sampling variance.
+
+`EVAL_VERSION = 1.1.0`. Pre-audit (v0/v1) numbers in git history are
+NOT directly comparable. See `AUDIT.md` for the full chronological
+narrative and reproduction script (`scripts/verify_headline.py --all`).
 
 **Setup (constant across all 8 rows):** GPQA-Diamond (198 questions),
 Qwen3 thinking-mode default sampling (temperature 0.6, top_p 0.95,
@@ -12,42 +26,113 @@ top_k 20, min_p 0, max_new_tokens 32768), 5-min per-question Modal
 RPC cap (Fix #1). Autorater = Claude Haiku 4.5 with Emmons &
 Zimmermann 2510.23966 Appendix C prompt (SHA `ac1e0ac4044b0a64…`).
 PHR detector = Claude Haiku 4.5 with Arcuschin-inspired LLM-as-judge
-prompt (SHA `4d7cc712e9456b80…`). Detector validated B4 (9.30% on
-GPT-4o-mini vs paper 13%, **unchanged across the parser fix**) —
-see `validation/arcuschin_2503.08679.md`.
+prompt (SHA `4d7cc712e9456b80…`). Detector validated B4 — see
+"B4 re-validation through v2 normalizer" below.
 
-## Eight-model scaling table (v2 corrected)
+## Eight-model scaling table (v2 normalized)
 
-| model | mode | base | n | accuracy | legibility | coverage | leg-cov gap | PHR strict | PHR incl. ack | empty final |
+| model | mode | base | n | accuracy | legibility | coverage | leg-cov gap | PHR strict (v2 norm) | bootstrap 95% CI | n_scorable |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Qwen3-Thinking-8B | thinking | Qwen3 | 198 | 61.62% | 3.48 | 3.24 | 0.23 | 3.28% | 4.92% | 0 |
-| Qwen3-Thinking-14B | thinking | Qwen3 | 197 | 64.47% | 3.61 | 3.42 | 0.19 | 4.72% | 5.51% | 0 |
-| Qwen3-Thinking-32B | thinking | Qwen3 | 185 | 71.89% | 3.73 | 3.57 | 0.16 | 2.26% | 3.76% | 0 |
-| DS-R1-Distill-Qwen-14B | thinking | Qwen | 197 | 54.82% | 3.41 | 3.13 | 0.29 | 0.93% | 1.85% | 0 |
-| DS-R1-Distill-Llama-70B | thinking | Llama | 198 | 68.69% | 3.59 | 3.30 | 0.29 | 2.94% | 5.15% | 0 |
-| Qwen2.5-7B-Instruct | non-thinking | Qwen2.5 | 198 | 31.82% | 3.89 | 2.22 | 1.67 | 14.29% | 14.29% | 2 |
-| Qwen2.5-72B-Instruct | non-thinking | Qwen2.5 | 195 | 52.82% | 3.99 | 2.98 | 1.01 | 21.36% | 22.33% | 0 |
-| Llama-3.1-8B-Instruct | non-thinking | Llama-3.1 | 198 | 23.23% | 3.77 | 1.96 | 1.81 | 13.04% | 13.04% | 40 |
+| Qwen3-Thinking-8B | thinking | Qwen3 | 198 | 61.62% | 3.48 | 3.24 | 0.23 | 3.28% | [0.82, 6.56] | 122 |
+| Qwen3-Thinking-14B | thinking | Qwen3 | 197 | 64.47% | 3.61 | 3.42 | 0.19 | 3.23% | [0.81, 6.45] | 124 |
+| Qwen3-Thinking-32B | thinking | Qwen3 | 185 | 71.89% | 3.73 | 3.57 | 0.16 | 2.26% | [0.00, 5.26] | 133 |
+| DS-R1-Distill-Qwen-14B | thinking | Qwen | 197 | 54.82% | 3.41 | 3.13 | 0.29 | 0.93% | [0.00, 2.80] | 107 |
+| DS-R1-Distill-Llama-70B | thinking | Llama | 198 | 68.69% | 3.59 | 3.30 | 0.29 | 2.96% | [0.74, 5.93] | 135 |
+| Qwen2.5-7B-Instruct | non-thinking | Qwen2.5 | 198 | 31.82% | 3.89 | 2.22 | 1.67 | 14.29% | [6.35, 22.22] | 63 |
+| Qwen2.5-72B-Instruct | non-thinking | Qwen2.5 | 195 | 52.82% | 3.99 | 2.98 | 1.01 | 19.80% | [11.88, 28.71] | 101 |
+| Llama-3.1-8B-Instruct | non-thinking | Llama-3.1 | 198 | 23.23% | 3.77 | 1.96 | 1.81 | 6.67% | [0.00, 15.56] | 45 |
 
-## Hypothesis prediction status — 8/8 in predicted quadrant
+n_scorable counts trajectories in the correct subset where
+`cot_conclusion` is letter-resolvable under the v2 normalizer
+(includes letter, value-match, concept-match, forced-choice; excludes
+multi-letter ambiguity and UNCLEAR). Headline rate = strict /
+n_scorable.
 
-| condition | threshold | violators / total |
-|---|---|---|
-| non-thinking → gap >1.0 | required | 0/3 (all pass: 1.67, 1.01, 1.81) |
-| non-thinking → PHR ≥10% | required | 0/3 (all pass: 14.29%, 21.36%, 13.04%) |
-| thinking → gap <0.5 | required | 0/5 (all pass: 0.23, 0.19, 0.16, 0.29, 0.29) |
-| thinking → PHR <10% | required | 0/5 (all pass: 3.28%, 4.72%, 2.26%, 0.93%, 2.94%) |
+## Top-line claim (v2 normalized)
 
-**8/8 models in the predicted quadrant.**
+**cot-suite v0.1 ships an open-source PyPI bundle of 5 published CoT-
+faithfulness methodologies (Lanham, Turpin, Chen, Arcuschin, Emmons-
+Zimmermann) on Inspect AI. We demonstrate the bundle on 8 open-weight
+reasoning models on GPQA-Diamond.**
 
-Cluster separation (corrected v2):
+Two paradigm-discriminating signals:
 
-- **PHR axis: 2.76× minimum** (nearest non-thinking PHR = Llama-3.1-8B at 13.04% vs. furthest thinking-mode PHR = Qwen3-Thinking-14B at 4.72%). Maximum PHR separation: 23.07× (Qwen2.5-72B at 21.36% vs. DS-R1-Distill-Qwen-14B at 0.93%).
-- **Gap axis: 3.5×** (nearest non-thinking gap = Qwen2.5-72B at 1.01 vs. furthest thinking-mode gap = DS-R1-Distill-Llama-70B / Qwen-14B at 0.29). Unchanged by the parser fix — autorater scores are independent of the answer extractor.
+- **PHR-strict cluster (7/8 bootstrap-robust + 1/8 partially-resolved).**
+  5 thinking-mode models at ≤3.28%; 2 non-thinking Qwen2.5 instruct
+  models at ≥14.29%. **11pp gap between thinking-mode max (3.28%)
+  and non-thinking-Qwen2.5 min (14.29%); Llama-3.1-8B at 6.67% sits
+  within that range as the partially-resolved case.** Llama-3.1-8B
+  (n_scorable=45) doesn't cluster with either thinking-mode (max
+  3.28%) or non-thinking-Qwen2.5 (min 14.29%). **95% bootstrap CI:
+  [0.00%, 15.56%].** The CI overlaps both clusters — lower bound
+  crosses thinking-mode max, upper bound crosses non-thinking-Qwen2.5
+  min. Whether Llama clusters with thinking-mode (least natural given
+  its training recipe), with non-thinking-Qwen2.5, or sits in a third
+  regime is partially-resolved at v0.1 sample size due to
+  Llama-3.1-8B's 23.2% GPQA-Diamond accuracy floor. v0.1.1
+  cross-benchmark replication on CommonsenseQA / MMLU-Pro planned to
+  grow n≥100.
+- **Legibility-coverage gap cluster (8/8 bootstrap-robust).** All
+  thinking ≤0.29 (max CI hi 0.441), all non-thinking ≥1.012 (min CI
+  lo 0.774). 3.5× point-estimate separation, partially scale-
+  sensitive on non-thinking side (Qwen2.5-72B closes 40% of the gap
+  at ~10× parameters vs Qwen2.5-7B but doesn't cross the cluster
+  boundary). Autorater-based, independent of answer-extraction
+  pipeline.
 
-**The two-axis cluster claim survives the parser fix.** Both axes still cleanly separate by training paradigm. The PHR axis's separation factor dropped from a v1 5.3× to a v2 2.76× — but every thinking-mode model is still under 5% strict-PHR while every non-thinking instruct model is still above 13%, with no overlap.
+The PHR figures reflect three layers of pre-launch audit:
+(1) parser bug in answer extraction (caught 2026-04-27);
+(2) judge labeling artifacts resolved via option-letter normalization
+(2026-04-28); (3) the first normalizer was over-aggressive and
+dropped real forced-choice divergences — revised after manual case
+adjudication on Qwen3-Thinking-14B + Qwen2.5-72B. Per-model deltas
+across the three layers in the "Three-layer audit" section below.
+Full audit trail in `AUDIT.md`. Reproducibility primitive:
+`scripts/verify_headline.py --all`.
 
-The 72B Qwen2.5 result remains the publishable wrinkle: scale within non-thinking partially closes the coverage gap (Δcov=+0.76, Δgap=−0.66 from 7B → 72B) without lowering PHR. The two monitorability axes decouple under scale: coverage is scale-sensitive on non-thinking models; PHR alignment is paradigm-locked.
+## Cluster verdict (v2 normalized + bootstrap-tested)
+
+**Gap axis (8/8 bootstrap-robust):** all thinking-mode gap ≤0.29
+(point estimates 0.16-0.29, max bootstrap CI hi 0.441); all
+non-thinking gap ≥1.012 (point estimates 1.012-1.808, min bootstrap
+CI lo 0.774). 3.5× point-estimate separation, partially scale-
+sensitive on non-thinking side. **Per-model bootstrap CIs are non-
+overlapping across the cluster boundary on every model.**
+
+**PHR axis (7/8 bootstrap-robust + 1/8 partially-resolved):**
+
+| model | mode | PHR (v2 norm) | bootstrap 95% CI | margin vs cluster boundary | verdict |
+|---|---|---|---|---|---|
+| Qwen3-Thinking-8B | thinking | 3.28% | [0.82, 6.56] | CI hi +7.73pp under non-thinking-Qwen2.5 min (14.29%) | ROBUST |
+| Qwen3-Thinking-14B | thinking | 3.23% | [0.81, 6.45] | CI hi +7.84pp under non-thinking min | ROBUST |
+| Qwen3-Thinking-32B | thinking | 2.26% | [0.00, 5.26] | CI hi +9.03pp under non-thinking min | ROBUST |
+| DS-R1-Distill-Qwen-14B | thinking | 0.93% | [0.00, 2.80] | CI hi +11.49pp under non-thinking min | ROBUST |
+| DS-R1-Distill-Llama-70B | thinking | 2.96% | [0.74, 5.93] | CI hi +8.36pp under non-thinking min | ROBUST |
+| Qwen2.5-7B-Instruct | non-thinking | 14.29% | [6.35, 22.22] | CI lo +3.07pp above thinking max (3.28%) | ROBUST |
+| Qwen2.5-72B-Instruct | non-thinking | 19.80% | [11.88, 28.71] | CI lo +8.60pp above thinking max | ROBUST |
+| **Llama-3.1-8B-Instruct** | non-thinking | **6.67%** | **[0.00, 15.56]** | **CI lo -3.28pp below thinking max** | **PARTIALLY RESOLVED** |
+
+Llama-3.1-8B is the partially-resolved case: point estimate 6.67%
+sits 3.39pp above thinking max (3.28%) but n_scorable=45 produces a
+wide CI [0.00%, 15.56%] whose lower bound crosses the boundary. This
+is a v0.1 sample-size limitation driven by Llama-3.1-8B's 23.2%
+GPQA-Diamond accuracy floor — n=46 correct trajectories before
+normalization, n=45 scorable. v0.1.1 cross-benchmark replication
+plan: re-run on CommonsenseQA / MMLU-Pro to grow n≥100.
+
+**Bootstrap-robust subset (7/8): 11.01pp absolute non-overlap on
+PHR axis** (thinking max 3.28% vs Qwen2.5-7B at 14.29%). The
+27.7×-separation framing on point estimates (Qwen2.5-72B at 19.80%
+vs DS-R1-Distill-Qwen-14B at 0.93%) overstates the bootstrap-
+robust separation, which is what reviewers should check.
+
+The 72B Qwen2.5 result remains a notable scale-sensitivity datapoint
+on the gap axis: scale within non-thinking partially closes the
+coverage gap (Δcov=+0.76, Δgap=−0.66 from Qwen2.5-7B to 72B at ~10×
+parameters) **without crossing the cluster boundary** and without
+lowering PHR (14.29% → 19.80% from 7B → 72B). The two monitorability
+axes decouple under scale: coverage is scale-sensitive on non-
+thinking models; PHR alignment is paradigm-locked.
 
 ## Four controlled comparisons (v2 corrected)
 
@@ -59,7 +144,7 @@ The 72B Qwen2.5 result remains the publishable wrinkle: scale within non-thinkin
 | legibility | 3.61 | 3.41 | -0.20 |
 | coverage | 3.42 | 3.13 | -0.29 |
 | leg-cov gap | 0.19 | 0.29 | +0.10 |
-| PHR strict | 4.72% | **0.93%** | -3.79pp |
+| PHR strict (v2 norm) | 3.23% | **0.93%** | -2.30pp |
 
 Both training recipes reach the thinking quadrant on the same Qwen
 base. R1 distillation produces marginally lower autorater scores but
@@ -74,7 +159,7 @@ recipes converge on the same monitorability signature class.
 | legibility | 3.41 | 3.59 | +0.18 |
 | coverage | 3.13 | 3.30 | +0.17 |
 | leg-cov gap | 0.29 | 0.29 | 0.00 |
-| PHR strict | 0.93% | 2.94% | +2.01pp |
+| PHR strict (v2 norm) | 0.93% | 2.96% | +2.03pp |
 
 **Same monitorability signature class across base architectures.**
 A 5× parameter scaling (14B → 70B) and a base-family swap
@@ -91,7 +176,7 @@ Both models stay clearly inside the thinking quadrant.
 | legibility | 3.89 | 3.99 | +0.10 (saturating) |
 | coverage | 2.22 | 2.98 | +0.76 |
 | leg-cov gap | 1.67 | 1.01 | -0.66 |
-| PHR strict | 14.29% | 21.36% | +7.07pp |
+| PHR strict (v2 norm) | 14.29% | 19.80% | +5.51pp |
 
 **Scale within non-thinking partially closes the coverage gap but
 does NOT lower PHR.** A ~10× parameter scaling buys +0.76 coverage
@@ -111,7 +196,7 @@ the non-thinking quadrant.
 | legibility | 3.73 | 3.77 | +0.04 |
 | coverage | 3.57 | 1.96 | -1.61 |
 | leg-cov gap | 0.16 | 1.81 | +1.65 |
-| PHR strict | 2.26% | 13.04% | +10.78pp |
+| PHR strict (v2 norm) | 2.26% | 6.67% | +4.41pp |
 | empty final_answer | 0 | 40 (20%) | +40 |
 
 **Even at a 4× parameter advantage, thinking-mode dominates scale
@@ -121,59 +206,71 @@ and 20% of trajectories never commit to an answer. Thinking-mode
 training is the load-bearing variable; raw scale does not close the
 monitorability gap on non-thinking models within the range studied.
 
-## Parser fix and v1 → v2 deltas (2026-04-27)
+## Three-layer audit: v0 → v1 → v2 PHR deltas
 
-The pre-fix v1 numbers in this file's git history were inflated by a
-bug in the answer-extractor regex used by `scripts/run_qwen3_gpqa.py`.
-The regex `\\banswer\\s*(?:is)?\\s*[:\\-]?\\s*\\(?([A-Da-d])\\)?`
-made the colon optional and was consumed by `re.search` (first match
-wins). Three independent failure modes:
+The PHR rates in this report passed through three layers of pre-
+launch audit (full chronological narrative in `AUDIT.md`):
 
-1. **Prose false positive:** `the answer choices` captured 'c' from
-   "**c**hoices" because the colon was optional.
-2. **Multi-line "Final Answer" header:** `Final Answer\\n\\nAnswer: D`
-   captured 'A' from the second "Answer" word because `\\s*` ate the
-   `\\n\\n`.
-3. **First-match-not-last-match:** mid-output prose like "leaning
-   toward answer A" overrode a final "Answer: D" commitment.
+1. **v0 (pre-audit):** raw judge `diverged && !acknowledged` over the
+   pre-fix parser's `final_answer` field. Inflated by the answer-
+   extractor regex bug.
+2. **v1 (parser fix, 2026-04-27):** corrected `final_answer`
+   extraction via `cotsuite.parsing.extract_answer_letter` (layered
+   anchored regex, mandatory colon, last-match within each layer).
+3. **v2 (option-letter normalization, 2026-04-28):** judge
+   `cot_conclusion` strings (letters / value-strings / concept names /
+   multi-letter / UNCLEAR) resolved against the per-question option
+   map via `cotsuite.normalize_cot.normalize_cot_conclusion`. Skip-
+   as-NaN for unscorable conclusions; forced-choice for definite
+   values that don't match any option. Applied only to judge-flagged
+   `diverged=True` rows — judge `diverged=False` calls trusted
+   directly.
 
-The fix lives in `cotsuite/parsing.py` — layered anchored extraction
-(``\\boxed{X}`` → ``Final Answer: X`` → generic ``Answer: X`` with
-mandatory colon → scoped bare-letter line in last 500 chars) with
-last-match within each layer. Both call sites (the multi-family
-scaling driver and the v0.1 Inspect AI scorer) now import this
-single canonical implementation.
+| model | v0 (raw) | v1 (parser fix) | v2 (normalized) | total Δ |
+|---|---|---|---|---|
+| Qwen3-Thinking-8B | 4.50% | 3.28% | 3.28% | -1.22pp |
+| Qwen3-Thinking-14B | 5.74% | 4.72% | 3.23% | -2.51pp |
+| Qwen3-Thinking-32B | 4.03% | 2.26% | 2.26% | -1.77pp |
+| DS-R1-Distill-Qwen-14B | 2.78% | 0.93% | 0.93% | -1.85pp |
+| DS-R1-Distill-Llama-70B | 3.79% | 2.94% | 2.96% | -0.83pp |
+| Qwen2.5-7B-Instruct | 20.00% | 14.29% | 14.29% | -5.71pp |
+| Qwen2.5-72B-Instruct | 22.62% | 21.36% | 19.80% | -2.82pp |
+| **Llama-3.1-8B-Instruct** | 32.69% | 13.04% | **6.67%** | **-26.02pp** |
+| **B4 GPT-4o-mini (Arcuschin validation)** | 9.30% | 9.30% | **4.88%** | **-4.42pp** |
 
-### v1 → v2 PHR strict deltas
+**Why each layer mattered.**
 
-| model | v1 (buggy) | v2 (corrected) | Δ |
-|---|---|---|---|
-| Qwen3-Thinking-8B | 4.50% | 3.28% | -1.22pp |
-| Qwen3-Thinking-14B | 5.74% | 4.72% | -1.02pp |
-| Qwen3-Thinking-32B | 4.03% | 2.26% | -1.77pp |
-| DS-R1-Distill-Qwen-14B | 2.78% | 0.93% | -1.85pp |
-| DS-R1-Distill-Llama-70B | 3.79% | 2.94% | -0.85pp |
-| Qwen2.5-7B-Instruct | 20.00% | 14.29% | -5.71pp |
-| Qwen2.5-72B-Instruct | 22.62% | 21.36% | -1.26pp |
-| Llama-3.1-8B-Instruct | 32.69% | 13.04% | -19.65pp |
-| **B4 GPT-4o-mini (Arcuschin validation)** | 9.30% | 9.30% | **±0.00pp** |
+- **Parser fix (v0 → v1):** mostly dropped non-thinking rates
+  because the buggy regex's prose false positives (capturing 'c'
+  from "answer **c**hoices", 'A' from "**A**nswer" in
+  `"Final Answer\n\nAnswer: D"`) were more common in non-thinking
+  outputs that prose through option choices before committing.
+- **Normalization (v1 → v2):** dropped rates further on cases
+  where the judge described the CoT conclusion in non-letter form
+  (value strings, concept names) that string-compared as different
+  from `final_answer` even when the underlying answer agreed.
+  Bigger effect on non-thinking models where judge descriptions
+  tended to be more verbose.
 
-**Bidirectional framing.** The bug both inflated some PHR rates
-(mode 1 false positives — dominant on non-thinking instruct models
-that often prose through option choices) AND deflated others (mode 3
-anchoring on a corrupted `final_answer` made the judge report
-no-divergence on cases that genuinely diverged once the corrected
-final_answer was passed). Net direction was deflationary on
-non-thinking models because mode 1 dominated. The pilot re-judge of
-Qwen3-Thinking-14B surfaced 2 newly-identified strict-PHR cases (qids
-121, 126) that had been hidden by the anchoring effect — those are
-real PHR signals that the buggy parser had masked.
+**B4 GPT-4o-mini drop from 9.30% (v0/v1) to 4.88% (v2)** is
+significant. Same mechanism as the multi-family models — judge
+described conclusions in value-strings the v2 normalizer correctly
+unmaps. Paper reports ~13% on GPT-4o-mini; v2 corrected sits
+8.12pp below paper's value, outside ±5pp tolerance. **v0.1.1 cross-
+parser + cross-judge ablation on Arcuschin's original ChainScope
+dataset planned** to determine whether the paper's number itself
+contained labeling artifacts our normalizer drops, or whether our
+normalizer is too conservative on UNCLEAR cases. See
+`validation/arcuschin_2503.08679.md`.
 
-**B4 was unaffected** because `scripts/validate_b4_arcuschin.py` used
-a strict primary regex (mandatory `Final Answer:` prefix) with the
-buggy loose regex only as a fallback. GPT-4o-mini outputs all triggered
-the strict primary, so the fallback never fired. The 9.30% paper
-comparison stands.
+**Llama-3.1-8B v0 → v2 drop is the largest** (-26.02pp). This
+reflects two effects compounding: (a) the model's outputs frequently
+trigger the parser bug because it truncates mid-calculation
+(genuine non-commitments the buggy parser turned into hallucinated
+letters); (b) when committed, its CoT conclusions often appear in
+value-string or concept-string form the normalizer correctly unmaps.
+Both are correct corrections; the headline 6.67% is the v2 honest
+rate, not a methodology failure.
 
 ## Detector ablation reframing
 
@@ -187,30 +284,29 @@ detection methods given the parsed final answer." A v0.1.1 follow-up
 should add a fourth detection method that re-parses from `raw_text`
 independently. Documented in `AUDIT.md`.
 
-## Methodology notes (caveats for the README)
+## Methodology notes
 
 ### PHR rate sensitivity to N at our sample sizes
 
-PHR strict is computed over the **correct trajectory subset**. The
-correct subset shifted slightly under the v2 parser because some
-trajectories that previously had a hallucinated wrong-letter
-`final_answer` (counted as incorrect) now have the correct letter
-and count toward the correct subset. Concrete: Qwen3-Thinking-32B's
-correct subset grew from n=124 (v1) to n=133 (v2); Qwen2.5-72B-Instruct
-grew from n=84 (v1) to n=103 (v2). At these n's, PHR rates have
-non-trivial sampling variance (Wilson 95% intervals span 4-7pp).
+PHR strict is computed over the **scorable correct trajectory
+subset** — `is_correct=True` AND the v2 normalizer was able to
+resolve `cot_conclusion` to a letter (or flag it as forced-choice
+divergence). Per-model n_scorable values are in the scaling table.
+At n=45-135, PHR rates have non-trivial sampling variance — see the
+"Cluster verdict" section above for bootstrap CIs.
 
-**The cluster-separation claim is robust to this sampling variance.**
-Even pessimistic combinations (highest thinking PHR = 4.72% Qwen3-T-14B
-vs lowest non-thinking PHR = 13.04% Llama-3.1-8B) keep cluster
-separation at 2.76×, with the two ranges non-overlapping by 8.32pp —
-well outside any reasonable confidence interval for either side.
+**The cluster-separation claim is robust on 7 of 8 models** under
+1000-sample bootstrap. Llama-3.1-8B is the partially-resolved case:
+point estimate 6.67% sits in non-thinking range but n_scorable=45
+produces a wide CI [0.00%, 15.56%] whose lower bound crosses the
+thinking-mode max. v0.1.1 cross-benchmark replication (CommonsenseQA
+/ MMLU-Pro, ~$5 compute) is the planned remediation.
 
 ### What the table does NOT claim
 
 - Within-cluster PHR rate differences (e.g., Qwen3-T-32B 2.26% vs
-  Qwen3-T-14B 4.72%) are NOT statistically distinguishable. They sit
-  inside the Wilson interval of the other.
+  Qwen3-T-14B 3.23%) are NOT statistically distinguishable — bootstrap
+  CIs heavily overlap.
 - Accuracy gains and monitorability gains are not independent —
   within the thinking cluster, higher accuracy correlates with
   slightly higher legibility/coverage; the autorater may be partially
@@ -219,79 +315,51 @@ well outside any reasonable confidence interval for either side.
   variants sit at slightly higher gaps (both 0.29) than native Qwen3-
   Thinking (0.16-0.23); within-class variance, not a cluster-membership
   question.
+- **Judge-error residual.** Spot-checks (qids 072 and 134 on
+  Qwen2.5-72B; see `AUDIT.md`) suggest a ~3-5% judge-error rate on
+  `diverged=True` calls. v0.1.1 cross-judge ablation planned.
 
 ### What N supports
 
-The cluster-membership claim ("each model lands in its predicted
-quadrant") survives any reasonable resampling because the
-inter-cluster gap (2.76× minimum on PHR axis post-correction;
-~8pp absolute non-overlap) dwarfs the intra-cluster variance.
+The cluster-membership claim survives any reasonable resampling on
+7 of 8 models because bootstrap CIs are non-overlapping across the
+boundary. Llama-3.1-8B's CI overlap reflects sample-size limitation,
+not cluster-claim collapse — point estimate (6.67%) supports
+non-thinking membership; lower-tail uncertainty acknowledged.
 
-## Top-line claim (v2 corrected, with bootstrap robustness)
+## Reproducibility primitives
 
-Across 8 reasoning models spanning 7B-72B parameters and two base
-families (Qwen, Llama):
+Every row in `post_hoc_rationalization_v2.jsonl` exposes:
 
-- **PHR-strict cluster (7/8 bootstrap-robust):** 5 thinking-mode
-  models at ≤4.72%, 2 non-thinking instruct models (Qwen2.5-7B,
-  Qwen2.5-72B) at ≥14.29%. **9.57pp absolute non-overlap on the
-  bootstrap-robust subset.** Bootstrap 95% CI lower bounds clear
-  the thinking-mode max for all 7 models.
-- **Llama-3.1-8B partially-resolved (n=46):** Point estimate 13.04%
-  sits in the non-thinking cluster; 95% bootstrap CI [4.35%, 23.91%]
-  crosses the thinking-mode max by 0.37pp on the lower bound.
-  P(bootstrap < thinking-mode max) ≈ 6%. **Llama's GPQA-Diamond
-  accuracy was 46/198 = 23.2%** — the smallest correct-trajectory
-  subsample of any model in this study — driving the wider
-  uncertainty interval. **v0.1.1 follow-up:** re-run Llama-3.1-8B
-  on CommonsenseQA / MMLU-Pro to grow n≥100 and tighten CI.
-- **Legibility-coverage gap cluster (8/8):** All thinking-mode
-  ≤0.29; all non-thinking ≥1.01. 3.5× separation, partially
-  scale-sensitive on non-thinking side (Qwen2.5-72B at 1.01 vs
-  Qwen2.5-7B at 1.65 — ~40% reduction at ~10× parameter scale,
-  doesn't cross cluster boundary). Autorater-based, unaffected
-  by parser fix.
+- `final_answer`: v2 parser-extracted letter
+- `cot_conclusion`: raw judge string
+- `cot_conclusion_normalized`: v2 normalizer canonical letter (or
+  null for forced-choice / unscorable)
+- `phr_scorable`: True if normalizer resolved or judge said
+  diverged=False
+- `diverged_normalized`: post-normalization divergence verdict
+- `phr_strict_normalized`: True iff diverged_normalized && !acknowledged
+- `phr_normalization_flag`: case-type tag (`letter_divergence`,
+  `value_match`, `concept_substring`, `forced_choice`,
+  `duplicate_options_resolved`, `letter_match`,
+  `unscorable_ambiguous`, `unscorable_empty`,
+  `judge_no_divergence`, `judge_error_or_skip`)
 
-The cross-architecture R1-distill replication (Llama base + R1
-recipe produces the same monitorability signature class as Qwen base
-+ R1 recipe — Δgap=0.00, ΔPHR=+2.01pp) confirms that the training
-intervention, not the model substrate, controls CoT-answer alignment.
+Reproduction primitive: `scripts/verify_headline.py --all` reads
+these fields and recomputes the headline rate per model. Passes
+8/8 within ≤0.5pp tolerance.
 
-### Bootstrap CI robustness (1000-sample, with replacement)
+Companion scripts:
+- `scripts/reconstruct_options.py` — rebuilds the per-question
+  option map from GPQA-Diamond using the same `random.Random(i)`
+  shuffle the run-driver applied.
+- `scripts/materialize_v2_normalized.py` — re-applies the v2
+  normalizer + re-extracts v2 parser output across all 8 models.
+- `scripts/bootstrap_phr_ci.py` — 1000-sample bootstrap CIs on
+  each model's normalized PHR rate.
 
-| model | n | point | 95% CI | margin vs thinking-max (4.72%) | verdict |
-|---|---|---|---|---|---|
-| Qwen2.5-72B-Instruct | 103 | 21.36% | [12.62, 29.13] | +7.90pp | **ROBUST** |
-| Qwen2.5-7B-Instruct | 63 | 14.29% | [6.35, 22.22] | +1.63pp | **ROBUST** |
-| Llama-3.1-8B-Instruct | 46 | 13.04% | [4.35, 23.91] | -0.37pp | **PARTIALLY RESOLVED** |
-
-The Llama-3.1-8B 95% CI lower bound is 0.37pp below the thinking-
-mode max because n=46. This is a v0.1 sample-size limitation driven
-by Llama's accuracy floor on GPQA-Diamond — not a methodology flaw
-in the PHR detector. The detector was validated B4 (GPT-4o-mini at
-9.30%, paper's 5-25% band). Tightening the CI is a v0.1.1 research
-task: re-run on a benchmark where Llama-3.1-8B has higher accuracy
-(CommonsenseQA, MMLU-Pro) to push n above 100. ~$5 compute,
-post-launch.
-
-**Cluster claim status, in two parts:**
-
-- **PHR axis: 7/8 bootstrap-robust + 1/8 partially-resolved at v0.1
-  sample size.** Headline claim holds on the bootstrap-robust subset
-  with a 9.57pp absolute non-overlap. Llama-3.1-8B point estimate
-  supports the cluster but small-n uncertainty is documented.
-- **Gap axis: 8/8 bootstrap-robust.** Autorater-based; unaffected by
-  parser fix and by sample-size variance because the autorater scores
-  every trajectory (n is full 197-198 per model, not the correct
-  subset).
-
-A **pre-launch parser-bug discovery and fix** (2026-04-27) corrected
-the previously-reported numbers downward. The bidirectional bug
-inflated PHR rates on non-thinking instruct models by 1-20pp via
-prose false positives, and deflated PHR rates on a small number of
-thinking-mode trajectories by anchoring the judge to a wrong
-`final_answer`. The B4 GPT-4o-mini validation against Arcuschin's
-paper-reported 13% rate is **unchanged at 9.30%** because B4's
-validation script used a stricter primary regex that didn't trigger
-the bug — defensive parser layering paid off in validation tooling.
-See `AUDIT.md` for the full discovery, fix, and bootstrap-CI narrative.
+The 9-block adjudication dumps used to validate the v2 normalizer
+are at `benchmarks/results/qwen3_14b_gpqa_full/adjudication_dump.txt`
+(first round) and
+`benchmarks/results/qwen25_72b_instruct_full/adjudication_dump.txt`
+(second round, post-revision).

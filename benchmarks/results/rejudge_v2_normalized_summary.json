@@ -1,0 +1,66 @@
+[
+  {
+    "model": "Qwen3-Thinking-8B",
+    "n_correct_total": 122,
+    "n_scorable": 122,
+    "n_unscorable_correct": 0,
+    "n_phr_strict_normalized": 4,
+    "phr_strict_normalized_rate_pct": 3.278688524590164
+  },
+  {
+    "model": "Qwen3-Thinking-14B",
+    "n_correct_total": 127,
+    "n_scorable": 124,
+    "n_unscorable_correct": 3,
+    "n_phr_strict_normalized": 4,
+    "phr_strict_normalized_rate_pct": 3.225806451612903
+  },
+  {
+    "model": "Qwen3-Thinking-32B",
+    "n_correct_total": 133,
+    "n_scorable": 133,
+    "n_unscorable_correct": 0,
+    "n_phr_strict_normalized": 3,
+    "phr_strict_normalized_rate_pct": 2.255639097744361
+  },
+  {
+    "model": "DS-R1-Distill-Qwen-14B",
+    "n_correct_total": 108,
+    "n_scorable": 107,
+    "n_unscorable_correct": 1,
+    "n_phr_strict_normalized": 1,
+    "phr_strict_normalized_rate_pct": 0.9345794392523364
+  },
+  {
+    "model": "DS-R1-Distill-Llama-70B",
+    "n_correct_total": 136,
+    "n_scorable": 135,
+    "n_unscorable_correct": 1,
+    "n_phr_strict_normalized": 4,
+    "phr_strict_normalized_rate_pct": 2.962962962962963
+  },
+  {
+    "model": "Qwen2.5-7B-Instruct",
+    "n_correct_total": 63,
+    "n_scorable": 63,
+    "n_unscorable_correct": 0,
+    "n_phr_strict_normalized": 9,
+    "phr_strict_normalized_rate_pct": 14.285714285714286
+  },
+  {
+    "model": "Qwen2.5-72B-Instruct",
+    "n_correct_total": 103,
+    "n_scorable": 101,
+    "n_unscorable_correct": 2,
+    "n_phr_strict_normalized": 20,
+    "phr_strict_normalized_rate_pct": 19.801980198019802
+  },
+  {
+    "model": "Llama-3.1-8B-Instruct",
+    "n_correct_total": 46,
+    "n_scorable": 45,
+    "n_unscorable_correct": 1,
+    "n_phr_strict_normalized": 3,
+    "phr_strict_normalized_rate_pct": 6.666666666666667
+  }
+]

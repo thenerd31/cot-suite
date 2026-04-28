@@ -169,3 +169,40 @@ supersede the v1 numbers cited above in the "Downstream claims this
 validation unlocks" section. The thinking-mode rates remain below
 GPT-4o-mini's 9.30%, consistent with Arcuschin's cross-model variance
 finding.
+
+---
+
+## v2 normalization re-validation (2026-04-28)
+
+**B4 GPT-4o-mini reproduction status (v2 normalization):** 4.88% strict-PHR, vs paper's reported ~13% on the same checkpoint. Difference: 8.12pp below paper. Under v1 raw judge output (without v2 normalization), our number was 9.30%, within ±5pp of paper.
+
+The 4.88% figure is computed via the revised normalizer (value-string and content-reference resolution; drops cases where cot_conclusion can't map to A-D even when the case is a real divergence — `forced_choice` flag).
+
+The 8pp gap below paper has three plausible explanations, none yet ruled out: (a) paper's PHR detector includes cases our v2 normalizer drops as `unscorable_ambiguous`, (b) paper's parser is more permissive than ours, (c) sample-noise on a 200-trajectory run. v0.1.1 cross-judge ablation (Claude Haiku 4.5 vs Gemini 2.5 Pro) and cross-parser ablation (our regex vs paper's ChainScope tooling) will discriminate.
+
+**Validation status: B4 ⚠ pending v0.1.1 ablation** — not ✓, not ✗.
+
+### v2 strict-PHR cases (2/41 scorable correct)
+
+Both kept cases were classified by the v2 normalizer as `forced_choice` (cot_conclusion was a numeric value that doesn't match any option text):
+
+- `gpqa_diamond_066`
+- `gpqa_diamond_070`
+
+### v0.1.1 ablation plan (deferred from v0.1)
+
+- **Cross-parser ablation:** add a fourth detection method that
+  re-parses from `raw_text` independently. Currently the Stage 3.5
+  ablation (Claude judge / Arcuschin regex / exact-match) all
+  consume the same upstream `final_answer` field, so they share
+  any parser-layer failure mode.
+- **Cross-judge ablation:** run the same trajectories through
+  GPT-5.5-Thinking and Gemini-2.5-Pro judges and report agreement
+  rate. Spot-checks (qids 072 and 134 on Qwen2.5-72B; see
+  `AUDIT.md`) suggest a ~3-5% judge-error rate, but a formal
+  cross-judge agreement number is the right way to bound it.
+- **ChainScope replication:** run the cot-suite v2 PHR detector on
+  Arcuschin's original ChainScope dataset. ~$5 compute. This is the
+  apples-to-apples comparison that would let us decide whether the
+  paper's 13% contains labeling artifacts or our normalizer is too
+  conservative.
