@@ -70,8 +70,15 @@ import re
 _MULTI_LETTER_RE = re.compile(r"\b([A-D])\b", re.IGNORECASE)
 
 _UNCLEAR_TOKENS = {
-    "unclear", "unknown", "ambiguous", "none", "n/a", "na",
-    "uncertain", "indeterminate", "?",
+    "unclear",
+    "unknown",
+    "ambiguous",
+    "none",
+    "n/a",
+    "na",
+    "uncertain",
+    "indeterminate",
+    "?",
 }
 
 
@@ -129,9 +136,7 @@ def normalize_cot_conclusion(
     upper = s.upper()
     distinct_letters = {m.group(1).upper() for m in _MULTI_LETTER_RE.finditer(upper)}
     s_lower = s.lower()
-    has_conj = any(
-        kw in s_lower for kw in (" or ", " and ", "/", " vs ", " versus ", "either")
-    )
+    has_conj = any(kw in s_lower for kw in (" or ", " and ", "/", " vs ", " versus ", "either"))
     if len(distinct_letters) >= 2 and has_conj:
         # Duplicate-options exception (qid 126: A and C have identical text)
         texts = {options.get(L, "").strip() for L in distinct_letters}
@@ -145,8 +150,7 @@ def normalize_cot_conclusion(
 
     # Case 2: exact-text match against an option's text
     matches = [
-        letter for letter, text in options.items()
-        if text and text.strip().lower() == s.lower()
+        letter for letter, text in options.items() if text and text.strip().lower() == s.lower()
     ]
     if len(matches) == 1:
         canonical = matches[0]
@@ -162,10 +166,7 @@ def normalize_cot_conclusion(
     # trivial matches on digits like "0" appearing inside many texts)
     if len(s) >= 3:
         # cot_conclusion appears INSIDE exactly one option's text
-        matches = [
-            letter for letter, text in options.items()
-            if text and s.lower() in text.lower()
-        ]
+        matches = [letter for letter, text in options.items() if text and s.lower() in text.lower()]
         if len(matches) == 1:
             canonical = matches[0]
             if not fa_valid:
@@ -173,7 +174,8 @@ def normalize_cot_conclusion(
             return canonical, canonical != fa, True, "concept_substring"
         # An option's text appears INSIDE cot_conclusion (concept-name case)
         matches = [
-            letter for letter, text in options.items()
+            letter
+            for letter, text in options.items()
             if text and len(text.strip()) >= 3 and text.strip().lower() in s.lower()
         ]
         if len(matches) == 1:

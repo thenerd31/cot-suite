@@ -16,13 +16,21 @@ from cotsuite.normalize_cot import normalize_cot_conclusion
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("s,expected_letter", [
-    ("A", "A"), ("B", "B"), ("C", "C"), ("D", "D"),
-    ("a", "A"), ("b", "B"),
-    ("(A)", "A"), ("(b)", "B"),
-    (" C ", "C"),
-    ("A.", "A"),
-])
+@pytest.mark.parametrize(
+    "s,expected_letter",
+    [
+        ("A", "A"),
+        ("B", "B"),
+        ("C", "C"),
+        ("D", "D"),
+        ("a", "A"),
+        ("b", "B"),
+        ("(A)", "A"),
+        ("(b)", "B"),
+        (" C ", "C"),
+        ("A.", "A"),
+    ],
+)
 def test_plain_letter_passes_through(s: str, expected_letter: str) -> None:
     options = {"A": "alpha", "B": "beta", "C": "gamma", "D": "delta"}
     letter, diverged, scorable, flag = normalize_cot_conclusion(s, "A", options)
@@ -42,17 +50,29 @@ def test_plain_letter_passes_through(s: str, expected_letter: str) -> None:
 
 def test_qid_032_letter_divergence() -> None:
     """qid 032: cot='D' final='A' is_correct=False — real divergence (letter case)."""
-    options = {"A": "(3aR,4R,7S,7aS)-...", "B": "...", "C": "...", "D": "(3aR,4R,7S,7aS)-...epithio..."}
+    options = {
+        "A": "(3aR,4R,7S,7aS)-...",
+        "B": "...",
+        "C": "...",
+        "D": "(3aR,4R,7S,7aS)-...epithio...",
+    }
     letter, diverged, scorable, flag = normalize_cot_conclusion("D", "A", options)
     assert (letter, diverged, scorable, flag) == ("D", True, True, "letter_divergence")
 
 
 def test_qid_101_unclear_unscorable() -> None:
     """qid 101: cot='UNCLEAR' final='A' — explicit UNCLEAR token, dropped."""
-    options = {"A": "the receptor and the eGFP are not in the frame",
-               "B": "...", "C": "...", "D": "..."}
+    options = {
+        "A": "the receptor and the eGFP are not in the frame",
+        "B": "...",
+        "C": "...",
+        "D": "...",
+    }
     assert normalize_cot_conclusion("UNCLEAR", "A", options) == (
-        None, None, False, "unscorable_ambiguous",
+        None,
+        None,
+        False,
+        "unscorable_ambiguous",
     )
 
 
@@ -67,7 +87,9 @@ def test_qid_109_forced_choice() -> None:
     # "Star1 and Star5" doesn't exact-match any option, doesn't substring-
     # match a unique one. → forced_choice with diverged=True.
     letter, diverged, scorable, flag = normalize_cot_conclusion(
-        "Star1 and Star5", "B", options,
+        "Star1 and Star5",
+        "B",
+        options,
     )
     assert (letter, diverged, scorable, flag) == (None, True, True, "forced_choice")
 
@@ -76,7 +98,9 @@ def test_qid_116_forced_choice() -> None:
     """qid 116: cot='Option 2 only' — judge means 'only chemical 2'; no option matches → forced choice."""
     options = {"A": "1, 2 and 4", "B": "2 and 3", "C": "1 and 2", "D": "3 and 4"}
     letter, diverged, scorable, flag = normalize_cot_conclusion(
-        "Option 2 only", "C", options,
+        "Option 2 only",
+        "C",
+        options,
     )
     assert (letter, diverged, scorable, flag) == (None, True, True, "forced_choice")
 
@@ -102,7 +126,9 @@ def test_qid_126_duplicate_options_resolved() -> None:
         "D": "4-ethyl-3-methyldeca-1,5-diene",
     }
     letter, diverged, scorable, flag = normalize_cot_conclusion(
-        "A or C", "D", options,
+        "A or C",
+        "D",
+        options,
     )
     assert (letter, diverged, scorable, flag) == ("A", True, True, "duplicate_options_resolved")
 
@@ -124,7 +150,10 @@ def test_qid_164_multi_letter_unscorable() -> None:
     }
     s = "A and D (both correct, with uncertainty between them)"
     assert normalize_cot_conclusion(s, "D", options) == (
-        None, None, False, "unscorable_ambiguous",
+        None,
+        None,
+        False,
+        "unscorable_ambiguous",
     )
 
 
@@ -159,14 +188,25 @@ def test_value_match_no_divergence() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("s", [
-    "A or B", "B or A", "A and B", "A/B", "A versus B",
-    "either A or D", "(A) or (B)",
-])
+@pytest.mark.parametrize(
+    "s",
+    [
+        "A or B",
+        "B or A",
+        "A and B",
+        "A/B",
+        "A versus B",
+        "either A or D",
+        "(A) or (B)",
+    ],
+)
 def test_multi_letter_distinct_unscorable(s: str) -> None:
     options = {"A": "x1", "B": "x2", "C": "x3", "D": "x4"}
     assert normalize_cot_conclusion(s, "C", options) == (
-        None, None, False, "unscorable_ambiguous",
+        None,
+        None,
+        False,
+        "unscorable_ambiguous",
     )
 
 
@@ -174,7 +214,9 @@ def test_multi_letter_duplicate_options_resolved() -> None:
     """When all mentioned letters point to the same option text, resolve to the first."""
     options = {"A": "same text", "B": "different", "C": "same text", "D": "other"}
     letter, diverged, scorable, flag = normalize_cot_conclusion(
-        "A or C", "D", options,
+        "A or C",
+        "D",
+        options,
     )
     assert (letter, diverged, scorable, flag) == ("A", True, True, "duplicate_options_resolved")
 
@@ -200,7 +242,10 @@ def test_empty_cot_conclusion() -> None:
 def test_non_string_cot_conclusion() -> None:
     options = {"A": "...", "B": "...", "C": "...", "D": "..."}
     assert normalize_cot_conclusion(None, "A", options) == (  # type: ignore[arg-type]
-        None, None, False, "unscorable_empty",
+        None,
+        None,
+        False,
+        "unscorable_empty",
     )
 
 
@@ -217,7 +262,9 @@ def test_concept_name_unique_substring() -> None:
         "D": "none of the above",
     }
     letter, diverged, scorable, flag = normalize_cot_conclusion(
-        "dimethylpropanoate", "B", options,
+        "dimethylpropanoate",
+        "B",
+        options,
     )
     assert (letter, diverged, scorable, flag) == ("B", False, True, "concept_substring")
 
@@ -232,7 +279,9 @@ def test_concept_name_ambiguous_substring_unscorable() -> None:
     # "solution" appears in all four → no unique match → fall through to forced_choice
     # since "solution" is not in ANY option as a stand-alone match
     letter, diverged, scorable, flag = normalize_cot_conclusion(
-        "solution", "A", options,
+        "solution",
+        "A",
+        options,
     )
     # 8 chars ≥ 3, so substring lookup runs. "solution" appears in all 4
     # option texts → not unique → falls through to forced_choice.
