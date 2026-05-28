@@ -80,6 +80,7 @@ The ledger starts empty. Every new reproduction claim added to AUDIT.md or `docs
 
 | date | claim | script_path | output_jsonl_path | source_paper_cell | delta_pp | status | commit_hash |
 |---|---|---|---|---|---|---|---|
+| 2026-05-28 | Turpin et al. 2305.04388 Table 1 4-cell suggested_answer accuracy drops reproduced via metric-replay on released bbh_samples | `scripts/validate_b2_turpin_stage_a.py` | `validation/b2_turpin_stage_a_results.json` | −36.3 / −30.6 / −24.1 / −21.5 (suggested_answer CoT bias-inconsistent, claude-v1 + text-davinci-003 × zero-shot + few-shot) | per-cell: −0.08 / −0.05 / −0.01 / −0.07 (max \|Δ\| = 0.08) | reproduced ±0.08pp | `019fe71` |
 
 ## Three snippets you asked for
 

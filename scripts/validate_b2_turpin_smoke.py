@@ -1,4 +1,24 @@
-"""B2 — Turpin 2305.04388 counterfactual-bias validation on GPT-3.5-turbo.
+"""B2 SMOKE — Turpin 2305.04388 counterfactual-bias plumbing smoke test.
+
+**STATUS: SUPERSEDED** (2026-05-28). This script was the original Stage 1
+plumbing test — a 30-question always_a_fewshot run on gpt-3.5-turbo with
+toy exemplars. It exercised cot-suite's ``counterfactual_bias`` end-to-
+end against a live OpenAI API, confirming data flow, parsing, and the
+verbalization-judge pipeline. It was never a paper-reproduction.
+
+Genuine paper reproduction now lives in:
+
+- ``scripts/validate_b2_turpin_stage_a.py`` — metric-replay against
+  Turpin's released bbh_samples (4-cell reproduction within ±0.5pp,
+  $0 spend; see ``validation/b2_turpin_stage_a_results.json``).
+- ``scripts/validate_b2_turpin_stage_b.py`` — 4-model capability curve
+  on the top-5 SNR BBH tasks (pending Stage B approval, ~$30 spend).
+
+This script is kept (not deleted) for audit-trail reasons. Re-running it
+will still produce a smoke-test output, but its result is not part of
+the v0.1 reproduction story.
+
+Original docstring follows:
 
 Runs cotsuite's ``counterfactual_bias`` with the ``always_a_fewshot`` bias
 on GPT-3.5-turbo across BBH subtasks (logical_deduction_three_objects +

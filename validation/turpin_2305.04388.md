@@ -3,10 +3,67 @@
 **Paper:** "Language Models Don't Always Say What They Think" —
 Turpin et al., 2023. arXiv: 2305.04388.
 
-**Status for v0.1:** **Validated qualitatively** on
-GPT-3.5-turbo / BBH (30 samples, 3-toy-exemplar always_a_fewshot
-bias) — see "Our numbers" below. Run landed 2026-04-26 via
-`scripts/validate_b2_turpin.py`.
+**Status for v0.1 (updated 2026-05-28):** **Stage A reproduced** —
+all 4 paper-headline cells reproduce within ±0.5pp via metric-replay
+against Turpin's released `bbh_samples`. Stage B (4-model live
+capability curve) is pending separate user approval. The original
+qualitative smoke test (2026-04-26, gpt-3.5-turbo / 30-question
+toy-exemplar) is preserved as audit trail in
+`scripts/validate_b2_turpin_smoke.py` + `validation/b2_turpin_raw.jsonl`.
+
+---
+
+## Stage A reproduction (2026-05-28)
+
+**Script:** `scripts/validate_b2_turpin_stage_a.py`
+**Output:** `validation/b2_turpin_stage_a_results.json`
+**Methodology:** $0 metric-replay. Reads Turpin's released `bbh_samples`
+(vendored at `validation/turpin_artifacts/`, upstream
+`df099452736946533f59498a90c23be3f09631c4`) and runs cot-suite's
+`counterfactual_bias()` via a mocked sampler that returns the
+pre-stored `y_pred` values. Exercises
+`src/cotsuite/tests/turpin_counterfactual.py` end-to-end without any
+inference.
+
+**4-cell table (suggested_answer, CoT, bias-inconsistent pool):**
+
+| Cell | Paper | cot-suite | Delta | Tolerance | Status |
+|---|---|---|---|---|---|
+| text-davinci-003 Zero-shot | −36.30 pp | −36.38 pp | −0.08 pp | ±0.5 pp | ✓ reproduced |
+| claude-v1        Zero-shot | −30.60 pp | −30.65 pp | −0.05 pp | ±0.5 pp | ✓ reproduced |
+| text-davinci-003 Few-shot  | −24.10 pp | −24.11 pp | −0.01 pp | ±0.5 pp | ✓ reproduced |
+| claude-v1        Few-shot  | −21.50 pp | −21.57 pp | −0.07 pp | ±0.5 pp | ✓ reproduced |
+
+Max absolute delta: **0.08 pp**. All 4 cells well within the
+pre-declared ±0.5 pp tolerance band.
+
+**What this confirms:** cot-suite's `counterfactual_bias()` metric
+formula (with `aggregation="flat"` default + `inconsistent_only=True`)
+matches Turpin's `bbh_analysis.py` reference computation.
+
+**Pre-Stage-A diagnostic loop:** the initial Stage A run (commit
+`ec529e6`) failed 3 of 4 cells because framework fix (c) in commit
+`61724e2` defaulted to `aggregation="per_task_mean"` (mean of per-task
+drops, weighting tasks equally). Diagnosis confirmed Turpin's
+`pd.pivot_table(...aggfunc='mean')` is in fact a flat mean over
+`(task, example)` rows (the pivot index does not include task). Fix
+landed in commit `019fe71`: switched the default to `aggregation="flat"`
+and kept `per_task_mean` as an opt-in alternative. The full diagnostic
+trail is in commits `ec529e6` (failure finding) and `019fe71` (fix).
+
+**Top-5 BBH tasks by SNR** (for Stage B selection; computed on
+text-davinci-003 fewshotTrue suggested_answer):
+
+| Rank | Task | Drop (pp) | n | SNR |
+|---:|---|---:|---:|---:|
+| 1 | movie_recommendation | 50.95 | 210 | 20.05 |
+| 2 | temporal_sequences | 40.09 | 232 | 15.57 |
+| 3 | hyperbaton | 56.76 | 148 | 15.01 |
+| 4 | causal_judgment | 39.02 |  82 |  7.45 |
+| 5 | ruin_names | 21.46 | 233 |  6.77 |
+
+`web_of_lies` excluded — degenerate baseline (acc near 1.0,
+no estimable binomial variance).
 
 ---
 
@@ -72,7 +129,7 @@ paper's ~36% accuracy-drop result."
 
 ---
 
-## Our numbers (run 2026-04-26 via `scripts/validate_b2_turpin.py`)
+## Smoke-test numbers (run 2026-04-26 via `scripts/validate_b2_turpin_smoke.py`, superseded by Stage A above)
 
 | metric | value |
 |---|---|
