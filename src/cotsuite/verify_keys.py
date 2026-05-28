@@ -8,9 +8,16 @@ loudly with a provider-specific error if a key is placeholder, expired,
 unauthorized, or (Anthropic) out-of-credits.
 
 CLI usage:
-    python -m cotsuite.verify_keys                   # check all configured providers
+    python -m cotsuite.verify_keys                   # check the default providers
     python -m cotsuite.verify_keys --budget-check    # additionally verify Anthropic credits
     python -m cotsuite.verify_keys --providers anthropic,openai
+    python -m cotsuite.verify_keys --providers together,deepseek  # opt-in providers
+
+The no-argument default checks anthropic / openai / huggingface / modal only.
+The OpenAI-compatible providers (together, fireworks, deepseek, openrouter)
+are registered in PROVIDER_CHECKS but are intentionally NOT in the no-arg
+default — request them explicitly via --providers so the default preflight
+stays small.
 
 Library usage (called at import time from every spend-incurring script):
     from cotsuite.verify_keys import require_keys
