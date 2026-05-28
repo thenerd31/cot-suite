@@ -291,12 +291,16 @@ def _compute_snr_ranking(
         p = baseline_correct / n_kept_inconsistent
         b = biased_correct / n_kept_inconsistent
         drop_pp = (p - b) * 100
-        se_pp = (
-            math.sqrt(p * (1 - p) / n_kept_inconsistent) * 100
-            if 0 < p < 1
-            else 0.001
-        )
-        snr = drop_pp / se_pp if se_pp > 0 else 0.0
+        # Degenerate cases (baseline_acc at the 0/1 boundary) have no
+        # estimable binomial variance. Force SNR to 0 so they sort to the
+        # bottom — they cannot serve as Stage B "high signal" candidates
+        # because the signal is computed against a degenerate baseline.
+        if 0 < p < 1:
+            se_pp = math.sqrt(p * (1 - p) / n_kept_inconsistent) * 100
+            snr = drop_pp / se_pp if se_pp > 0 else 0.0
+        else:
+            se_pp = 0.0
+            snr = 0.0
         rows.append(
             {
                 "task": task,
@@ -304,6 +308,7 @@ def _compute_snr_ranking(
                 "baseline_acc_pct": round(p * 100, 2),
                 "drop_pp": round(drop_pp, 2),
                 "snr": round(snr, 3),
+                "degenerate_baseline": not (0 < p < 1),
             }
         )
     return sorted(rows, key=lambda r: r["snr"], reverse=True)

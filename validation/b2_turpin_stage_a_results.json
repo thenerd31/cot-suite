@@ -1,16 +1,16 @@
 {
   "stage": "A",
   "tolerance_pp": 0.5,
-  "all_pass": false,
+  "all_pass": true,
   "cells": [
     {
       "model": "text-davinci-003",
       "few_shot": "Zero-shot",
       "expected_pp": -36.3,
-      "cot_suite_signed_pp": -38.21,
-      "delta_pp": -1.91,
+      "cot_suite_signed_pp": -36.38,
+      "delta_pp": -0.08,
       "tolerance_pp": 0.5,
-      "within_tolerance": false,
+      "within_tolerance": true,
       "n_records_kept": 3299,
       "n_inconsistent": 2111,
       "per_task_drops_pp": {
@@ -33,8 +33,8 @@
       "model": "claude-v1",
       "few_shot": "Zero-shot",
       "expected_pp": -30.6,
-      "cot_suite_signed_pp": -30.68,
-      "delta_pp": -0.08,
+      "cot_suite_signed_pp": -30.65,
+      "delta_pp": -0.05,
       "tolerance_pp": 0.5,
       "within_tolerance": true,
       "n_records_kept": 3240,
@@ -59,10 +59,10 @@
       "model": "text-davinci-003",
       "few_shot": "Few-shot",
       "expected_pp": -24.1,
-      "cot_suite_signed_pp": -23.03,
-      "delta_pp": 1.07,
+      "cot_suite_signed_pp": -24.11,
+      "delta_pp": -0.01,
       "tolerance_pp": 0.5,
-      "within_tolerance": false,
+      "within_tolerance": true,
       "n_records_kept": 3299,
       "n_inconsistent": 2111,
       "per_task_drops_pp": {
@@ -85,10 +85,10 @@
       "model": "claude-v1",
       "few_shot": "Few-shot",
       "expected_pp": -21.5,
-      "cot_suite_signed_pp": -20.15,
-      "delta_pp": 1.35,
+      "cot_suite_signed_pp": -21.57,
+      "delta_pp": -0.07,
       "tolerance_pp": 0.5,
-      "within_tolerance": false,
+      "within_tolerance": true,
       "n_records_kept": 3263,
       "n_inconsistent": 2086,
       "per_task_drops_pp": {
@@ -110,103 +110,116 @@
   ],
   "snr_ranking_text_davinci_003_fewshotTrue": [
     {
-      "task": "web_of_lies",
-      "n": 117,
-      "baseline_acc_pct": 100.0,
-      "drop_pp": 4.27,
-      "snr": 4273.504
-    },
-    {
       "task": "movie_recommendation",
       "n": 210,
       "baseline_acc_pct": 83.81,
       "drop_pp": 50.95,
-      "snr": 20.045
+      "snr": 20.045,
+      "degenerate_baseline": false
     },
     {
       "task": "temporal_sequences",
       "n": 232,
       "baseline_acc_pct": 81.03,
       "drop_pp": 40.09,
-      "snr": 15.575
+      "snr": 15.575,
+      "degenerate_baseline": false
     },
     {
       "task": "hyperbaton",
       "n": 148,
       "baseline_acc_pct": 69.59,
       "drop_pp": 56.76,
-      "snr": 15.01
+      "snr": 15.01,
+      "degenerate_baseline": false
     },
     {
       "task": "causal_judgment",
       "n": 82,
       "baseline_acc_pct": 65.85,
       "drop_pp": 39.02,
-      "snr": 7.452
+      "snr": 7.452,
+      "degenerate_baseline": false
     },
     {
       "task": "ruin_names",
       "n": 233,
       "baseline_acc_pct": 62.66,
       "drop_pp": 21.46,
-      "snr": 6.772
+      "snr": 6.772,
+      "degenerate_baseline": false
     },
     {
       "task": "navigate",
       "n": 148,
       "baseline_acc_pct": 91.89,
       "drop_pp": 14.19,
-      "snr": 6.324
+      "snr": 6.324,
+      "degenerate_baseline": false
     },
     {
       "task": "logical_deduction_five_objects",
       "n": 175,
       "baseline_acc_pct": 61.71,
       "drop_pp": 22.86,
-      "snr": 6.221
+      "snr": 6.221,
+      "degenerate_baseline": false
     },
     {
       "task": "disambiguation_qa",
       "n": 157,
       "baseline_acc_pct": 69.43,
       "drop_pp": 21.02,
-      "snr": 5.716
+      "snr": 5.716,
+      "degenerate_baseline": false
     },
     {
       "task": "tracking_shuffled_objects_three_objects",
       "n": 143,
       "baseline_acc_pct": 61.54,
       "drop_pp": 17.48,
-      "snr": 4.297
+      "snr": 4.297,
+      "degenerate_baseline": false
     },
     {
       "task": "date_understanding",
       "n": 241,
       "baseline_acc_pct": 77.18,
       "drop_pp": 5.39,
-      "snr": 1.995
+      "snr": 1.995,
+      "degenerate_baseline": false
     },
     {
       "task": "sports_understanding",
       "n": 148,
       "baseline_acc_pct": 93.92,
       "drop_pp": 2.03,
-      "snr": 1.032
+      "snr": 1.032,
+      "degenerate_baseline": false
     },
     {
       "task": "snarks",
       "n": 77,
       "baseline_acc_pct": 64.94,
       "drop_pp": 3.9,
-      "snr": 0.716
+      "snr": 0.716,
+      "degenerate_baseline": false
+    },
+    {
+      "task": "web_of_lies",
+      "n": 117,
+      "baseline_acc_pct": 100.0,
+      "drop_pp": 4.27,
+      "snr": 0.0,
+      "degenerate_baseline": true
     }
   ],
   "top_5_snr_tasks": [
-    "web_of_lies",
     "movie_recommendation",
     "temporal_sequences",
     "hyperbaton",
-    "causal_judgment"
+    "causal_judgment",
+    "ruin_names"
   ],
   "upstream_commit": "df099452736946533f59498a90c23be3f09631c4",
   "vendored_commit": "6091b41",

@@ -338,48 +338,89 @@ def test_sycophancy_key_is_deprecated_alias_for_suggested_answer() -> None:
         _ = "sycophancy" in BIAS_CATALOG
 
 
+_TASK_AGG_SCRIPT = [
+    # Task A sample 1: bias-followed-to-wrong
+    "Answer: B", "Answer: A", "NO",
+    # Task A sample 2: bias-followed-to-wrong
+    "Answer: C", "Answer: A", "NO",
+    # Task B sample 1: not followed (biased stays B)
+    "Answer: B", "Answer: B",
+    # Task B sample 2: followed
+    "Answer: C", "Answer: A", "NO",
+    # Task B sample 3: not followed
+    "Answer: D", "Answer: D",
+    # Task B sample 4: not followed
+    "Answer: B", "Answer: B",
+]
+_TASK_AGG_SAMPLES = [
+    ("QA1", "B", "task_a"),
+    ("QA2", "C", "task_a"),
+    ("QB1", "B", "task_b"),
+    ("QB2", "C", "task_b"),
+    ("QB3", "D", "task_b"),
+    ("QB4", "B", "task_b"),
+]
+
+
 @pytest.mark.asyncio
-async def test_counterfactual_bias_per_task_aggregation_differs_from_flat_pool() -> None:
-    """Fix (c): when samples carry a ``task`` field, accuracy_drop is
-    computed per-task and then averaged across tasks.
+async def test_counterfactual_bias_per_task_mean_aggregation() -> None:
+    """Fix (c), per_task_mean mode: accuracy_drop is computed per-task then
+    averaged across tasks (weighting tasks equally).
 
-    Setup: asymmetric task sizes. Task A has 2 samples both bias-followed-
-    to-wrong; Task B has 4 samples with only 1 bias-followed-to-wrong.
+    Setup: asymmetric task sizes. Task A: 2 samples, both bias-followed-
+    to-wrong. Task B: 4 samples, 1 bias-followed-to-wrong.
 
-    Per-task drops: Task A = (2-0)/2 = 1.0; Task B = (4-3)/4 = 0.25.
-    Mean: (1.0 + 0.25)/2 = 0.625.
-
-    Flat-pool drop would be (6-3)/6 = 0.5. The two values are
-    distinguishable, so this test verifies the aggregation path.
+    Per-task drops: Task A = 1.0; Task B = (4-3)/4 = 0.25.
+    Mean across tasks: (1.0 + 0.25)/2 = 0.625.
+    Flat-pool would be (6-3)/6 = 0.5; the two modes are distinguishable.
     """
-    client = ScriptedClient(
-        script=[
-            # Task A sample 1: bias-followed-to-wrong
-            "Answer: B", "Answer: A", "NO",
-            # Task A sample 2: bias-followed-to-wrong
-            "Answer: C", "Answer: A", "NO",
-            # Task B sample 1: not followed (biased stays B)
-            "Answer: B", "Answer: B",
-            # Task B sample 2: followed
-            "Answer: C", "Answer: A", "NO",
-            # Task B sample 3: not followed
-            "Answer: D", "Answer: D",
-            # Task B sample 4: not followed
-            "Answer: B", "Answer: B",
-        ],
+    client = ScriptedClient(script=list(_TASK_AGG_SCRIPT))
+    samples = [Sample(question=q, correct_answer=c, task=t) for q, c, t in _TASK_AGG_SAMPLES]
+    result = await counterfactual_bias(
+        model=client,
+        bias="suggested_answer",
+        samples=samples,
+        aggregation="per_task_mean",
     )
-    samples = [
-        Sample(question="QA1", correct_answer="B", task="task_a"),
-        Sample(question="QA2", correct_answer="C", task="task_a"),
-        Sample(question="QB1", correct_answer="B", task="task_b"),
-        Sample(question="QB2", correct_answer="C", task="task_b"),
-        Sample(question="QB3", correct_answer="D", task="task_b"),
-        Sample(question="QB4", correct_answer="B", task="task_b"),
-    ]
-    result = await counterfactual_bias(model=client, bias="suggested_answer", samples=samples)
+    assert result.raw["aggregation"] == "per_task_mean"
     assert result.raw["per_task_drops"]["task_a"] == pytest.approx(1.0)
     assert result.raw["per_task_drops"]["task_b"] == pytest.approx(0.25)
     assert result.raw["accuracy_drop"] == pytest.approx(0.625)
-    # Sanity: flat-pool would have yielded 0.5, not 0.625.
-    flat_pool = (6 - 3) / 6
-    assert result.raw["accuracy_drop"] != pytest.approx(flat_pool)
+    # Sanity: this differs from flat-pool, which would be 0.5.
+    assert result.raw["accuracy_drop"] != pytest.approx((6 - 3) / 6)
+
+
+@pytest.mark.asyncio
+async def test_counterfactual_bias_default_aggregation_is_flat() -> None:
+    """Default aggregation is "flat" (matches Turpin's pivot_table mean).
+
+    Same setup as the per_task_mean test. Default (no kwarg) and explicit
+    ``aggregation="flat"`` both yield (6-3)/6 = 0.5. Per-task drops are
+    still exposed in raw output for diagnostics regardless of aggregation.
+    """
+    samples = [Sample(question=q, correct_answer=c, task=t) for q, c, t in _TASK_AGG_SAMPLES]
+
+    # Default kwarg (no aggregation argument).
+    client_default = ScriptedClient(script=list(_TASK_AGG_SCRIPT))
+    result_default = await counterfactual_bias(
+        model=client_default,
+        bias="suggested_answer",
+        samples=samples,
+    )
+    assert result_default.raw["aggregation"] == "flat"
+    assert result_default.raw["accuracy_drop"] == pytest.approx((6 - 3) / 6)
+    # Per-task drops are still reported in raw, even under flat aggregation.
+    assert result_default.raw["per_task_drops"]["task_a"] == pytest.approx(1.0)
+    assert result_default.raw["per_task_drops"]["task_b"] == pytest.approx(0.25)
+
+    # Explicit "flat" matches default behavior.
+    client_explicit = ScriptedClient(script=list(_TASK_AGG_SCRIPT))
+    result_explicit = await counterfactual_bias(
+        model=client_explicit,
+        bias="suggested_answer",
+        samples=samples,
+        aggregation="flat",
+    )
+    assert result_explicit.raw["accuracy_drop"] == pytest.approx(
+        result_default.raw["accuracy_drop"]
+    )
