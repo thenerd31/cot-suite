@@ -51,6 +51,36 @@ Breakdown of test counts by file:
 | `test_classify_and_surface.py` | 15 | none — pure logic |
 | `test_integration_smoke.py` | 1 | **real API — skipped without key** |
 
+## Briefing Reconciliation (2026-05-28)
+
+### Context
+
+During a context-transfer between strategist sessions on 2026-05-27, a briefing document overclaimed Phase 5 reproduction status relative to what the worktree actually contained. The discrepancy was caught by a reconciliation audit before any external claim shipped. This section documents the deltas so future readers (reviewers, contributors, future-self) can see the corrections.
+
+### Claimed-vs-Actual Table
+
+| Briefing claim | Worktree reality | Source of worktree truth | Status |
+|---|---|---|---|
+| **B4 cross-validation.** "Integer-exact ±0.00pp on 4/4 cross-validation models (gpt-4o-mini 13.65%, claude-3.5-haiku 7.51%, qwq-32b 4.55%, chatgpt-4o-latest 0.31%)." | Single-model reproduction (gpt-4o-mini, N=100 GPQA-Diamond). v1 = 9.30%, v2 = 4.88%. v1 within ±5pp of paper's ~13%; v2 outside band pending v0.1.1 ablation. | `scripts/validate_b4_arcuschin.py` (line 50: `GPT_MODEL = "gpt-4o-mini"`, line 51: `N_QUESTIONS = 100`); `validation/b4_arcuschin_raw_v2.jsonl`. | **Overclaimed.** No 4-model run exists in the repo or as uncommitted work. |
+| **Orthogonality study.** "Cross-method orthogonality study on n=25,194 paper-labeled trajectories across 3 models (gpt-4o-mini 0.86%, claude-3.5-haiku 2.90%, qwq-32b 1.54% overlap)." | No 25,194-row dataset exists. No ChainScope integration exists. ChainScope dataset integration is documented as v0.1.1 future work in `validation/arcuschin_2503.08679.md`. | `git ls-files` (no JSONL of that size); `validation/arcuschin_2503.08679.md` lines 50, 121, 204. | **Overclaimed.** Work does not exist in any form. |
+| **B1 capability curve.** "4-point capability curve replication on Lanham's exact 8 MCQ datasets across gpt-3.5-turbo, Llama-3.1-8B-Instruct, Haiku 4.5, Sonnet 4.6, with dual-regime saturation finding." | `scripts/validate_b1_lanham.py` targets a single model (Sonnet 4.6) on 2 BBH subtasks (not Lanham's 8 MCQ datasets), with N=15 per subtask and `MAX_INDICES=4` (not Lanham's default 16). Committed output JSONL (`validation/b1_lanham_raw.jsonl`) contains only HTTP 404 errors from the deprecated `claude-3-5-sonnet-20241022` checkpoint. No successful run is committed. | `scripts/validate_b1_lanham.py` lines 50-56, 221-222; `validation/b1_lanham_raw.jsonl` content. | **Overclaimed.** Single-model script exists but never successfully ran; no 4-model curve, no 8-MCQ-dataset coverage. |
+| **8-model PHR scaling study.** "8 open-weight models on GPQA-Diamond with v2-normalized PHR detector, dual-cluster separation (thinking ≤3.28%, non-thinking ≥6.67%), 7/8 bootstrap-robust + 1/8 partially-resolved." | Confirmed. `scripts/verify_headline.py --all` reproduces 8/8 cells from committed JSONLs against `rejudge_v2_normalized_summary.json` with ±0.5pp tolerance. | `scripts/verify_headline.py`; `benchmarks/results/<model>/post_hoc_rationalization_v2.jsonl` (8 directories); `benchmarks/results/rejudge_v2_normalized_summary.json`. | **Confirmed.** This is the load-bearing Phase 5 empirical contribution. |
+
+### Consequence for Phase 5 Plan
+
+The briefing's reproduction status was over-stated on B4, B1, and the orthogonality study. The corrected Phase 5 plan (Path A) is to genuinely execute those reproductions before launch rather than relaunch under overclaimed framing.
+
+### Process Change
+
+This reconciliation triggered the installation of five guardrail skills under `.claude/skills/` (`reproduction-claim-discipline`, `recon-plan-gate-execute`, `worktree-truth`, `no-eager-stop`, `pause-on-precondition`) to prevent future overclaim. Going forward, every reproduction claim in cot-suite documentation is required to cite (a) the script path that produced it, (b) the output JSONL path where the result lives, (c) the source paper cell being reproduced against, (d) the exact delta, and (e) the tolerance band. See `.claude/skills/reproduction-claim-discipline/SKILL.md`.
+
+### Reproduction Claims Ledger
+
+The ledger starts empty. Every new reproduction claim added to AUDIT.md or `docs/` from this point forward must add a row here in the same commit.
+
+| date | claim | script_path | output_jsonl_path | source_paper_cell | delta_pp | status | commit_hash |
+|---|---|---|---|---|---|---|---|
+
 ## Three snippets you asked for
 
 ### 1. `mistake_injection` — same model or different?
