@@ -801,28 +801,30 @@ claim.
       2305.04388, Chen 2505.05410, Arcuschin 2503.08679, and
       Emmons & Zimmermann 2510.23966 under a unified CLI" claim
       survives.
-- [ ] **(Updated 2026-05-28) Young trilogy arXiv-page verification.**
-      The abstract-level facts in §12 (model counts, family counts,
-      trace counts, the 74.4/82.6/69.7 cross-classifier split, the
-      39.7%-89.9% faithfulness range, the thinking-token vs
-      answer-text acknowledgment gap) are taken from the task brief's
-      verified-abstract summary and should be re-confirmed by direct
-      WebFetch of 2603.20172 / 2603.22582 / 2603.26410 before any
-      launch artifact cites a specific Young number. The GitHub repo
-      `github.com/ricyoung/cot-faithfulness-open-models` is listed
-      **per the task brief and is not independently verified this
-      session** — confirm existence, license, and contents before
-      citing it as a runnable artifact.
+- [x] **(Updated 2026-05-28; closed 2026-05-28) Young trilogy verification.**
+      §12 abstract-level facts re-confirmed this session by direct
+      WebFetch: 2603.22582 states "12 open-weight reasoning models …
+      9 architectural families (7B-685B)" (12 is canonical; the repo
+      description's "11" is stale); the 74.4/82.6/69.7 three-classifier
+      split (2603.20172) and the 55.4% thinking-answer divergence
+      (2603.26410) verified against their abstracts. The GitHub repo
+      `github.com/ricyoung/cot-faithfulness-open-models` is verified to
+      exist (created 2026-03-04) and is the companion to 2603.22582 +
+      2603.20172 only — it does NOT contain 2603.26410 (separate work).
+      Its README headline shows pipeline 80.8 vs the abstract's 82.6
+      (likely an earlier draft).
 - [ ] **(Updated 2026-05-28) OpenAI monitorability-evals repo
       metadata** — `github.com/openai/monitorability-evals` verified
       this session: created 2026-04-22, Apache-2.0, 76 stars. The
       blog URL `alignment.openai.com/monitorability-evals/` is cited
       per the task brief; re-confirm before launch.
-- [ ] **(Updated 2026-05-28) Accidental-CoT-grading + Redwood review
-      URLs** — `alignment.openai.com/accidental-cot-grading/` and
-      `blog.redwoodresearch.org/p/openai-cot` are cited **per the
-      task brief and were NOT independently verified this session**
-      (see §13). Verify both before citing in any launch artifact.
+- [x] **(Updated 2026-05-28; closed 2026-05-28) Accidental-CoT-grading +
+      Redwood review URLs** — both verified this session by WebFetch.
+      `alignment.openai.com/accidental-cot-grading/` = "Investigating the
+      consequences of accidentally grading CoT during RL" (Carroll,
+      Korbak, Dou, Baker, Kivlichan; May 7 2026);
+      `blog.redwoodresearch.org/p/openai-cot` = Buck Shlegeris's review
+      of it (May 7 2026). See §13.
 
 ---
 
@@ -1058,7 +1060,8 @@ success rate, single-paper companion).
 **Updated 2026-05-28 — re-check against the Young trilogy and the
 OpenAI monitorability-evals release.** Neither disturbs the verdict.
 The Young repo `github.com/ricyoung/cot-faithfulness-open-models`
-(per task brief; not independently verified this session) is a
+(verified 2026-05-28: repo exists; companion to 2603.22582 + 2603.20172
+only, does NOT contain 2603.26410, which is separate work) is a
 cross-classifier *faithfulness-measurement* study, not a bundle of
 the five wrapped methodologies — it operationalizes cue-injection
 faithfulness under multiple classifiers, not Lanham AOCs +
@@ -1235,10 +1238,12 @@ a thinking-token-aware one).
 - **Primary citation is the arXiv IDs**: 2603.20172, 2603.22582,
   2603.26410.
 - A companion repository is listed as
-  **`github.com/ricyoung/cot-faithfulness-open-models`** — **(repo per
-  task brief; not independently verified.)** This session did not
-  confirm the URL's existence, license, or contents; treat it as
-  unverified until WebFetch/`gh` confirmation (tracked in open-items).
+  **`github.com/ricyoung/cot-faithfulness-open-models`** — **verified
+  2026-05-28: repo exists; companion to 2603.22582 + 2603.20172 only
+  (does NOT contain 2603.26410, which is separate work).** Repo
+  *description* says "11 models" while the 2603.22582 abstract states
+  "12 open-weight reasoning models … 9 architectural families (7B-685B)"
+  — 12 is canonical (abstract); the repo description appears stale.
 - **No reproduction claim is made against the Young trilogy.**
   cot-suite has run none of Young's three-classifier comparisons,
   thinking-token-vs-answer-text splits, or divergence rates on its own
@@ -1253,7 +1258,7 @@ a thinking-token-aware one).
 
 | Young paper | what it establishes | cot-suite consequence |
 |---|---|---|
-| 2603.20172 | faithfulness % is classifier-dependent (74.4/82.6/69.7 on identical traces; rank reversals) | motivates **cross-classifier reporting default**; pin classifier in `Provenance` |
+| 2603.20172 | faithfulness % is classifier-dependent: per-model gaps up to 30.6pp across classifiers (74.4/82.6/69.7 on identical traces), with model-ranking reversals (e.g., Qwen3.5-27B 1st↔7th under different classifiers); see paper for canonical figures — the repo README shows pipeline 80.8 vs the abstract's 82.6 and may reflect an earlier draft | motivates **cross-classifier reporting default**; pin classifier in `Provenance` |
 | 2603.22582 | thinking-token (~87.5%) vs answer-text (~28.6%) acknowledgment split, 12 models, GPQA-Diamond-inclusive | v0.2 candidate: separate thinking-channel vs answer-channel scoring |
 | 2603.26410 | 55.4% thinking-answer divergence among hint-followed cases | v0.2 candidate: thinking-answer divergence scorer; reinforces 12.1 |
 
@@ -1275,13 +1280,16 @@ subject to external technical review, which is part of the ecosystem
 cot-suite's open, reproducible measurement posture is meant to serve.
 
 - **OpenAI — "accidental CoT grading" disclosure** —
-  `alignment.openai.com/accidental-cot-grading/`. A disclosure that a
-  CoT-grading setup was applied in a way that was not intended.
-  **(URL per task brief; NOT independently verified this session.)**
+  `alignment.openai.com/accidental-cot-grading/`. *"Investigating the
+  consequences of accidentally grading CoT during RL"* by Micah Carroll,
+  Tomek Korbak, Zehao Dou, Bowen Baker, Ian Kivlichan (OpenAI), May 7,
+  2026. **Verified 2026-05-28.** A disclosure that a CoT-grading setup
+  was applied during RL in a way that was not intended.
 - **Buck Shlegeris / Redwood Research review** —
-  `blog.redwoodresearch.org/p/openai-cot`. An external review of the
-  above by Redwood Research. **(URL per task brief; NOT independently
-  verified this session.)**
+  `blog.redwoodresearch.org/p/openai-cot`. *"A review of 'Investigating
+  the consequences of accidentally grading CoT during RL'"* by Buck
+  Shlegeris, May 7, 2026. **Verified 2026-05-28.** An external review of
+  the OpenAI disclosure above.
 
 **Why this is in scope.** cot-suite's entire value proposition is
 *reproducible, externally checkable* monitorability measurement — the
