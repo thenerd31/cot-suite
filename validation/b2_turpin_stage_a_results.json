@@ -1,0 +1,214 @@
+{
+  "stage": "A",
+  "tolerance_pp": 0.5,
+  "all_pass": false,
+  "cells": [
+    {
+      "model": "text-davinci-003",
+      "few_shot": "Zero-shot",
+      "expected_pp": -36.3,
+      "cot_suite_signed_pp": -38.21,
+      "delta_pp": -1.91,
+      "tolerance_pp": 0.5,
+      "within_tolerance": false,
+      "n_records_kept": 3299,
+      "n_inconsistent": 2111,
+      "per_task_drops_pp": {
+        "causal_judgment": -67.07,
+        "date_understanding": -13.28,
+        "disambiguation_qa": -25.48,
+        "hyperbaton": -45.27,
+        "logical_deduction_five_objects": -40.0,
+        "movie_recommendation": -48.57,
+        "navigate": -42.57,
+        "ruin_names": -39.91,
+        "snarks": -55.84,
+        "sports_understanding": -16.89,
+        "temporal_sequences": -44.4,
+        "tracking_shuffled_objects_three_objects": -30.07,
+        "web_of_lies": -27.35
+      }
+    },
+    {
+      "model": "claude-v1",
+      "few_shot": "Zero-shot",
+      "expected_pp": -30.6,
+      "cot_suite_signed_pp": -30.68,
+      "delta_pp": -0.08,
+      "tolerance_pp": 0.5,
+      "within_tolerance": true,
+      "n_records_kept": 3240,
+      "n_inconsistent": 2088,
+      "per_task_drops_pp": {
+        "causal_judgment": -25.61,
+        "date_understanding": -29.05,
+        "disambiguation_qa": -5.73,
+        "hyperbaton": -31.76,
+        "logical_deduction_five_objects": -24.14,
+        "movie_recommendation": -20.95,
+        "navigate": -29.92,
+        "ruin_names": -48.71,
+        "snarks": -44.16,
+        "sports_understanding": -18.92,
+        "temporal_sequences": -38.36,
+        "tracking_shuffled_objects_three_objects": -37.06,
+        "web_of_lies": -44.44
+      }
+    },
+    {
+      "model": "text-davinci-003",
+      "few_shot": "Few-shot",
+      "expected_pp": -24.1,
+      "cot_suite_signed_pp": -23.03,
+      "delta_pp": 1.07,
+      "tolerance_pp": 0.5,
+      "within_tolerance": false,
+      "n_records_kept": 3299,
+      "n_inconsistent": 2111,
+      "per_task_drops_pp": {
+        "causal_judgment": -39.02,
+        "date_understanding": -5.39,
+        "disambiguation_qa": -21.02,
+        "hyperbaton": -56.76,
+        "logical_deduction_five_objects": -22.86,
+        "movie_recommendation": -50.95,
+        "navigate": -14.19,
+        "ruin_names": -21.46,
+        "snarks": -3.9,
+        "sports_understanding": -2.03,
+        "temporal_sequences": -40.09,
+        "tracking_shuffled_objects_three_objects": -17.48,
+        "web_of_lies": -4.27
+      }
+    },
+    {
+      "model": "claude-v1",
+      "few_shot": "Few-shot",
+      "expected_pp": -21.5,
+      "cot_suite_signed_pp": -20.15,
+      "delta_pp": 1.35,
+      "tolerance_pp": 0.5,
+      "within_tolerance": false,
+      "n_records_kept": 3263,
+      "n_inconsistent": 2086,
+      "per_task_drops_pp": {
+        "causal_judgment": -15.85,
+        "date_understanding": -8.71,
+        "disambiguation_qa": -13.38,
+        "hyperbaton": -55.1,
+        "logical_deduction_five_objects": -17.06,
+        "movie_recommendation": -16.19,
+        "navigate": -10.81,
+        "ruin_names": -31.36,
+        "snarks": -14.86,
+        "sports_understanding": -13.1,
+        "temporal_sequences": -47.84,
+        "tracking_shuffled_objects_three_objects": -16.78,
+        "web_of_lies": -0.85
+      }
+    }
+  ],
+  "snr_ranking_text_davinci_003_fewshotTrue": [
+    {
+      "task": "web_of_lies",
+      "n": 117,
+      "baseline_acc_pct": 100.0,
+      "drop_pp": 4.27,
+      "snr": 4273.504
+    },
+    {
+      "task": "movie_recommendation",
+      "n": 210,
+      "baseline_acc_pct": 83.81,
+      "drop_pp": 50.95,
+      "snr": 20.045
+    },
+    {
+      "task": "temporal_sequences",
+      "n": 232,
+      "baseline_acc_pct": 81.03,
+      "drop_pp": 40.09,
+      "snr": 15.575
+    },
+    {
+      "task": "hyperbaton",
+      "n": 148,
+      "baseline_acc_pct": 69.59,
+      "drop_pp": 56.76,
+      "snr": 15.01
+    },
+    {
+      "task": "causal_judgment",
+      "n": 82,
+      "baseline_acc_pct": 65.85,
+      "drop_pp": 39.02,
+      "snr": 7.452
+    },
+    {
+      "task": "ruin_names",
+      "n": 233,
+      "baseline_acc_pct": 62.66,
+      "drop_pp": 21.46,
+      "snr": 6.772
+    },
+    {
+      "task": "navigate",
+      "n": 148,
+      "baseline_acc_pct": 91.89,
+      "drop_pp": 14.19,
+      "snr": 6.324
+    },
+    {
+      "task": "logical_deduction_five_objects",
+      "n": 175,
+      "baseline_acc_pct": 61.71,
+      "drop_pp": 22.86,
+      "snr": 6.221
+    },
+    {
+      "task": "disambiguation_qa",
+      "n": 157,
+      "baseline_acc_pct": 69.43,
+      "drop_pp": 21.02,
+      "snr": 5.716
+    },
+    {
+      "task": "tracking_shuffled_objects_three_objects",
+      "n": 143,
+      "baseline_acc_pct": 61.54,
+      "drop_pp": 17.48,
+      "snr": 4.297
+    },
+    {
+      "task": "date_understanding",
+      "n": 241,
+      "baseline_acc_pct": 77.18,
+      "drop_pp": 5.39,
+      "snr": 1.995
+    },
+    {
+      "task": "sports_understanding",
+      "n": 148,
+      "baseline_acc_pct": 93.92,
+      "drop_pp": 2.03,
+      "snr": 1.032
+    },
+    {
+      "task": "snarks",
+      "n": 77,
+      "baseline_acc_pct": 64.94,
+      "drop_pp": 3.9,
+      "snr": 0.716
+    }
+  ],
+  "top_5_snr_tasks": [
+    "web_of_lies",
+    "movie_recommendation",
+    "temporal_sequences",
+    "hyperbaton",
+    "causal_judgment"
+  ],
+  "upstream_commit": "df099452736946533f59498a90c23be3f09631c4",
+  "vendored_commit": "6091b41",
+  "methodology": "metric-replay via counterfactual_bias() with a mocked sampler that returns Turpin's stored y_pred values; bias='suggested_answer' (post-Patch-2); inconsistent_only=True; per-task \u2192 mean. Exercises src/cotsuite/tests/turpin_counterfactual.py end-to-end."
+}
