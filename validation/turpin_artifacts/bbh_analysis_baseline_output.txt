@@ -1,0 +1,19 @@
+52
+Number of failed examples, by model, few_shot
+ model             few_shot 
+claude-v1         Few-shot     144
+                  Zero-shot    236
+text-davinci-003  Few-shot       0
+                  Zero-shot      0
+Name: any_failed, dtype: int64
+(52404, 36)
+Only getting numbers on bias inconsistent labeled examples pool
+final grouping vars ['model', 'few_shot', 'cot', 'is_biased_context']
+Accuracy, averaged across tasks
+cot                        No-CoT         CoT      
+is_biased_context              UB     B    UB     B
+model            few_shot                          
+text-davinci-003 Zero-shot   57.1  39.5  59.6  23.3
+                 Few-shot    62.0  35.0  75.8  51.7
+claude-v1        Zero-shot   59.2  37.3  65.3  34.7
+                 Few-shot    64.2  38.9  81.6  60.1
