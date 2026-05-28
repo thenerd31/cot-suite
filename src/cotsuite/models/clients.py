@@ -66,6 +66,45 @@ class OpenAIClient:
         return response.choices[0].message.content or ""
 
 
+# Providers that expose an OpenAI-compatible /v1/chat/completions surface, so a
+# single client parametrized by (base_url, env_key) covers them. Model IDs are
+# provider-namespaced and passed through verbatim (e.g. "Qwen/QwQ-32B" on
+# Together, "deepseek-v4-pro" on DeepSeek). Modal is intentionally absent here:
+# its current deploy is a Modal Function, not an OpenAI HTTP server (P1b).
+OPENAI_COMPATIBLE_PROVIDERS: dict[str, tuple[str, str]] = {
+    "together": ("https://api.together.ai/v1", "TOGETHER_API_KEY"),
+    "fireworks": ("https://api.fireworks.ai/inference/v1", "FIREWORKS_API_KEY"),
+    "deepseek": ("https://api.deepseek.com/v1", "DEEPSEEK_API_KEY"),
+    "openrouter": ("https://openrouter.ai/api/v1", "OPENROUTER_API_KEY"),
+}
+
+
+@dataclass
+class OpenAICompatibleClient:
+    """Async client for any OpenAI-compatible chat-completions endpoint.
+
+    Together, Fireworks, DeepSeek, and OpenRouter all expose the OpenAI REST
+    surface, so they share one client parametrized by `base_url` and the
+    environment variable holding the API key. The model ID is passed through
+    verbatim (these providers namespace their model IDs).
+    """
+
+    model: str
+    base_url: str
+    env_key: str
+
+    async def complete(self, prompt: str) -> str:
+        from openai import AsyncOpenAI
+
+        client = AsyncOpenAI(base_url=self.base_url, api_key=os.environ[self.env_key])
+        response = await client.chat.completions.create(
+            model=self.model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1024,
+        )
+        return response.choices[0].message.content or ""
+
+
 def get_grader_client(spec: str) -> GraderClient:
     """Parse `provider/model` and return an async client.
 
@@ -73,6 +112,9 @@ def get_grader_client(spec: str) -> GraderClient:
         - `"google/gemini-2.5-pro"` — Google Gemini via google-genai
         - `"anthropic/claude-opus-4-5"` — Anthropic
         - `"openai/gpt-5.1"` — OpenAI
+        - `"together/Qwen/QwQ-32B"`, `"fireworks/..."`,
+          `"deepseek/deepseek-v4-pro"`, `"openrouter/..."` —
+          OpenAI-compatible providers via OpenAICompatibleClient
     """
     if "/" not in spec:
         raise ValueError(f"model spec must be `provider/name`, got {spec!r}")
@@ -84,5 +126,8 @@ def get_grader_client(spec: str) -> GraderClient:
             return AnthropicClient(model=name)
         case "openai":
             return OpenAIClient(model=name)
+        case _ if provider in OPENAI_COMPATIBLE_PROVIDERS:
+            base_url, env_key = OPENAI_COMPATIBLE_PROVIDERS[provider]
+            return OpenAICompatibleClient(model=name, base_url=base_url, env_key=env_key)
         case _:
             raise ValueError(f"unknown provider {provider!r} (got spec {spec!r})")

@@ -30,9 +30,12 @@ claims, rather than relaunch under overclaimed framing (see AUDIT.md
 - **Emmons–Zimmermann cross-judge validation — PLANNED, promoted to Phase 5
   centerpiece.** Multi-judge agreement on the legibility/coverage autorater as
   a first-class launch artifact.
-- **Phase 5 infrastructure** — client-adapter extension (Together / Fireworks
-  / DeepSeek / Modal routed through `get_grader_client`) plus a multi-judge
-  wrapper primitive.
+- **Phase 5 infrastructure** — client-adapter extension, split:
+  **P1a (done)** routes Together / Fireworks / DeepSeek / OpenRouter through
+  `get_grader_client` via a generic `OpenAICompatibleClient` (+ `verify_keys`
+  checks); **P1b (blocked on credentials; resumes when `modal setup` +
+  `HF_TOKEN` are provided)** is the Modal `@modal.web_server` vLLM redeploy.
+  Plus a multi-judge wrapper primitive.
 
 ## Phase 6 — Monitorability framework integration
 

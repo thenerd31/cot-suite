@@ -304,11 +304,101 @@ def check_modal() -> CheckResult:
     return CheckResult(provider="modal", ok=True, detail=f"token info OK. {workspace_line}")
 
 
+def _check_openai_compatible(
+    *, provider: str, env_key: str, base_url: str, key_hint: str
+) -> CheckResult:
+    """Shared check for OpenAI-compatible providers (Together/Fireworks/DeepSeek/OpenRouter).
+
+    Uses the OpenAI SDK pointed at ``base_url``; ``models.list()`` exercises
+    auth + network without burning generation spend.
+    """
+    key = os.environ.get(env_key)
+    if _looks_like_placeholder(key):
+        return CheckResult(
+            provider=provider,
+            ok=False,
+            detail=f"{env_key} is missing or a placeholder (len={len(key or '')}).",
+            hint=key_hint,
+        )
+    try:
+        import openai
+    except ImportError:
+        return CheckResult(
+            provider=provider,
+            ok=False,
+            detail="openai package not installed.",
+            hint="pip install 'openai>=2.8'",
+        )
+
+    client = openai.OpenAI(api_key=key, base_url=base_url)
+    try:
+        next(iter(client.models.list()), None)
+    except openai.AuthenticationError as exc:
+        return CheckResult(
+            provider=provider,
+            ok=False,
+            detail=f"AuthenticationError: {exc}",
+            hint=f"{env_key} is unauthorized — regenerate it.",
+        )
+    except Exception as exc:
+        return CheckResult(
+            provider=provider,
+            ok=False,
+            detail=f"{type(exc).__name__}: {exc}",
+            hint="Unexpected error — check network + API status.",
+        )
+    return CheckResult(provider=provider, ok=True, detail="models.list OK.")
+
+
+def check_together() -> CheckResult:
+    """Together AI (OpenAI-compatible)."""
+    return _check_openai_compatible(
+        provider="together",
+        env_key="TOGETHER_API_KEY",
+        base_url="https://api.together.ai/v1",
+        key_hint="Set a real TOGETHER_API_KEY in .env (api.together.ai/settings/api-keys).",
+    )
+
+
+def check_fireworks() -> CheckResult:
+    """Fireworks AI (OpenAI-compatible)."""
+    return _check_openai_compatible(
+        provider="fireworks",
+        env_key="FIREWORKS_API_KEY",
+        base_url="https://api.fireworks.ai/inference/v1",
+        key_hint="Set a real FIREWORKS_API_KEY in .env (app.fireworks.ai → Settings → API Keys).",
+    )
+
+
+def check_deepseek() -> CheckResult:
+    """DeepSeek direct API (OpenAI-compatible)."""
+    return _check_openai_compatible(
+        provider="deepseek",
+        env_key="DEEPSEEK_API_KEY",
+        base_url="https://api.deepseek.com/v1",
+        key_hint="Set a real DEEPSEEK_API_KEY in .env (platform.deepseek.com/api_keys).",
+    )
+
+
+def check_openrouter() -> CheckResult:
+    """OpenRouter aggregator (OpenAI-compatible)."""
+    return _check_openai_compatible(
+        provider="openrouter",
+        env_key="OPENROUTER_API_KEY",
+        base_url="https://openrouter.ai/api/v1",
+        key_hint="Set a real OPENROUTER_API_KEY in .env (openrouter.ai/keys).",
+    )
+
+
 PROVIDER_CHECKS = {
     "anthropic": check_anthropic,
     "openai": check_openai,
     "huggingface": check_huggingface,
     "modal": check_modal,
+    "together": check_together,
+    "fireworks": check_fireworks,
+    "deepseek": check_deepseek,
+    "openrouter": check_openrouter,
 }
 
 

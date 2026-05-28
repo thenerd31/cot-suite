@@ -48,9 +48,19 @@ framing (see AUDIT.md "Briefing Reconciliation", 2026-05-28).
   multiple judge models and report agreement, making cross-judge sensitivity
   a first-class launch artifact rather than a v0.1.1 follow-up.
 - **Phase 5 infrastructure:**
-  - **Client-adapter extension** — route Together / Fireworks / DeepSeek /
-    Modal through `get_grader_client` so reproductions can target whatever
-    model the source paper used (or its nearest available stand-in).
+  - **Client-adapter extension — P1a (DONE, this commit).** A generic
+    `OpenAICompatibleClient` routes Together / Fireworks / DeepSeek /
+    OpenRouter through `get_grader_client` (all four expose the OpenAI REST
+    surface), and `verify_keys` gains
+    `check_{together,fireworks,deepseek,openrouter}`. Unblocks B3 (DeepSeek
+    V3/R1) and B4 redux (qwq-32b via Together). Mocked-tested, $0 spend.
+  - **Client-adapter extension — P1b (BLOCKED on credentials).** Modal
+    `@modal.web_server` vLLM redeploy exposing `/v1/chat/completions` (port
+    8000, `VLLM_API_KEY` auth), to become a 5th OpenAI-compatible endpoint.
+    Status: **blocked on credentials; resumes when `modal setup` + `HF_TOKEN`
+    are provided** (the gated model `meta-llama/Llama-3.1-8B-Instruct`
+    requires the HF token). Unblocks B1 redux (Llama-3.1-8B) — the
+    deferrable methodology.
   - **Multi-judge wrapper primitive** — a reusable wrapper that fans a single
     trajectory across N judge models, the shared substrate under the
     Emmons–Zimmermann cross-judge centerpiece and the v0.1.1 cross-judge
