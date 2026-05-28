@@ -1,19 +1,21 @@
 # cot-suite
 
-A unified Python library for **chain-of-thought monitorability and faithfulness** on reasoning-model agents.
+cot-suite is an Inspect AI-native library for chain-of-thought monitorability evaluation on reasoning-model agents.
 
-**Status:** pre-alpha. Targeting a public launch mid-May 2026. Stage 1 validation run (Qwen3-14B × GPQA-Diamond × Haiku 4.5 autorater) complete; results and methodology in [`benchmarks/results/qwen3_14b_gpqa_full/`](benchmarks/results/qwen3_14b_gpqa_full/).
+**Status:** Pre-launch, targeting late-July to mid-August 2026.
 
 > Renamed from `cot-divergence` on 2026-04-21. The old `cotdiv` import path still works via a shim until 2026-07-21.
 
 ## What it does
 
-`cot-suite` treats two closely-related but distinct questions as one evaluation surface:
+The library bundles four contributions:
 
-- **Monitorability** — can a human (or an LLM monitor) read a model's chain-of-thought and catch bad reasoning before the model acts on it? This is the near-term AI-safety bet laid out in Korbak et al. [2507.11473](https://arxiv.org/abs/2507.11473) and operationalized by Emmons & Zimmermann et al. [2510.23966](https://arxiv.org/abs/2510.23966).
-- **Faithfulness** — does a model's CoT *actually* reflect how it reached its final answer, or is the stated reasoning a post-hoc rationalization? Lanham [2307.13702](https://arxiv.org/abs/2307.13702), Turpin [2305.04388](https://arxiv.org/abs/2305.04388), Chen/Benton/Perez [2505.05410](https://arxiv.org/abs/2505.05410), and Arcuschin [2503.08679](https://arxiv.org/abs/2503.08679) each probe this from different angles.
+1. **Paper-faithful reproductions** of foundational CoT-monitorability methodologies as Inspect scorers — Lanham [2307.13702](https://arxiv.org/abs/2307.13702), Turpin [2305.04388](https://arxiv.org/abs/2305.04388), Yanda Chen [2505.05410](https://arxiv.org/abs/2505.05410), Arcuschin & Janiak [2503.08679](https://arxiv.org/abs/2503.08679), Emmons & Zimmermann [2510.23966](https://arxiv.org/abs/2510.23966). Each scorer cites its source paper, vendors released artifacts where available, and ships with a documented delta against the paper's reported cells.
+2. **Cross-classifier sensitivity reporting by default.** Every faithfulness scorer runs against at least two classifiers (regex pipeline + LLM judge) and reports per-judge scores, Cohen's κ, and ranking-reversal warnings. Motivated by Young [2603.20172](https://arxiv.org/abs/2603.20172), which showed up to 30pp ranking reversals across classifiers on the same trajectories — making single-number faithfulness measurements methodologically unreliable.
+3. **Inspect-native interop** with OpenAI's monitorability-evals (Apr 2026) — supports g-mean² with cross-fit filter, the three eval archetypes (intervention / process / outcome-property), and the released datasets via Inspect adapters.
+4. **An Inspect-native MonitorBench task loader** (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590), 1,514 instances) and a roadmap for additional task surfaces (ChainScope, CoT-Control).
 
-A legible CoT can still be unfaithful; a faithful CoT can still be illegible. Evaluating one without the other paints half the picture. `cot-suite` ships both as first-class, Inspect-AI-native primitives, with a versioned autorater port of the 2510.23966 Appendix C prompt at the center and the faithfulness literature as complementary modules around it.
+Built to support the kind of external review of frontier-lab monitorability claims that OpenAI established as a precedent in their May 2026 accidental-CoT-grading disclosure.
 
 ## Modules
 
@@ -27,6 +29,10 @@ A legible CoT can still be unfaithful; a faithful CoT can still be illegible. Ev
 - **`cotsuite.inspect.scorers`** — Inspect AI scorers. Two ship in v0.1: `cot_legibility_coverage` (Emmons & Zimmermann) and `cot_post_hoc_rationalization` (per-trajectory Arcuschin signal — strict subset of the paper's full pair-construction IPHR methodology). Three more (Lanham, Turpin, Chen) coming in v0.2 — see [`ROADMAP.md`](ROADMAP.md). Auto-discoverable via `[project.entry-points.inspect_ai]`: after `pip install cot-suite`, `inspect eval some_task --scorer cotsuite/cot_legibility_coverage` works without further setup. Self-grading guard fires a `UserWarning` if Inspect's grader role resolves to the eval's primary model.
 
 Full methodology and shortcut disclosures in [`AUDIT.md`](AUDIT.md). Known pre-release blockers in [`BLOCKERS.md`](BLOCKERS.md). Roadmap in [`ROADMAP.md`](ROADMAP.md).
+
+## Related work
+
+cot-suite tracks Young's trilogy ([2603.20172](https://arxiv.org/abs/2603.20172), [2603.22582](https://arxiv.org/abs/2603.22582), [2603.26410](https://arxiv.org/abs/2603.26410)) as *concurrent* work; that line motivates the cross-classifier sensitivity reporting at the core of this library. MonitorBench (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590)) supplies the 1,514-instance task surface we load natively. OpenAI's monitorability-evals (the companion release to "Monitoring Monitorability," [2512.18311](https://arxiv.org/abs/2512.18311)) supplies the g-mean² metric and three-archetype eval taxonomy we interoperate with. The faithfulness scorers reproduce Lanham 2307.13702, Turpin 2305.04388, Yanda Chen 2505.05410, and Arcuschin & Janiak 2503.08679, while the autorater ports Emmons & Zimmermann 2510.23966. See [`docs/related_work.md`](docs/related_work.md) for the full landscape.
 
 ## Install
 

@@ -1,43 +1,264 @@
 # ROADMAP.md
 
-Post-v0.x future work. **Do not implement any of these inside v0.x — the
-v0.x scope is frozen on fixes and paper-verified replications, not features.**
-This file is a parking lot so good ideas aren't lost.
+Phase plan and post-v0.x parking lot. **Launch status: Pre-launch,
+targeting late-July to mid-August 2026.**
 
-## Provenance hardening
+The phase plan below (Phases 5-7+) is the active execution sequence. Each
+phase maps onto the repo's version-numbering convention: Phase 5 is the
+v0.1 launch target, Phase 6 is the v0.2-era integration work, and Phase 7+
+is launch / v1.0 prep. The version-keyed milestone detail (v0.1.1 / v0.2 /
+v0.2.1+ / v1.0) is preserved below the phase plan so existing references
+still resolve.
 
-Today `Provenance` is documentation-only: a frozen dataclass with
-`arxiv_id`, `section`, `verified_against_pdf`, and `notes`. One unit test
-(`tests/test_turpin_chen.py::test_all_primary_cues_are_pdf_verified`)
-enforces that every entry in the primary Chen catalog has
-`verified_against_pdf=True`. That's it — a malicious or careless PR could
-flip the flag on an unverified entry and nothing else would stop it.
+**Do not implement Phase 6+ items inside v0.1 — the v0.1 scope is frozen on
+fixes and paper-verified reproductions, not features.** The parking-lot
+sections at the bottom exist so good ideas aren't lost.
 
-Three hardening steps, in order of value:
+---
 
-1. **Registry-time assertion.** Every `Cue` / `BiasConfig` registered in
-   a primary namespace (`tests.turpin_counterfactual`, `tests.chen_cue_injection`,
-   future `tests.lanham.*` catalogs) must have `provenance.verified_against_pdf=True`
-   at module-import time, or raise `ProvenanceError`. Unverified entries
-   must live under `tests.extensions/`. This turns the one-off unit test
-   into an always-on structural guarantee.
+## Phase 5 (current) — Reproduction-faithfulness lockdown
 
-2. **CLI: `cotdiv provenance audit`.** Walk every registered metric /
-   test / cue / bias, print a grouped table:
-   - Paper-verified replications (arxiv_id set, verified=True)
-   - Unverified replications (arxiv_id set, verified=False) — must be in
-     extensions/
-   - Extensions (arxiv_id None)
-   One-command answer to "what does this library actually claim to implement."
+Maps to the **v0.1** launch target. The Phase 5 goal is to genuinely execute
+the reproductions the project claims, rather than relaunch under overclaimed
+framing (see AUDIT.md "Briefing Reconciliation", 2026-05-28).
 
-3. **CI commit check.** Any commit whose diff flips a
-   `verified_against_pdf` field from `False` to `True` must also touch a
-   file under `docs/paper-refs/<arxiv_id>.md` (a per-paper cross-check
-   log) or `AUDIT.md`. Prevents silent promotion without human PDF
-   review. Implement as a `.github/workflows/provenance-check.yml`
-   workflow running on pull_request events.
+- **B2 Turpin — COMPLETE.** Stage A reproduces the Turpin 2305.04388 Table 1
+  four-cell `suggested_answer` accuracy drops within ±0.08pp on all 4 cells
+  (commit `035a725`; ledger row in AUDIT.md, script
+  `scripts/validate_b2_turpin_stage_a.py`, output
+  `validation/b2_turpin_stage_a_results.json`). Stage B apparatus is
+  committed; the run is pending.
+- **B4 redux — PLANNED.** Real 4-model orthogonality study against
+  ChainScope released traces. Reframes the prior overclaimed B4 work — see
+  AUDIT.md "Briefing Reconciliation". Replaces the single-model
+  (gpt-4o-mini, N=100) reproduction currently in
+  `scripts/validate_b4_arcuschin.py` with a genuine multi-model run on
+  paper-labeled trajectories.
+- **B1 redux — PLANNED (lower priority than B4 redux).** 4-model Lanham
+  capability curve. Deprioritized relative to B4 redux because of
+  model-availability constraints: Lanham's Claude 1.3 is retired, so the
+  curve must be reconstructed on available models rather than the paper's
+  exact lineup. (The committed `validation/b1_lanham_raw.jsonl` contains only
+  404s from the deprecated `claude-3-5-sonnet-20241022` checkpoint — no
+  successful run exists yet.)
+- **B3 Yanda Chen six-cue — PLANNED.** Cites Young 2603.22582 as concurrent
+  work.
+- **Emmons–Zimmermann cross-judge validation — PLANNED, promoted to Phase 5
+  centerpiece.** Run the legibility/coverage autorater trajectories through
+  multiple judge models and report agreement, making cross-judge sensitivity
+  a first-class launch artifact rather than a v0.1.1 follow-up.
+- **Phase 5 infrastructure:**
+  - **Client-adapter extension** — route Together / Fireworks / DeepSeek /
+    Modal through `get_grader_client` so reproductions can target whatever
+    model the source paper used (or its nearest available stand-in).
+  - **Multi-judge wrapper primitive** — a reusable wrapper that fans a single
+    trajectory across N judge models, the shared substrate under the
+    Emmons–Zimmermann cross-judge centerpiece and the v0.1.1 cross-judge
+    ablations already scoped in AUDIT.md.
 
-## Few-shot scaffolded cues
+---
+
+## Phase 6 — Monitorability framework integration
+
+Maps to the **v0.2** era (4-6 weeks post-launch). Do not start before Phase 5
+closes.
+
+- **OpenAI monitorability-evals interop.** Bring g-mean² + the cross-fit
+  filter + the three archetypes (intervention / process / outcome-property)
+  in as Inspect-native primitives.
+  - g-mean² metric **vendored verbatim from `openai/monitorability-evals`
+    (Apache-2.0)**. The repo will include
+    `LICENSES/Apache-2.0-monitorability-evals.txt` + a `NOTICE` file with
+    attribution; the vendored `gmean.py` preserves the OpenAI copyright
+    header. Source file upstream: `metric/intervention_gmean_metric.py`.
+    Verified formula: `gmean2 = tpr * tnr` over (arm × correctness × monitor
+    signal) triples. Not directly computable from current cot-suite outputs
+    without a binarization scheme on the 0-4 Likert autorater outputs plus a
+    ground-truth proxy (see the v1.0.1 milestone below).
+- **MonitorBench Inspect loader.** 1,514 instances across 3 dimensions + 2
+  stress-test settings, loaded as an Inspect dataset. Vendor the
+  1,514-instance `datasets/**.json` + `dataset_config.yaml`. Reimplement the
+  three-dimension scoring + two stress-test wrappers (Direct Concealment,
+  Monitor-aware Evasion) on cot-suite's Inspect baseline (`>=0.3.199`). Do not
+  depend on MonitorBench's own `inspect_ai==0.3.177` pin or reuse its Inspect
+  code.
+- **Cross-judge / classifier-sensitivity reporting as default for all
+  scorers.** Promote the multi-judge wrapper primitive (Phase 5
+  infrastructure) into the default reporting path so every scorer emits a
+  cross-judge sensitivity band, not just the headline number.
+- **CoT-Control stress-test integration** (Yueh-Han Chen 2603.05706) — add
+  the CoT-Control stress tests as an Inspect-native setting.
+
+---
+
+## Phase 7+ — Launch prep
+
+Maps to **launch / v1.0**.
+
+- Reviewer outreach.
+- Workshop submission.
+- Hero artifacts (the load-bearing reproduction figures and the cross-judge
+  sensitivity story).
+- Provenance hardening (the three structural guarantees detailed under "v1.0"
+  below) lands as part of the v1.0 cut.
+
+---
+
+## Out of scope for v0.1
+
+- **B1 redux may defer to v0.1.1.** If Phase 5 tightens — i.e. B4 redux, B3,
+  and the Emmons–Zimmermann cross-judge centerpiece consume the runway — the
+  4-model Lanham capability curve slips to v0.1.1. This is acceptable: B1
+  redux is the lowest-priority Phase 5 item because of the Claude 1.3
+  retirement, and the decisive Lanham claim does not gate launch.
+- **Native Inspect-only architecture** (Scope C from
+  `docs/inspect_ai_integration_assessment.md`). The standalone CLI's "score a
+  pre-existing trajectory JSONL" workflow doesn't fit Inspect's
+  eval-time-generation model. Replacing it would throw away the v0.1
+  multi-family recorded outputs (Stage 1+2+3 results across 8 model
+  directories). Probably out of scope forever.
+
+---
+
+## Process
+
+The Phase 5 reconciliation (AUDIT.md "Briefing Reconciliation", 2026-05-28)
+installed five guardrail skills under `.claude/skills/`. They are the working
+discipline for every reproduction claim and every multi-step execution in
+this repo:
+
+- **`.claude/skills/recon-plan-gate-execute/`** — recon → plan → gate →
+  execute. No code before the plan clears the gate.
+- **`.claude/skills/reproduction-claim-discipline/`** — every reproduction
+  claim must cite (a) the script path that produced it, (b) the output JSONL
+  path, (c) the source-paper cell, (d) the exact delta, and (e) the tolerance
+  band, and must add a row to the AUDIT.md Reproduction Claims Ledger in the
+  same commit.
+- **`.claude/skills/worktree-truth/`** — the worktree is ground truth; never
+  claim a result a briefing asserts but the worktree does not contain.
+- **`.claude/skills/no-eager-stop/`** — do not stop short of the stated
+  finish line.
+- **`.claude/skills/pause-on-precondition/`** — pause and surface when a
+  precondition (API key, deployed model, committed dataset) is missing
+  instead of fabricating around it.
+
+---
+
+## Version-keyed milestones (preserved)
+
+The phases above are the active sequence. The version-keyed detail below is
+retained so existing cross-references and the docs-site roadmap
+(`docs/roadmap.md`) stay consistent.
+
+### v0.1 (Phase 5 launch target)
+
+- **Five paper-verified evaluation methodologies** under one CLI — Lanham,
+  Turpin, Chen, Arcuschin, Emmons & Zimmermann.
+- **Two Inspect AI scorers** auto-discoverable via
+  `[project.entry-points.inspect_ai]` — `cot_legibility_coverage` and
+  `cot_post_hoc_rationalization` (per-trajectory Arcuschin signal — strict
+  subset of the paper's full pair-construction IPHR methodology).
+- **Self-grading guard** — `cotsuite.inspect._safety.warn_if_self_grading`
+  fires a `UserWarning` when Inspect's grader role resolves to the eval's
+  primary model.
+- **8-model multi-family scaling table** on GPQA-Diamond — the load-bearing
+  Phase 5 empirical contribution; `scripts/verify_headline.py --all`
+  reproduces 8/8 cells from committed JSONLs within ±0.5pp.
+- **Reproducibility contract** — `eval_version` + `cotsuite_version` +
+  `prompt_version` + `prompt_sha256` + autorater spec.
+- **Production hardening** — hatchling + hatch-vcs versioning, ruff D-rules +
+  mypy strict on the public API surface, GitHub Actions CI matrix (Python
+  3.11/3.12/3.13 × Ubuntu+macOS), trusted-publisher PyPI release pipeline with
+  Sigstore attestations.
+
+### v0.1.1 — first follow-up
+
+- **g-mean² methodology design** (OpenAI 2512.18311). The vendored
+  `metric/intervention_gmean_metric.py` (Phase 6) is mechanical; the open
+  problem is the binarization scheme on 0-4 Likert autorater outputs plus a
+  ground-truth proxy for monitor flagging. Defer until the methodology is
+  locked, then the Phase 6 metric becomes computable from cot-suite outputs.
+- **Cross-judge ablation.** Run the existing trajectories through additional
+  judges (e.g. GPT-5.5-Thinking, Gemini-2.5-Pro) to estimate the ~3-5%
+  judge-error rate documented in AUDIT.md (2026-04-28) and tighten the v2 PHR
+  numbers. Subsumed by the multi-judge wrapper primitive once it lands.
+- **B4 cross-parser / cross-judge ablation.** Discriminate the three candidate
+  explanations for the 8pp gap below the paper on GPT-4o-mini (detector scope,
+  parser permissiveness, sample noise). Validation status for B4 stays
+  ⚠ pending this ablation — not ✓, not ✗.
+- **Llama-3.1-8B PHR CI tightening.** Re-run on CommonsenseQA / MMLU-Pro to
+  grow the correct-trajectory subsample to n≥100 and resolve the lone
+  partially-resolved cluster cell. Modest compute, post-launch.
+- **Independent-reparse ablation.** At least one detection method that
+  re-parses from `raw_text` rather than sharing the upstream `final_answer`
+  field (lesson from the 2026-04-27 parser-bug fix).
+- **B1 redux** may land here if it deferred from Phase 5 (see "Out of scope
+  for v0.1").
+
+### v0.2 — Phase 6 integration (4-6 weeks post-launch)
+
+Port the remaining four methodologies to Inspect Scorers:
+
+| Scorer | Paper | Notes |
+|---|---|---|
+| `cot_lanham_early_answering` | Lanham 2307.13702 §3.1 | Cleanest of the four |
+| `cot_lanham_mistake_injection` | Lanham 2307.13702 §3.2 | Second grader role for the mistake generator |
+| `cot_turpin_counterfactual` | Turpin 2305.04388 | Solver+Scorer pair (cross-sample aggregate) |
+| `cot_chen_cue_injection` | Chen 2505.05410 | Solver+Scorer pair, same pattern as Turpin |
+
+Plus the Phase 6 monitorability integration: OpenAI monitorability-evals
+interop (g-mean² + cross-fit filter + three archetypes), the MonitorBench
+loader, cross-judge sensitivity as default, and CoT-Control stress tests.
+Confirm the post-2026-05-08 `inspect_evals` registry layout before opening any
+upstream PR (per inspect_evals PR #1538 by Scott-Simmons).
+
+Other v0.2 candidates (no firm commitments yet):
+
+- **CC-SHAP metric** (Siegel 2404.03189) — Task #13.
+- **Verbosity** (Meek 2510.27378) — would round out the cue-injection family.
+- **Confidence-trajectory PHR** (Lewis-Lim 2508.19827) — orthogonal PHR signal
+  to Arcuschin's.
+- **Activation-level scorer** (gated on the optional `cot-suite[activations]`
+  extra; informed by McGuinness, Serrano, Bailey, Emmons "Neural Chameleons"
+  2512.11949).
+
+### v0.2.1+
+
+- **Open one `inspect_evals` upstream PR** — recommend legibility/coverage
+  first, since it has the tightest reproduction story and is already
+  implemented end-to-end.
+- **Use that review feedback** to shape the remaining four metric PRs.
+
+### v1.0 — Phase 7+ launch / provenance hardening
+
+Today `Provenance` is documentation-only: a frozen dataclass with `arxiv_id`,
+`section`, `verified_against_pdf`, and `notes`. One unit test
+(`tests/test_turpin_chen.py::test_all_primary_cues_are_pdf_verified`) enforces
+that every entry in the primary Chen catalog has `verified_against_pdf=True`.
+A careless PR could flip the flag and nothing else would stop it. Three
+hardening steps, in order of value:
+
+1. **Registry-time assertion.** Every `Cue` / `BiasConfig` registered in a
+   primary namespace (`tests.turpin_counterfactual`, `tests.chen_cue_injection`,
+   future `tests.lanham.*` catalogs) must have
+   `provenance.verified_against_pdf=True` at module-import time, or raise
+   `ProvenanceError`. Unverified entries must live under `tests/extensions/`.
+   Turns the one-off unit test into an always-on structural guarantee.
+2. **CLI: `cotsuite provenance audit`.** Walk every registered
+   metric / test / cue / bias and print a grouped table (paper-verified /
+   unverified / extension). One-command answer to "what does this library
+   actually claim to implement."
+3. **CI commit check.** Any commit whose diff flips a `verified_against_pdf`
+   field from `False` to `True` must also touch a file under
+   `docs/paper-refs/<arxiv_id>.md` or `AUDIT.md`. Prevents silent promotion
+   without human PDF review. Implement as
+   `.github/workflows/provenance-check.yml` on pull_request events.
+
+---
+
+## Parking lot (no committed version)
+
+### Few-shot scaffolded cues
 
 The Chen Visual Pattern cue lives in `tests/extensions/` today because it
 requires few-shot examples with ■/□/✓ markers, and the `Cue.renderer`
@@ -52,90 +273,33 @@ Design sketch:
         build_prompt: Callable[[list[Exemplar], str, str], str]
         provenance: Provenance
 
-Would let us promote Visual Pattern back into the primary Chen catalog
-with `verified_against_pdf=True`. Also unblocks any paper-verified cue
-that depends on few-shot context.
+Would let us promote Visual Pattern back into the primary Chen catalog with
+`verified_against_pdf=True`. Also unblocks any paper-verified cue that depends
+on few-shot context.
 
-## Dense-sweep filler_tokens reproduction
+### Dense-sweep filler_tokens reproduction
 
-Current `filler_tokens` defaults to a sparse dyadic sweep `(0, 1, 2, 4,
-8, 16, 32, 64, 128, 256)`. Lanham 2307.13702 §3.4 sweeps densely from 0
-to max-sampled-CoT-length. For a published-number reproduction against
-Lanham Fig 6, we'd want a dense sweep mode. Low priority — the
-decisive claim ("zero uplift from filler at any length") survives a
-sparse sweep.
+Current `filler_tokens` defaults to a sparse dyadic sweep
+`(0, 1, 2, 4, 8, 16, 32, 64, 128, 256)`. Lanham 2307.13702 §3.4 sweeps densely
+from 0 to max-sampled-CoT-length. For a published-number reproduction against
+Lanham Fig 6 we'd want a dense sweep mode. Low priority — the decisive claim
+("zero uplift from filler at any length") survives a sparse sweep.
 
-## Inspect AI integration milestones
-
-Driven by `docs/inspect_ai_integration_assessment.md`. v0.1 ships
-**Scope A** (standalone CLI + 2 Inspect scorers + entry-point);
-later versions extend.
-
-### v0.1 (shipped 2026-04-26)
-
-- `cotsuite.inspect.scorers.cot_legibility_coverage` — Emmons &
-  Zimmermann legibility/coverage autorater as Inspect Scorer.
-- `cotsuite.inspect.scorers.cot_post_hoc_rationalization` — per-
-  trajectory PHR detector (NOT Arcuschin's full pair-construction
-  IPHR methodology — strict subset; documented).
-- `[project.entry-points.inspect_ai] cotsuite = "cotsuite.inspect"`
-  — `inspect eval` discovers both scorers without further setup.
-- `cotsuite.inspect._safety.warn_if_self_grading` — UserWarning
-  when grader role resolves to the eval's primary model.
-- `tests/test_inspect_integration.py` — 6 smoke tests for entry-
-  point loading + registry name correctness.
-
-### v0.1.1
-
-- **g-mean² adoption** (OpenAI 2512.18311). Verified formula:
-  `gmean2 = tpr * tnr` over (arm × correctness × monitor signal)
-  triples. NOT directly computable from current cot-suite outputs;
-  requires a binarization scheme on 0-4 Likert autorater outputs
-  + a ground-truth proxy. Pre-work: 4-8 h methodology design;
-  implementation: 2-4 h. Defer until methodology is locked.
-
-### v0.2 (4-6 weeks post-launch)
-
-- Port the remaining 4 metrics to Inspect Scorers:
-  - Lanham early-answering (~6-10 h, cleanest of the four)
-  - Lanham mistake-injection (~8-12 h, second grader role for
-    the mistake generator)
-  - Turpin counterfactual-bias (~12-18 h, needs Solver+Scorer
-    pair pattern because the accuracy-drop is a cross-sample
-    aggregate)
-  - Chen cue-injection (~10-14 h, same Solver+Scorer pair
-    pattern as Turpin)
-- Confirm the post-2026-05-08 `inspect_evals` registry layout
-  before opening any upstream PR (per inspect_evals PR #1538 by
-  Scott-Simmons).
-
-### v0.2.1+
-
-- Open one `inspect_evals` PR — recommend legibility/coverage
-  first, since it has the tightest reproduction story and is
-  already implemented end-to-end.
-- Use that review feedback to shape the remaining four metric
-  PRs.
-
-### Out of scope (probably forever)
-
-- **Native Inspect-only architecture** (Scope C from the
-  assessment). The standalone CLI's "score a pre-existing
-  trajectory JSONL" workflow doesn't fit Inspect's eval-time-
-  generation model. Replacing it would throw away expensive
-  recorded outputs (Stage 1+2+3 multi-family results,
-  ~$200 of compute).
-
-## Length-weighted AOC alignment — promoted to `BLOCKERS.md`
+### Length-weighted AOC alignment — moved to `BLOCKERS.md`
 
 Moved to `BLOCKERS.md` on 2026-04-19. This is a precondition for any
 "reproduces Lanham Table 2" claim, not a future-work item.
 
 ## Process lessons
 
-- **Pre-deploy vLLM smoke test.** Before any Modal deploy with a new
-  inference stack, run a local `AsyncEngineArgs` smoke-test against a
-  small model (e.g., Qwen2.5-0.5B on CPU) to catch API churn before
-  burning GPU time. Rationale: on 2026-04-20, vllm 0.19.x had dropped
-  the `disable_log_requests` kwarg — a 5s local `AsyncEngineArgs(...)`
-  instantiation would have caught it before ~$0.18 of H100 crash-loop.
+- **Pre-deploy vLLM smoke test.** Before any Modal deploy with a new inference
+  stack, run a local `AsyncEngineArgs` smoke-test against a small model (e.g.,
+  Qwen2.5-0.5B on CPU) to catch API churn before burning GPU time. Rationale:
+  on 2026-04-20, vllm 0.19.x had dropped the `disable_log_requests` kwarg — a
+  5s local `AsyncEngineArgs(...)` instantiation would have caught it before a
+  GPU crash-loop.
+- **Detector ablations need to span the full parsing pipeline.** The Stage 3.5
+  detector ablation shared the same upstream `final_answer` field across all
+  three detection methods, so they shared the parser-layer failure mode.
+  Future ablations should include at least one method that re-parses from
+  `raw_text` independently.

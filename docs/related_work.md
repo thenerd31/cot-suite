@@ -4,11 +4,25 @@ cot-suite operationalizes CoT-monitorability evaluations from a set of
 existing papers and runs them on a multi-family open-weights scaling
 table. This document positions our v0.1 results relative to the eight
 most-related prior works as of 2026-04-27, plus a recent-literature
-sweep covering October 2025–April 2026. The framing throughout: we
-are doing **replication + tooling + open-weight scaling**, not novel
-methodology — the methodologies are Lanham, Turpin, Chen, Arcuschin,
-Emmons & Zimmermann; we wire them into one library and apply them
-consistently across 8 models.
+sweep covering October 2025–April 2026, and (Updated 2026-05-28) a
+March–May 2026 addendum covering the Young classifier-sensitivity
+trilogy, OpenAI's monitorability-evals release, and the external-review
+precedent for frontier-lab monitorability claims. The framing
+throughout: we are doing **replication + tooling + open-weight
+scaling**, not novel methodology — the methodologies are Lanham,
+Turpin, Chen, Arcuschin, Emmons & Zimmermann; we wire them into one
+library and apply them consistently across 8 models.
+
+> **Updated 2026-05-28.** New material is concentrated in the dated
+> sub-sections of §3, §4, §7, §8, and in new sections §12 (Young
+> trilogy), §13 (external review of frontier-lab monitorability
+> claims), and §14 (commercial agent-oversight). The original §1-11
+> treatment is preserved; only the dated insertions are new. The
+> "Phase-6" label used below refers to the Inspect-native interop work
+> tracked as v0.2 / v0.2.1+ in `ROADMAP.md` (Inspect Scorers for the
+> remaining four metrics + an Inspect-native dataset loader); it is a
+> naming convenience for the cross-tool-interop milestone, not a new
+> scope beyond what the roadmap already commits to.
 
 ---
 
@@ -200,6 +214,77 @@ capability scaling.
   table provides the open-weight scaling curve their paper asserts
   but does not measure.
 
+### Updated 2026-05-28: OpenAI monitorability-evals release (April 2026)
+
+OpenAI released the companion evaluation harness for 2512.18311 as a
+standalone open-source project in April 2026, alongside a write-up on
+their alignment blog:
+
+- **Blog:** `https://alignment.openai.com/monitorability-evals/`
+- **Repo:** `github.com/openai/monitorability-evals` — **verified**
+  2026-04-22 creation date, Apache-2.0 license, 76 stars (as checked
+  for this addendum). This is the reference implementation the
+  `docs/inspect_ai_integration_assessment.md` g-mean² section already
+  points to (`run_eval_scaffold_lib.py`).
+
+**g-mean² mechanics, expanded.** Reading the released scaffold makes
+the metric's structure explicit:
+
+- The reported quantity is **g-mean² = TPR × TNR**, the product of a
+  true-positive rate and a true-negative rate for a binary monitor
+  evaluated against a binary ground-truth proxy. (This matches the
+  formula already extracted into the integration assessment:
+  `gmean2 = tpr * tnr` over `(arm × correctness × monitor signal)`
+  triples.)
+- **TNR is a geometric mean across intervention arms**, not a single
+  pooled rate — the intervention-specific variant
+  `√(TNR_{X=1} · TNR_{X=0})` in the paper generalizes to a geo-mean
+  over the arm set in the scaffold, so a monitor must keep its
+  false-positive rate low across *every* arm to score well.
+- **TPR is reported as a minimal-criterion upper bound** — it credits
+  the monitor whenever it satisfies a minimal flagging criterion, so
+  the published TPR is an optimistic ceiling rather than a strict
+  point estimate. The practical consequence is that g-mean² is
+  primarily disciplined by the TNR (specificity) term.
+- Uncertainty is quantified with a **bootstrap**, and arms pass
+  through a **cross-fit eligibility filter** before entering the
+  metric: a selection fraction `selection_frac=0.6` partitions data
+  for the eligibility decision, and a Wald multiplier `wald_k=1.96`
+  (the ~95% normal critical value) sets the eligibility band. Arms
+  that fail the filter are excluded from the geo-mean rather than
+  dragging the score toward an artifact.
+
+**The three archetypes, named.** The scaffold organizes evaluations
+into the same three archetypes the paper defines (§2), which is the
+taxonomy cot-suite's Phase-6 interop should map onto:
+
+1. **Intervention evaluations** — inject a decision-relevant factor
+   (an arm `X`) and check whether the monitor flags trajectories where
+   the factor was used. This is the archetype closest to the
+   Turpin/Chen cue-injection lineage cot-suite already wraps (B2/B3).
+2. **Process evaluations** — score whether the CoT process itself is
+   legible/complete enough to monitor, independent of any single
+   injected factor. This is the archetype closest to cot-suite's
+   Emmons-Zimmermann legibility/coverage autorater.
+3. **Outcome-property evaluations** — check a property of the outcome
+   (e.g., sandbagging, a withheld capability) against what the CoT
+   reveals.
+
+**Phase-6 Inspect-native interop.** cot-suite's Inspect-native
+scorers (v0.1 ships `cot_legibility_coverage` and
+`cot_post_hoc_rationalization`; the remaining four metrics land in
+v0.2 per `ROADMAP.md`) put cot-suite and `monitorability-evals` on the
+same substrate at the data-contract level: both can read/produce
+Inspect-style `(arm, correctness, monitor-signal)` triples. The
+Phase-6 goal is to emit our binarized monitor signals in a shape that
+`monitorability-evals`'s `bootstrapped_gmean_metric` can consume
+directly, so that a cot-suite run can be scored under OpenAI's exact
+g-mean² implementation rather than a reimplementation. This is the
+cleanest path to a like-for-like comparison and supersedes
+hand-rolling g-mean² internally — but it is still gated on the same
+binarization-scheme + ground-truth-proxy decision flagged above and in
+the integration assessment. No g-mean² number is claimed for v0.1.
+
 ---
 
 ## 4. Korbak et al. — arXiv 2507.11473 — "Chain of Thought Monitorability: A New and Fragile Opportunity for AI Safety"
@@ -219,6 +304,23 @@ moves toward latent/continuous reasoning. Recommendations:
 4. Don't make CoT monitoring the sole safety layer.
 
 **Models / datasets / metrics:** None — position paper.
+
+**Endorsers / signatories (Updated 2026-05-28).** Beyond the
+multi-lab author list, the paper carries a prominent set of endorsers
+that signals how broad the cross-lab buy-in is — including **Geoffrey
+Hinton, Ilya Sutskever, John Schulman, and Samuel Bowman**. This is
+the umbrella conceptual frame cot-suite operates *inside*: the library
+is not arguing that monitorability matters (that case is made here by
+a who's-who of the field); it is supplying the measurement tooling the
+position paper's recommendation (1) calls for.
+
+**Provenance note (Updated 2026-05-28).** Lead author **Tomek Korbak
+is now at OpenAI** (previously UK AISI). This is worth flagging only
+because several adjacent papers in §9 (Lee–Chen–Korbak 2602.22303,
+the CoT-Control authorship in §7, the deployment-context papers in
+§10) share Korbak as a co-author across institutional moves; the
+affiliation drift does not change the position paper's standing as the
+charter document.
 
 **Where cot-suite fits.** Korbak is the **charter document for
 cot-suite**. The library is a direct operationalization of their
@@ -412,6 +514,23 @@ verification. Code: https://github.com/YuehHanChen/CoTControl
   legibility/coverage. It is a sibling evaluation in the
   monitorability portfolio, not a competitor to cot-suite's bundle.
 
+### Updated 2026-05-28: CoT-Control as a Phase-6 stress-test integration target
+
+CoT-Control is the **intentional-concealment stress test** cot-suite's
+Phase-6 interop should be able to drive. Its task suite is a clean fit
+for an Inspect-native loader: synthetic prompts with a known
+suppress/add/restyle instruction and an LLM-judge verification step
+map directly onto an Inspect Task (Solver applies the control
+instruction) + Scorer (judge checks whether the CoT complied)
+structure — the same Solver+Scorer pair pattern the ROADMAP already
+specifies for the Turpin and Chen ports. Integrating CoT-Control as a
+stress-test dataset would let cot-suite report *structural*
+faithfulness (Lanham/Turpin/Chen/Arcuschin/Emmons) and *intentional*
+controllability (CoT-Control) on the **same open-weight checkpoints**
+(Qwen3-14B/32B already overlap), under one CLI. This is an integration
+target, not a v0.1 claim: no CoT-Control numbers are produced by
+cot-suite today.
+
 ---
 
 ## 8. ASTRAL Group — arXiv 2603.28590 — "MonitorBench: A Comprehensive Benchmark for Chain-of-Thought Monitorability in Large Language Models"
@@ -428,6 +547,28 @@ positioned as a stand-alone benchmark with curated instances rather
 than a methodology evaluated on existing tasks. Code:
 https://github.com/ASTRAL-Group/MonitorBench (15 stars, 10 commits,
 MIT license).
+
+**Affiliation (Updated 2026-05-28).** ASTRAL-Group is a UIUC / UW /
+UCSD collaboration.
+
+**Three dimensions (Updated 2026-05-28).** MonitorBench organizes its
+base measurement along three monitorability dimensions, which align
+closely with OpenAI's three archetypes (§3) and are therefore the
+natural mapping target for a shared Phase-6 data contract:
+1. **Input Intervention** — was a decision-critical input factor used
+   and is it surfaced in the CoT? (≈ OpenAI's *intervention*
+   archetype; ≈ the Turpin/Chen cue-injection axis cot-suite wraps.)
+2. **Outcome Justification** — does the CoT justify the actual
+   outcome? (≈ OpenAI's *outcome-property* archetype.)
+3. **Solution Process** — is the reasoning process itself
+   legible/complete enough to monitor? (≈ OpenAI's *process*
+   archetype; ≈ cot-suite's legibility/coverage autorater.)
+
+**Two stress tests (Updated 2026-05-28).** *Direct Concealment*
+(instruct the model to hide the decision-critical factor) and
+*Monitor-aware Evasion* (instruct the model to defeat a downstream CoT
+monitor) — the same intentional-concealment family as CoT-Control's
+suppression axis.
 
 **Models tested:** Per repo + abstract — frontier closed + a
 selection of open-weight reasoning models. Not enumerated in the
@@ -450,6 +591,20 @@ not port their methods. Turpin 2305.04388 is not cited.
 404 from the PyPI JSON API on 2026-04-27). Repo has `requirements.txt`
 only — no `pyproject.toml` or `setup.py`. Designed to be cloned and
 run locally, not pip-installed.
+
+**License / Inspect relationship (Updated 2026-05-28).** The repo is
+**Apache-2.0**. It **pins `inspect_ai==0.3.177`** in its requirements,
+but on inspection it **does not run as Inspect tasks** — the
+evaluation executes through a **custom vLLM pipeline**, and the
+`inspect_ai` pin appears to be a transitive/utility dependency rather
+than the execution substrate. Practically this means MonitorBench is
+*not* directly loadable as an Inspect eval today; a **cot-suite
+Phase-6 Inspect-native loader** for the MonitorBench instances is
+planned (ingest the 1,514 instances as an Inspect dataset and run them
+through cot-suite's existing Inspect scorers). This is the same
+"ingest as a v0.2 dataset" follow-up flagged below, now with the
+concrete note that the upstream `inspect_ai` pin does not by itself
+make the instances Inspect-runnable.
 
 **Where this leaves cot-suite's positioning.** MonitorBench is the
 closest thing in the field to a "comprehensive monitorability
@@ -480,12 +635,17 @@ test data?).
 | Lewis-Lim 2508.19827 | mostly sub-32B open-weight | Qwen2.5-7B-Instruct | 7B-32B |
 | Yueh-Han Chen 2603.05706 | closed frontier + Qwen3-14B/32B + R1 | Qwen3-14B | 14B-32B (open) |
 | MonitorBench 2603.28590 | mixed closed + open reasoning | not enumerated in abstract | unenumerated |
+| Young 2603.20172 | 12 open-weight, 9 families | 7B (family-spanning) | 7B-1T |
 | **cot-suite v0.1** | **8 open-weight** | **Qwen2.5-7B-Instruct** | **7B-72B with intermediate rungs** |
 
 **No prior work covers the 7B-72B range with Qwen-base, Llama-base,
 native-thinking, and R1-distill variants in one consistent
 benchmark.** Closest analog is Lewis-Lim, which lacks 70B and uses
-soft-reasoning rather than GPQA-Diamond.
+soft-reasoning rather than GPQA-Diamond. (Updated 2026-05-28: the
+Young trilogy — §12 — spans a far wider 7B-1T / 9-family range but on
+MMLU+GPQA-Diamond with cue-injection faithfulness only, not the
+five-methodology bundle; it is the broadest open-weight comparison
+baseline now available and is treated in §12.)
 
 ### GPQA-Diamond explicit use
 
@@ -499,6 +659,7 @@ soft-reasoning rather than GPQA-Diamond.
 | Lewis-Lim 2508.19827 | ❌ — confirmed GPQA-Main (448 ex), not Diamond (198 ex) |
 | Yueh-Han Chen 2603.05706 | ❌ custom CoT-Control task suite |
 | MonitorBench 2603.28590 | ❌ 1,514 novel curated instances |
+| Young 2603.22582 | ✅ MMLU + GPQA-Diamond (498 questions) |
 
 ### Model-overlap matrix (our 8 models × the 6 prior works)
 
@@ -518,7 +679,11 @@ checkpoint but not exact match. ❌ = not tested.
 
 (Korbak and Schoen have no model-list overlap and are omitted from
 the matrix — they're cited for framing/downstream-context, not for
-quantitative comparison.)
+quantitative comparison. The Young trilogy — §12 — reports 12
+open-weight models across 9 families but does not publish a
+per-checkpoint HF-identifier table in the abstract, so an
+exact-overlap column is deferred to the §12 treatment rather than
+guessed at here.)
 
 **Models unique to our study** (not tested by any of these 6 prior
 works on any benchmark): Qwen3-Thinking-8B, Qwen3-Thinking-14B. Both
@@ -540,12 +705,14 @@ how their checkpoint identity resolves.
 |---|---|---|---|
 | Early-answering AOC | Lanham 2307.13702 | (none of the 8) | ✅ (B1) |
 | Mistake-injection AOC | Lanham 2307.13702 | (none of the 8) | ✅ (B1) |
-| Cue-injection faithfulness | Turpin 2305.04388, Chen 2505.05410 | Meek, Chua&Ev, Lewis-Lim | ✅ (B2, B3) |
+| Cue-injection faithfulness | Turpin 2305.04388, Chen 2505.05410 | Meek, Chua&Ev, Lewis-Lim, Young (§12) | ✅ (B2, B3) |
 | Implicit PHR | Arcuschin 2503.08679 | (cited by Meek + MonitorBench; not run) | ✅ (B4) |
 | Legibility / coverage | Emmons & Zimmermann 2510.23966 | (cited by Meek + MonitorBench; not run) | ✅ (Stage 1/2/3 autorater) |
 | Verbosity | Meek 2510.27378 | Meek only | ❌ v0.2 |
 | Confidence-trajectory PHR | Lewis-Lim 2508.19827 | Lewis-Lim only | ❌ v0.2 |
 | g-mean² monitorability | OpenAI 2512.18311 | OpenAI only | ❌ recommend v0.1.1 add |
+| Cross-classifier faithfulness sensitivity | Young 2603.20172 | Young only | ✅ default posture (cross-classifier; see §12) |
+| Thinking-vs-answer-text faithfulness split | Young 2603.22582 / 2603.26410 | Young only | ❌ v0.2 candidate |
 | Intentional CoT-control success rate | Yueh-Han Chen 2603.05706 | CoT-Control only | ❌ different threat model — out of scope |
 | Stress-test concealment under instruction | MonitorBench 2603.28590 | MonitorBench only | ❌ different threat model — out of scope |
 
@@ -580,6 +747,14 @@ claim.
    *complementary* monitorability evaluations with different threat
    models (intentional / stress-test concealment); position cot-suite
    as the structural-faithfulness bundle, not a competitor to either.
+8. (Updated 2026-05-28) Cite the **Young trilogy** (§12) as the
+   concurrent work that motivates cot-suite's **cross-classifier
+   reporting default**: because Young 2603.20172 shows faithfulness
+   numbers swing 74.4% / 82.6% / 69.7% on *identical traces* purely by
+   changing the classifier, cot-suite reports under multiple
+   classifier configurations rather than a single number. Young is a
+   comparison baseline and a methodological motivator, **not**
+   upstream art cot-suite derives from.
 
 ---
 
@@ -626,6 +801,28 @@ claim.
       2305.04388, Chen 2505.05410, Arcuschin 2503.08679, and
       Emmons & Zimmermann 2510.23966 under a unified CLI" claim
       survives.
+- [ ] **(Updated 2026-05-28) Young trilogy arXiv-page verification.**
+      The abstract-level facts in §12 (model counts, family counts,
+      trace counts, the 74.4/82.6/69.7 cross-classifier split, the
+      39.7%-89.9% faithfulness range, the thinking-token vs
+      answer-text acknowledgment gap) are taken from the task brief's
+      verified-abstract summary and should be re-confirmed by direct
+      WebFetch of 2603.20172 / 2603.22582 / 2603.26410 before any
+      launch artifact cites a specific Young number. The GitHub repo
+      `github.com/ricyoung/cot-faithfulness-open-models` is listed
+      **per the task brief and is not independently verified this
+      session** — confirm existence, license, and contents before
+      citing it as a runnable artifact.
+- [ ] **(Updated 2026-05-28) OpenAI monitorability-evals repo
+      metadata** — `github.com/openai/monitorability-evals` verified
+      this session: created 2026-04-22, Apache-2.0, 76 stars. The
+      blog URL `alignment.openai.com/monitorability-evals/` is cited
+      per the task brief; re-confirm before launch.
+- [ ] **(Updated 2026-05-28) Accidental-CoT-grading + Redwood review
+      URLs** — `alignment.openai.com/accidental-cot-grading/` and
+      `blog.redwoodresearch.org/p/openai-cot` are cited **per the
+      task brief and were NOT independently verified this session**
+      (see §13). Verify both before citing in any launch artifact.
 
 ---
 
@@ -858,6 +1055,22 @@ are MonitorBench (different category — single benchmark, no PyPI)
 and CoT-Control (different threat model — intentional control
 success rate, single-paper companion).
 
+**Updated 2026-05-28 — re-check against the Young trilogy and the
+OpenAI monitorability-evals release.** Neither disturbs the verdict.
+The Young repo `github.com/ricyoung/cot-faithfulness-open-models`
+(per task brief; not independently verified this session) is a
+cross-classifier *faithfulness-measurement* study, not a bundle of
+the five wrapped methodologies — it operationalizes cue-injection
+faithfulness under multiple classifiers, not Lanham AOCs +
+legibility/coverage + IPHR pair construction. OpenAI's
+`monitorability-evals` (Apache-2.0, created 2026-04-22, 76 stars) is
+the companion to 2512.18311 only — intervention/process/outcome-
+property g-mean² scaffolding, again not the five-method bundle. The
+"first PyPI-installable bundle …" claim survives both. (Neither Young
+nor `monitorability-evals` was probed on PyPI this session; both are
+research repos distributed via GitHub, consistent with the rest of
+the competing-bundle landscape.)
+
 ### Per-paper arXiv verification (§9)
 
 Every adjacent-research paper in §9 was independently verified by
@@ -931,3 +1144,184 @@ implementation that supersedes the v0.1 framing. The eight
 prior works in §1-8 remain the right anchor set; the §9-10
 adjacent-research and deployment-context sections capture the
 sweep's marginal additions.
+
+---
+
+## 12. The Young trilogy (Mar 2026) — classifier-sensitivity and thinking-vs-answer divergence
+
+**Added 2026-05-28.** A three-paper series by **Richard J. Young**
+(March 2026) is the most directly relevant **concurrent** work for
+cot-suite's reporting design. It is **not** upstream art cot-suite
+derives from — the timing is concurrent and the methodologies do not
+overlap with the five wrapped papers — but it is (a) the empirical
+motivation for cot-suite's **cross-classifier-sensitivity reporting
+default** and (b) the broadest open-weight **comparison baseline** now
+available (12 models, 9 families, 7B-1T). The abstract-level facts
+below are the verified-abstract summary supplied in the task brief and
+are flagged for direct re-verification in the open-items list before
+any launch artifact cites a specific number.
+
+### 12.1 — arXiv 2603.20172 — "Measuring Faithfulness Depends on How You Measure: Classifier Sensitivity" (Mar 20 2026)
+
+The central result: **the faithfulness number you report is an
+artifact of the classifier you use to read the CoT.** Young runs three
+classifiers over the **same** influenced traces:
+1. a **regex** classifier,
+2. a **regex + LLM pipeline**, and
+3. a **Claude Sonnet 4 judge**.
+
+On **12 open-weight models across 9 families (7B–1T)** and **10,276
+influenced traces**, the headline faithfulness rates are **74.4%
+(regex) / 82.6% (regex+LLM) / 69.7% (Sonnet-4 judge)** on **identical
+data**. Per-model gaps span **2.6–30.6pp**, and the classifier choice
+induces **ranking reversals** — e.g., a model ranked 1st under one
+classifier drops to 7th under another. The paper's load-bearing
+conclusion: **"published faithfulness numbers cannot be meaningfully
+compared across studies using different classifiers."**
+
+**Why this is the motivator for cot-suite's default.** cot-suite
+measures faithfulness with an LLM-as-judge dispatcher
+(`cotsuite.core.classify`) and a versioned autorater; Young 2603.20172
+is direct evidence that a *single* classifier configuration produces a
+number that is not portable across studies. The takeaway baked into
+cot-suite's posture is to **report under more than one classifier
+configuration** (and to pin the exact classifier in `Provenance`)
+rather than publish a single headline faithfulness percentage. This is
+a *reporting-discipline* motivation, not a claim that cot-suite
+reproduces Young's numbers — cot-suite has not run Young's three-
+classifier comparison on its own traces, and no such reproduction is
+claimed here.
+
+### 12.2 — arXiv 2603.22582 — "Lie to Me: How Faithful Is CoT Reasoning in Reasoning Models?" (Mar 23 2026)
+
+**12 open-weight models, 9 families, 498 MMLU + GPQA-Diamond
+questions, six Chen-style hints, 41,832 inference runs.** Faithfulness
+ranges **39.7%–89.9%** across models. The most cot-suite-relevant
+finding is a **locus split**: acknowledgment of an influencing hint is
+**~87.5% in the thinking tokens** but only **~28.6% in the answer
+text** — i.e., models frequently *do* surface the hint in their
+internal reasoning while omitting it from the final answer-facing
+explanation.
+
+**Relevance to cot-suite.** This is the same six-hint Chen lineage
+cot-suite wraps in `cotsuite.tests.chen_cue_injection`, run on a
+GPQA-Diamond-inclusive question set that overlaps cot-suite's
+benchmark. The thinking-token-vs-answer-text acknowledgment gap is a
+concrete candidate metric refinement for cot-suite v0.2: cot-suite's
+current PHR / cue-acknowledgment signals do not separately score the
+thinking-token channel vs the answer-text channel, and Young 2603.22582
+is the evidence that the split is large enough to matter. Logged as a
+v0.2 candidate in the methodological-lineage table, not a v0.1 claim.
+
+### 12.3 — arXiv 2603.26410 — "Why Models Know But Don't Say: Thinking-Answer Divergence in Open-Weight Reasoning Models" (Mar 27 2026)
+
+**12 open-weight models on MMLU + GPQA**, reporting **55.4%
+thinking-answer divergence among hint-followed cases** — i.e., among
+cases where the model's answer changed in the direction of the hint,
+the majority show a divergence between what the thinking tokens reveal
+and what the answer text states. This is the natural sequel to
+2603.22582's locus split, quantified as a divergence rate on the
+subset where the hint actually moved the answer.
+
+**Relevance to cot-suite.** Same lineage and same v0.2-candidate
+status as 2603.22582 — it sharpens the case that a thinking-vs-answer
+divergence scorer belongs on the cot-suite roadmap, and it strengthens
+the §12.1 reporting-discipline argument (a single answer-text-only
+classifier would systematically under-count acknowledgment relative to
+a thinking-token-aware one).
+
+### 12.4 — Code and citation discipline
+
+- **Primary citation is the arXiv IDs**: 2603.20172, 2603.22582,
+  2603.26410.
+- A companion repository is listed as
+  **`github.com/ricyoung/cot-faithfulness-open-models`** — **(repo per
+  task brief; not independently verified.)** This session did not
+  confirm the URL's existence, license, or contents; treat it as
+  unverified until WebFetch/`gh` confirmation (tracked in open-items).
+- **No reproduction claim is made against the Young trilogy.**
+  cot-suite has run none of Young's three-classifier comparisons,
+  thinking-token-vs-answer-text splits, or divergence rates on its own
+  traces. Per the reproduction-claim-discipline rules, any future
+  statement of the form "cot-suite measured X; Young reports Y; we
+  agree by Δ" must cite the producing `scripts/` path, the output
+  JSONL, the specific Young arXiv cell, the signed delta, and a
+  pre-declared tolerance band — none of which exist today. Young is
+  cited here strictly as concurrent motivation + comparison baseline.
+
+### 12.5 — Positioning summary
+
+| Young paper | what it establishes | cot-suite consequence |
+|---|---|---|
+| 2603.20172 | faithfulness % is classifier-dependent (74.4/82.6/69.7 on identical traces; rank reversals) | motivates **cross-classifier reporting default**; pin classifier in `Provenance` |
+| 2603.22582 | thinking-token (~87.5%) vs answer-text (~28.6%) acknowledgment split, 12 models, GPQA-Diamond-inclusive | v0.2 candidate: separate thinking-channel vs answer-channel scoring |
+| 2603.26410 | 55.4% thinking-answer divergence among hint-followed cases | v0.2 candidate: thinking-answer divergence scorer; reinforces 12.1 |
+
+The Young trilogy does **not** change cot-suite's "first
+PyPI-installable bundle …" claim (it is a faithfulness-measurement
+study, not a five-method bundle — see §11 re-check) and does **not**
+make cot-suite derivative (concurrent timing, disjoint methodology).
+Its function in this document is to (1) justify the cross-classifier
+reporting default and (2) serve as the widest open-weight comparison
+baseline available.
+
+---
+
+## 13. External review of frontier-lab monitorability claims (May 2026)
+
+**Added 2026-05-28.** A May 2026 episode is worth recording as
+**precedent**: frontier-lab monitorability/CoT-grading claims are now
+subject to external technical review, which is part of the ecosystem
+cot-suite's open, reproducible measurement posture is meant to serve.
+
+- **OpenAI — "accidental CoT grading" disclosure** —
+  `alignment.openai.com/accidental-cot-grading/`. A disclosure that a
+  CoT-grading setup was applied in a way that was not intended.
+  **(URL per task brief; NOT independently verified this session.)**
+- **Buck Shlegeris / Redwood Research review** —
+  `blog.redwoodresearch.org/p/openai-cot`. An external review of the
+  above by Redwood Research. **(URL per task brief; NOT independently
+  verified this session.)**
+
+**Why this is in scope.** cot-suite's entire value proposition is
+*reproducible, externally checkable* monitorability measurement — the
+Korbak recommendation (1) that frontier developers "develop and run"
+such evaluations and report them implies someone outside the lab can
+audit the result. The accidental-CoT-grading episode + Redwood's
+review is a concrete instance of exactly that external-audit loop
+operating on a frontier lab's monitorability-adjacent claims. It
+strengthens the case for cot-suite's `Provenance`-everywhere,
+script-and-JSONL-cited reproduction discipline (the
+reproduction-claim-discipline rules): claims that can be independently
+re-derived are the ones that survive external review. **Both URLs are
+cited per the task brief and must be verified before appearing in any
+launch artifact** (tracked in open-items).
+
+---
+
+## 14. Commercial agent-oversight tooling — Apollo Watcher
+
+**Added 2026-05-28.** **Apollo Watcher** (Apollo Research,
+`apolloresearch.ai`) is a **commercial agent-oversight product** — a
+deployment-time monitor for agent behavior. It is recorded here for
+landscape completeness and to draw a clean **complementary, not
+competitive** boundary:
+
+- **Watcher is a deployment monitor.** It observes running agents in
+  production and flags concerning behavior at deploy/runtime — the
+  consumer side of the monitorability story (cf. the UK-AISI
+  deployment-monitoring papers in §10).
+- **cot-suite is a measurement library.** It quantifies, offline and
+  reproducibly, *how monitorable a given checkpoint's CoT is* under a
+  bundle of published methodologies, across a multi-family scaling
+  table.
+
+The two sit at different layers of the same stack: cot-suite produces
+the per-checkpoint monitorability measurements that inform whether —
+and how much to trust — a CoT-reading deployment monitor like Watcher.
+There is no feature overlap and no competing-bundle concern (Watcher
+is a product, not a PyPI bundle of the five wrapped methodologies), so
+it does not affect the §11 competing-bundle verdict. Apollo's research
+arm separately authored / co-authored several §5, §9, §10 papers
+(Schoen 2509.15541, Storf 2603.00829, the deployment-context work);
+Watcher is the productized counterpart to that research line.
