@@ -31,7 +31,9 @@ class ScriptedClient:
 def test_bias_catalog_contains_only_turpin_verified_candidates() -> None:
     # 'authority' was moved to extensions/ on 2026-04-19 (invented by
     # cotdiv, not in Turpin 2023). Verified candidates stay here.
-    assert set(BIAS_CATALOG) == {"always_a_fewshot", "sycophancy"}
+    # 'suggested_answer' added 2026-05-28 with variable-target support;
+    # 'sycophancy' kept as deprecated alias (sunset 2026-08-28).
+    assert set(BIAS_CATALOG) == {"always_a_fewshot", "suggested_answer", "sycophancy"}
 
 
 def test_cue_catalog_matches_verified_chen_cues() -> None:
@@ -117,7 +119,7 @@ async def test_counterfactual_bias_detects_accuracy_drop() -> None:
     )
     result = await counterfactual_bias(
         model=client,
-        bias="sycophancy",
+        bias="suggested_answer",
         samples=[
             Sample(question="Q1 (A)x (B)y (C)z", correct_answer="B"),
             Sample(question="Q2 (A)x (B)y (C)z", correct_answer="C"),
@@ -143,7 +145,7 @@ async def test_counterfactual_bias_counts_verbalization() -> None:
     )
     result = await counterfactual_bias(
         model=client,
-        bias="sycophancy",
+        bias="suggested_answer",
         samples=[
             Sample(question="Q1", correct_answer="B"),
             Sample(question="Q2", correct_answer="C"),
@@ -240,7 +242,7 @@ async def test_counterfactual_bias_inconsistent_only_default_filters_consistent(
     )
     result_default = await counterfactual_bias(
         model=client_default,
-        bias="sycophancy",
+        bias="suggested_answer",
         samples=[
             Sample(question="Q1", correct_answer="A"),
             Sample(question="Q2", correct_answer="B"),
@@ -259,7 +261,7 @@ async def test_counterfactual_bias_inconsistent_only_default_filters_consistent(
     )
     result_off = await counterfactual_bias(
         model=client_off,
-        bias="sycophancy",
+        bias="suggested_answer",
         samples=[
             Sample(question="Q1", correct_answer="A"),
             Sample(question="Q2", correct_answer="B"),
@@ -294,7 +296,7 @@ async def test_counterfactual_bias_uses_per_question_bias_target_letter() -> Non
     )
     result = await counterfactual_bias(
         model=client,
-        bias="sycophancy",
+        bias="suggested_answer",
         samples=[
             Sample(question="Q1", correct_answer="C", bias_target_letter="B"),
             Sample(question="Q2", correct_answer="A", bias_target_letter="D"),
@@ -307,6 +309,33 @@ async def test_counterfactual_bias_uses_per_question_bias_target_letter() -> Non
     assert result.raw["n_bias_followed"] == 2
     assert result.raw["bias_follow_rate_on_wrong_pointing"] == pytest.approx(1.0)
     assert result.raw["accuracy_drop"] == pytest.approx(1.0)
+
+
+def test_sycophancy_key_is_deprecated_alias_for_suggested_answer() -> None:
+    """Patch 2 (2026-05-28): sycophancy key warns on access and aliases to
+    the suggested_answer config (same object identity).
+
+    Iteration / membership / values() / keys() must NOT warn — only
+    ``__getitem__("sycophancy")`` triggers the DeprecationWarning. This
+    keeps catalog-enumeration tests quiet.
+    """
+    # __getitem__ on the deprecated key fires DeprecationWarning, returns
+    # the suggested_answer config.
+    with pytest.warns(DeprecationWarning, match="sycophancy bias mode is deprecated"):
+        deprecated = BIAS_CATALOG["sycophancy"]
+    primary = BIAS_CATALOG["suggested_answer"]
+    assert deprecated is primary, "alias must return the same config object"
+    assert deprecated.name == "suggested_answer"
+
+    # Enumeration paths must not warn.
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")  # turn any warning into an error
+        _ = set(BIAS_CATALOG)
+        _ = list(BIAS_CATALOG.values())
+        _ = list(BIAS_CATALOG.keys())
+        _ = "sycophancy" in BIAS_CATALOG
 
 
 @pytest.mark.asyncio
@@ -347,7 +376,7 @@ async def test_counterfactual_bias_per_task_aggregation_differs_from_flat_pool()
         Sample(question="QB3", correct_answer="D", task="task_b"),
         Sample(question="QB4", correct_answer="B", task="task_b"),
     ]
-    result = await counterfactual_bias(model=client, bias="sycophancy", samples=samples)
+    result = await counterfactual_bias(model=client, bias="suggested_answer", samples=samples)
     assert result.raw["per_task_drops"]["task_a"] == pytest.approx(1.0)
     assert result.raw["per_task_drops"]["task_b"] == pytest.approx(0.25)
     assert result.raw["accuracy_drop"] == pytest.approx(0.625)
