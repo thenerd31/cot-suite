@@ -63,14 +63,28 @@ Every API call is wrapped in tenacity exponential backoff. A run-level
 both phases); 5 consecutive 429s without an intervening success raises
 ``StageBHalt`` — the run stops and reports rather than blindly retrying.
 
-# Output schema (per the original Step 3 spec)
+# Output schema
 
-``validation/b2_turpin_stage_b_<model>.jsonl`` — one row per question:
+``benchmarks/results/<model>/turpin_stage_b/<model>.jsonl`` — one row per
+question (no embedded summary row):
   {task, question_id, baseline_ans, biased_ans, correct_ans,
    bias_target_letter, bias_followed, verbalized, judge_response}
-followed by one summary row:
-  {summary: true, model, per_task: {<task>: {accuracy_drop_pp, n,
-   verbalization_rate, bootstrap_ci_pp: [lo, hi]}}, ...}
+
+``benchmarks/results/turpin_stage_b_summary.json`` — consolidated per-cell
+metrics across all models, rewritten incrementally after each model completes
+(so a mid-run halt still leaves a valid summary of the finished models):
+  {eval, upstream_commit, n_per_task, est_api_usd,
+   models: {<slug>: {jsonl, total_429, malformed, n_rows,
+   per_task: {<task>: {accuracy_drop_pp, n, verbalization_rate,
+   bootstrap_ci_pp: [lo, hi], ...}}}}}
+
+# Spend guard (belt-and-suspenders)
+
+Estimated API spend is accumulated from token≈chars/4 counts at approximate
+per-model pricing; reaching ``SPEND_CEILING_USD`` ($30) raises StageBHalt.
+Modal/Llama inference is GPU spend (tracked separately by Modal), NOT counted
+here. The grader path is unchanged from Stage A (bool ``_parse_yes_no``) so the
+suggested_answer measurement stays comparable to the Stage A ±0.08pp anchor.
 
 Usage (once keys are configured — DO NOT run as part of apparatus commit):
     PYTHONPATH=. .venv/bin/python scripts/validate_b2_turpin_stage_b.py --model gpt-3.5-turbo
@@ -97,7 +111,7 @@ from cotsuite.tests.turpin_counterfactual import BIAS_CATALOG, Sample, counterfa
 
 ARTIFACTS = Path("validation/turpin_artifacts")
 DATA_DIR = ARTIFACTS / "data" / "bbh"
-DEFAULT_OUTPUT_DIR = Path("validation")
+DEFAULT_OUTPUT_DIR = Path("benchmarks/results")
 
 UPSTREAM_COMMIT = "df099452736946533f59498a90c23be3f09631c4"
 
@@ -115,6 +129,17 @@ DEFAULT_JUDGE = "anthropic/claude-haiku-4-5"
 MAX_CONSECUTIVE_429 = 5
 BOOTSTRAP_RESAMPLES = 1000
 BOOTSTRAP_SEED = 0
+
+# Belt-and-suspenders API spend ceiling. Estimated (token ≈ chars/4) at the
+# approximate per-model (input, output) USD-per-token below; reaching the
+# ceiling raises StageBHalt. Modal/Llama is GPU spend (separate) and is absent
+# here, so it is never counted toward this ceiling.
+SPEND_CEILING_USD = 30.0
+API_PRICE_PER_TOKEN: dict[str, tuple[float, float]] = {
+    "openai/gpt-3.5-turbo": (0.5e-6, 1.5e-6),
+    "anthropic/claude-haiku-4-5": (1.0e-6, 5.0e-6),
+    "anthropic/claude-sonnet-4-6": (3.0e-6, 15.0e-6),
+}
 
 # Turpin's answer-format instruction, appended after the test question so the
 # model emits in the same "The best answer is: (X)" shape as the few-shot
@@ -365,6 +390,42 @@ class RateLimitGuard:
 
 
 # ---------------------------------------------------------------------------
+# Spend tracking (belt-and-suspenders $30 ceiling)
+# ---------------------------------------------------------------------------
+
+
+def _est_tokens(text: str) -> int:
+    """Crude token estimate (≈ chars/4) — used only for the spend ceiling."""
+    return max(1, len(text) // 4)
+
+
+@dataclass
+class SpendTracker:
+    """Accumulates estimated API $ across the whole run; halts at the ceiling.
+
+    Token counts (chars/4) and pricing are approximate — this exists only as a
+    belt-and-suspenders ceiling alongside the provider-console limit. Modal/Llama
+    (GPU) inference is not an API dollar cost and is never recorded here (its
+    spec is absent from ``API_PRICE_PER_TOKEN``).
+    """
+
+    api_usd: float = 0.0
+    ceiling: float = SPEND_CEILING_USD
+
+    def record(self, *, spec: str, prompt: str, response: str) -> None:
+        price = API_PRICE_PER_TOKEN.get(spec)
+        if price is None:
+            return  # modal/llama or untracked spec — not API dollar spend
+        in_price, out_price = price
+        self.api_usd += _est_tokens(prompt) * in_price + _est_tokens(response) * out_price
+        if self.api_usd >= self.ceiling:
+            raise StageBHalt(
+                f"estimated API spend ${self.api_usd:.2f} reached ceiling "
+                f"${self.ceiling:.2f}; halting per spend guard."
+            )
+
+
+# ---------------------------------------------------------------------------
 # Two-phase per-cell runner
 # ---------------------------------------------------------------------------
 
@@ -392,6 +453,7 @@ async def run_cell(
     n: int,
     guard: RateLimitGuard,
     judge_spec: str,
+    spend: SpendTracker,
 ) -> list[CellRow]:
     """Run one (model, task) cell: Phase 1 inference, then Phase 2 judge burst."""
     samples = load_task_samples(task, limit=n)
@@ -408,6 +470,9 @@ async def run_cell(
             lambda p=s.biased_prompt: client.complete(p),
             what=f"{model.slug}/{s.question_id}/biased",
         )
+        # Estimate API $ (no-op for the Modal/Llama model — GPU spend, separate).
+        spend.record(spec=model.spec, prompt=s.baseline_prompt, response=baseline_raw)
+        spend.record(spec=model.spec, prompt=s.biased_prompt, response=biased_raw)
         baseline_ans = extract_turpin_answer(baseline_raw)
         biased_ans = extract_turpin_answer(biased_raw)
         bias_followed = biased_ans == s.bias_target_letter and biased_ans != ""
@@ -438,6 +503,11 @@ async def run_cell(
             )
             row.verbalized = bool(verdict)
             row.judge_response = "verbalized" if verdict else "not_verbalized"
+            spend.record(
+                spec=judge_spec,
+                prompt=f"{cue}\n{row.biased_cot}",
+                response=row.judge_response,
+            )
     return rows
 
 
@@ -550,15 +620,23 @@ async def run_model(
     n: int,
     output_dir: Path,
     judge_spec: str,
+    spend: SpendTracker,
 ) -> dict[str, Any]:
-    """Run all tasks for one model; write the per-model JSONL with summary."""
+    """Run all tasks for one model; write the per-model JSONL (per-question rows).
+
+    The consolidated summary now lives in a separate ``turpin_stage_b_summary.json``
+    (written by the caller), so the JSONL holds only per-question rows.
+    """
     guard = RateLimitGuard()
-    out_path = output_dir / f"b2_turpin_stage_b_{model.slug}.jsonl"
+    out_path = output_dir / model.slug / "turpin_stage_b" / f"{model.slug}.jsonl"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     per_task_summary: dict[str, Any] = {}
     all_rows: list[CellRow] = []
 
     for task in tasks:
-        cell_rows = await run_cell(model=model, task=task, n=n, guard=guard, judge_spec=judge_spec)
+        cell_rows = await run_cell(
+            model=model, task=task, n=n, guard=guard, judge_spec=judge_spec, spend=spend
+        )
         all_rows.extend(cell_rows)
         per_task_summary[task] = await compute_cell_metrics(cell_rows)
 
@@ -580,16 +658,16 @@ async def run_model(
                 )
                 + "\n"
             )
-        summary = {
-            "summary": True,
-            "model": model.slug,
-            "n_per_task": n,
-            "total_429": guard.total_429,
-            "per_task": per_task_summary,
-            "upstream_commit": UPSTREAM_COMMIT,
-        }
-        fh.write(json.dumps(summary) + "\n")
-    return {"model": model.slug, "out_path": str(out_path), "per_task": per_task_summary}
+    # Malformed = unextractable answer on either arm (monitored/reported, not auto-halted).
+    malformed = sum(1 for r in all_rows if r.baseline_ans == "" or r.biased_ans == "")
+    return {
+        "model": model.slug,
+        "out_path": str(out_path),
+        "per_task": per_task_summary,
+        "total_429": guard.total_429,
+        "malformed": malformed,
+        "n_rows": len(all_rows),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -618,9 +696,44 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--judge", default=DEFAULT_JUDGE, help="Verbalization judge model spec.")
     parser.add_argument(
-        "--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR, help="Directory for output JSONLs."
+        "--output-dir",
+        type=Path,
+        default=DEFAULT_OUTPUT_DIR,
+        help="Root for outputs: <dir>/<model>/turpin_stage_b/<model>.jsonl + <dir>/turpin_stage_b_summary.json.",
     )
     return parser
+
+
+def _write_summary(
+    path: Path,
+    results: list[dict[str, Any]],
+    args: argparse.Namespace,
+    spend: SpendTracker,
+    *,
+    halted_on: str | None = None,
+    reason: str | None = None,
+) -> None:
+    """Write/overwrite the consolidated per-cell summary.json (called incrementally)."""
+    summary: dict[str, Any] = {
+        "eval": "b2_turpin_stage_b",
+        "upstream_commit": UPSTREAM_COMMIT,
+        "n_per_task": args.n,
+        "est_api_usd": round(spend.api_usd, 4),
+        "models": {
+            r["model"]: {
+                "jsonl": r["out_path"],
+                "total_429": r["total_429"],
+                "malformed": r["malformed"],
+                "n_rows": r["n_rows"],
+                "per_task": r["per_task"],
+            }
+            for r in results
+        },
+    }
+    if halted_on:
+        summary["halted_on"] = halted_on
+        summary["halt_reason"] = reason
+    path.write_text(json.dumps(summary, indent=2) + "\n")
 
 
 async def _amain(argv: list[str] | None = None) -> int:
@@ -634,23 +747,61 @@ async def _amain(argv: list[str] | None = None) -> int:
     model_keys = list(MODEL_REGISTRY) if args.model == "all" else [args.model]
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    results = []
+    summary_path = args.output_dir / "turpin_stage_b_summary.json"
+    spend = SpendTracker()
+    n_tasks = len(tasks)
+    results: list[dict[str, Any]] = []
     for key in model_keys:
         model = MODEL_REGISTRY[key]
         print(
-            f"[stage-b] running {model.slug} over {len(tasks)} tasks (n={args.n})...",
+            f"[stage-b] running {model.slug} over {n_tasks} tasks (n={args.n})...",
             file=sys.stderr,
         )
         try:
-            results.append(
-                await run_model(
-                    model, tasks=tasks, n=args.n, output_dir=args.output_dir, judge_spec=args.judge
-                )
+            res = await run_model(
+                model,
+                tasks=tasks,
+                n=args.n,
+                output_dir=args.output_dir,
+                judge_spec=args.judge,
+                spend=spend,
             )
         except StageBHalt as halt:
             print(f"[stage-b] HALT on {model.slug}: {halt}", file=sys.stderr)
+            _write_summary(summary_path, results, args, spend, halted_on=model.slug, reason=str(halt))
             return 1
-    print(f"[stage-b] complete: {len(results)} model(s).", file=sys.stderr)
+        except Exception as exc:  # noqa: BLE001 — surface infra errors (e.g. Modal connection) as a clean halt
+            print(
+                f"[stage-b] HALT on {model.slug} ({type(exc).__name__}): {exc}",
+                file=sys.stderr,
+            )
+            _write_summary(
+                summary_path,
+                results,
+                args,
+                spend,
+                halted_on=model.slug,
+                reason=f"{type(exc).__name__}: {exc}",
+            )
+            return 1
+        results.append(res)
+        _write_summary(summary_path, results, args, spend)
+        anomalies: list[str] = []
+        if res["malformed"]:
+            anomalies.append(f"malformed={res['malformed']}/{res['n_rows']}")
+        if res["total_429"]:
+            anomalies.append(f"429s={res['total_429']}")
+        anomaly_str = "; ".join(anomalies) if anomalies else "none"
+        print(
+            f"[stage-b] {model.slug} DONE | cells {len(res['per_task'])}/{n_tasks} | "
+            f"est API ${spend.api_usd:.2f} | anomalies: {anomaly_str}",
+            file=sys.stderr,
+        )
+    print(
+        f"[stage-b] complete: {len(results)} model(s). est API ${spend.api_usd:.2f} "
+        f"(Modal GPU spend separate). summary: {summary_path}",
+        file=sys.stderr,
+    )
     return 0
 
 
