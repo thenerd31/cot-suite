@@ -1,0 +1,6 @@
+cot-suite
+Copyright (c) 2026 Aswin Surya. Released under the MIT License.
+
+This product includes software developed by OpenAI:
+- src/cotsuite/metrics/gmean.py — vendored from openai/monitorability-evals at commit 806dabf3ecc4e4ed466b6e26c1689e1e5e404c92.
+  Licensed under Apache License 2.0. See LICENSES/Apache-2.0-monitorability-evals.txt.
