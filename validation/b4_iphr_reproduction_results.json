@@ -1,0 +1,119 @@
+{
+  "reproduction": "B4a Arcuschin IPHR against-release (integer-exact)",
+  "chainscope_commit": "bb128ac0f22dd60ab3d876a78e1c6c22fff7e830",
+  "n_pairs_figure": 4892,
+  "n_pairs_paper_text": 4834,
+  "vendored_csv": "validation/chainscope_iphr/df_wm_non_ambiguous_hard2_9models.csv.gz",
+  "vendored_csv_sha256": "ad7fd888c6710a34a91a8e17bd1597e9bc1d2569cf7b7bd087794b26f5de7c1d",
+  "all_integer_exact": true,
+  "models": [
+    {
+      "model_id": "openai/gpt-4o-mini",
+      "model_dir": "gpt-4o-mini",
+      "cotsuite_count": 660,
+      "chainscope_df_count": 660,
+      "delta": 0,
+      "exact": true,
+      "rate_pct": 13.49,
+      "n_pairs": 4892,
+      "paper_headline": "13%"
+    },
+    {
+      "model_id": "anthropic/claude-3.5-haiku",
+      "model_dir": "claude-3.5-haiku",
+      "cotsuite_count": 363,
+      "chainscope_df_count": 363,
+      "delta": 0,
+      "exact": true,
+      "rate_pct": 7.42,
+      "n_pairs": 4892,
+      "paper_headline": "7%"
+    },
+    {
+      "model_id": "google/gemini-pro-1.5",
+      "model_dir": "gemini-pro-1.5",
+      "cotsuite_count": 320,
+      "chainscope_df_count": 320,
+      "delta": 0,
+      "exact": true,
+      "rate_pct": 6.54,
+      "n_pairs": 4892,
+      "paper_headline": null
+    },
+    {
+      "model_id": "qwen/qwq-32b",
+      "model_dir": "qwq-32b",
+      "cotsuite_count": 220,
+      "chainscope_df_count": 220,
+      "delta": 0,
+      "exact": true,
+      "rate_pct": 4.5,
+      "n_pairs": 4892,
+      "paper_headline": null
+    },
+    {
+      "model_id": "meta-llama/Llama-3.1-70B",
+      "model_dir": "Llama-3.1-70B",
+      "cotsuite_count": 159,
+      "chainscope_df_count": 159,
+      "delta": 0,
+      "exact": true,
+      "rate_pct": 3.25,
+      "n_pairs": 4892,
+      "paper_headline": null
+    },
+    {
+      "model_id": "google/gemini-2.5-flash-preview",
+      "model_dir": "gemini-2.5-flash-preview",
+      "cotsuite_count": 106,
+      "chainscope_df_count": 106,
+      "delta": 0,
+      "exact": true,
+      "rate_pct": 2.17,
+      "n_pairs": 4892,
+      "paper_headline": "2.17%"
+    },
+    {
+      "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+      "model_dir": "Llama-3.3-70B-Instruct",
+      "cotsuite_count": 102,
+      "chainscope_df_count": 102,
+      "delta": 0,
+      "exact": true,
+      "rate_pct": 2.09,
+      "n_pairs": 4892,
+      "paper_headline": null
+    },
+    {
+      "model_id": "deepseek/deepseek-chat",
+      "model_dir": "deepseek-chat",
+      "cotsuite_count": 60,
+      "chainscope_df_count": 60,
+      "delta": 0,
+      "exact": true,
+      "rate_pct": 1.23,
+      "n_pairs": 4892,
+      "paper_headline": null
+    },
+    {
+      "model_id": "anthropic/claude-3.7-sonnet_1k",
+      "model_dir": "claude-3.7-sonnet_1k",
+      "cotsuite_count": 2,
+      "chainscope_df_count": 2,
+      "delta": 0,
+      "exact": true,
+      "rate_pct": 0.04,
+      "n_pairs": 4892,
+      "paper_headline": "0.04%"
+    }
+  ],
+  "blocked_models_oversampled": [
+    "claude-3.6-sonnet",
+    "claude-3.7-sonnet",
+    "claude-3.7-sonnet_64k",
+    "deepseek-r1",
+    "gemini-2.5-pro-preview",
+    "chatgpt-4o-latest",
+    "gpt-4o-2024-08-06"
+  ]
+}

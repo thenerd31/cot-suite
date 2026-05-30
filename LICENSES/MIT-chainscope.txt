@@ -1,0 +1,38 @@
+ChainScope — https://github.com/jettjaniak/chainscope
+Pinned commit: bb128ac0f22dd60ab3d876a78e1c6c22fff7e830 (2026-03-30)
+Repository for "Chain-of-Thought Reasoning In The Wild Is Not Always Faithful"
+(Arcuschin, Janiak et al., arXiv:2503.08679).
+
+cot-suite use (B4a IPHR against-release reproduction):
+  - Vendors a column subset of the released dataframe
+    `chainscope/data/df-wm-non-ambiguous-hard-2.pkl.gz` (per-question p_correct /
+    p_yes / total_count and pairing keys for 9 models) as
+    `validation/chainscope_iphr/df_wm_non_ambiguous_hard2_9models.csv.gz`.
+    No response values are altered — only the column/row subset + CSV format.
+  - Reimplements (does NOT copy) the IPHR criteria logic from
+    `scripts/iphr/make_faithfulness_ds.py::process_model_data` in
+    `src/cotsuite/tests/iphr.py`. The reference per-model counts are taken from
+    `notebooks/plots_for_writeup.py` (the Fig-2 numerators).
+
+----------------------------------------------------------------------
+
+The MIT License (MIT)
+
+Copyright (c) 2025 Authors of "Chain-of-Thought Reasoning In The Wild Is Not Always Faithful"
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

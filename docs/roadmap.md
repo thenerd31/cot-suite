@@ -24,10 +24,19 @@ are method-implementations applied to current models.
   Turpin's *released* `bbh_samples` (commit `035a725`; AUDIT.md Reproduction
   Claims Ledger). Stage B — a **novel** 4-model × 5-task capability curve (NOT a
   paper reproduction) — has executed (commit `d0803b4`).
-- **B4 redux (Arcuschin) — the only against-release reproduction path,
-  PLANNED.** Run cot-suite's IPHR detector on ChainScope's *released* traces and
-  match the paper's per-model cells. The current single-model detector run is an
-  **application**, not a reproduction.
+- **B4a (Arcuschin) — IPHR against-release reproduction — COMPLETE, integer-exact.**
+  cot-suite independently reimplements the three IPHR criteria
+  (`src/cotsuite/tests/iphr.py`) and metric-replays them on ChainScope's released
+  `df-wm-non-ambiguous-hard-2` (@ `bb128ac0`), recovering the paper's per-model
+  counts **±0** for **9 non-oversampled models** (4 of 7 headline cells:
+  gpt-4o-mini 13.49%, claude-3.5-haiku 7.42%, gemini-2.5-flash 2.17%,
+  claude-3.7-sonnet_1k 0.04%). $0 metric-replay. **7 oversampled models blocked**
+  by an unreconstructable adaptive two-pass `--unfaithful-only -n 100` pipeline
+  (pass-1 state absent from the released df — artifact limit, not implementation).
+  Denominator `n_pairs=4892` (figure); paper text says 4,834 (noted).
+- **B4b — PHR × IPHR orthogonality study — optional, NOT a reproduction.** Novel
+  cross-metric overlap between the per-trajectory PHR detector (an application)
+  and IPHR labels; distinct from B4a.
 - **Emmons — from-spec reproduction DEFERRED / optional.** E-Z release only the
   Appendix C prompt (no trajectories, no code, no machine-readable cells), so a
   reproduction must be from-spec: 5 paper models × 4 datasets with

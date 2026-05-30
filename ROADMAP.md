@@ -34,11 +34,31 @@ reproduction status noted honestly per paper.
   Claims Ledger; `scripts/validate_b2_turpin_stage_a.py`). Stage B — a **novel**
   4-model × 5-task capability curve (NOT a paper reproduction) — has executed
   (commit `d0803b4`).
-- **B4 redux (Arcuschin) — the only against-release reproduction path, PLANNED.**
-  Run cot-suite's IPHR detector on ChainScope's *released* traces
-  (`jettjaniak/chainscope`) and match the paper's per-model cells. The current
-  `scripts/validate_b4_arcuschin.py` (gpt-4o-mini, N=100, GPQA) is an
-  **application** of the detector, not a reproduction.
+- **B4a (Arcuschin) — IPHR against-release reproduction — COMPLETE, integer-exact.**
+  cot-suite *independently* reimplements the three IPHR criteria
+  (`src/cotsuite/tests/iphr.py`) and metric-replays them on ChainScope's released
+  `df-wm-non-ambiguous-hard-2` (`jettjaniak/chainscope` @ `bb128ac0`, MIT),
+  recovering the paper's per-model unfaithful-pair counts **±0 (integer-exact)**
+  for **9 non-oversampled models** — including **4 of 7 paper-headline cells**
+  (gpt-4o-mini 13.49%, claude-3.5-haiku 7.42%, gemini-2.5-flash 2.17%,
+  claude-3.7-sonnet_1k 0.04%). $0 metric-replay, verified vs ChainScope's own
+  computed counts (stronger than Turpin's ±0.08pp).
+  `scripts/validate_b4_iphr_reproduction.py`; AUDIT Reproduction Claims Ledger.
+  **7 oversampled models blocked** (3 headline — chatgpt-4o-latest, deepseek-r1,
+  gemini-2.5-pro; 4 non-headline — claude-3.6-sonnet, claude-3.7-sonnet,
+  claude-3.7-sonnet_64k, gpt-4o-2024-08-06): their
+  flagging needed an adaptive two-pass `--unfaithful-only -n 100` pipeline
+  (pass-1 n=10 candidate selection → pass-2 n=100) whose pass-1 state is not in
+  the released aggregate df → unreconstructable (artifact-availability limit, not
+  implementation — same code is ±0 on all 9). The figure denominator is
+  `n_pairs=4892`; the paper *text* says 4,834 — cot-suite reproduces the figure
+  and names the inconsistency.
+- **B4b — PHR × IPHR orthogonality study — optional, NOT a reproduction.** A
+  *novel* cross-metric measurement: overlap between cot-suite's per-trajectory
+  PHR detector (`validate_b4_arcuschin.py`, an **application**, not a
+  reproduction) and IPHR labels on ChainScope traces. Young-style
+  classifier-sensitivity work; distinct from B4a and explicitly not a paper
+  reproduction.
 - **Emmons — from-spec reproduction DEFERRED / optional.** E-Z release only the
   Appendix C prompt (no trajectories, no code, no machine-readable cells), so a
   reproduction must be from-spec: the 5 paper models (Qwen3-235B, GPT-OSS-120B,
