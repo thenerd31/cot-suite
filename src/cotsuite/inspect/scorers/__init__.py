@@ -5,9 +5,11 @@ from cotsuite.inspect.scorers.legibility_coverage import cot_legibility_coverage
 from cotsuite.inspect.scorers.post_hoc_rationalization import (
     cot_post_hoc_rationalization,
 )
+from cotsuite.inspect.scorers.turpin_counterfactual import cot_turpin_counterfactual
 
 __all__ = [
     "cot_chen_cue_injection",
     "cot_legibility_coverage",
     "cot_post_hoc_rationalization",
+    "cot_turpin_counterfactual",
 ]
