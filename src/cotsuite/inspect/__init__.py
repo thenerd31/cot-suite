@@ -12,9 +12,9 @@ or import directly:
     from cotsuite.inspect.scorers import cot_legibility_coverage
 """
 
-# Eager import so each `@scorer(...)` decorator fires and registers
-# into Inspect's registry the moment cotsuite.inspect is imported by
+# Eager import so each `@scorer(...)` / `@solver(...)` decorator fires and
+# registers into Inspect's registry the moment cotsuite.inspect is imported by
 # Inspect's entry-point loader.
-from cotsuite.inspect import scorers  # noqa: F401
+from cotsuite.inspect import scorers, solvers  # noqa: F401
 
-__all__ = ["scorers"]
+__all__ = ["scorers", "solvers"]
