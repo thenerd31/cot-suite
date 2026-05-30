@@ -121,9 +121,23 @@ The validation passes if all three hold:
 - Cross-rater agreement between Haiku 4.5 and Gemini 2.5 Pro. Not
   measured in this project; v0.2.
 - That our scoring scale (0-4) is directly comparable to the paper's
-  percentage headline. The paper uses a 0-4 Likert and the 97.33%
-  figure is the fraction of trajectories scoring ≥ some threshold;
-  our means are on the raw Likert scale.
+  percentage headline. The paper grades each **correct** response 0-4
+  and reports the **normalized mean** — `mean(score) / 4 × 100`,
+  averaged over examples (reported as mean ± SD across **5 autorater
+  runs**); the 97.33% figure is that normalized mean, **not** a fraction
+  of trajectories scoring above a threshold. Our numbers above are raw
+  0-4 Likert means (e.g. 3.48), so comparing to Table 1 would require
+  the same `/ 4 × 100` normalization **and** the paper's full setup
+  (Qwen3-235B, four datasets, Gemini-2.5-Pro rater).
+
+  > Metric verified against the **arXiv:2510.23966v1 PDF** (§5,
+  > "we ... report the normalized (i.e., divided by four) scores averaged
+  > over multiple questions/tasks"; Table 1 caption, "average Legibility
+  > and Coverage scores normalized to a 0–100% scale"; ± = SD across five
+  > autorater runs per the Table 2 caption). An earlier draft of this note
+  > mis-stated the metric as a fraction-above-threshold — corrected
+  > 2026-05-30. (Consistent with `docs/autorater-notes.md`'s "mean ± SD
+  > over 5 runs".)
 
 ---
 
