@@ -27,7 +27,7 @@ result = await early_answering(
     cot="...",
     full_answer="A",
     answer_extractor=...,        # callable: completion → answer letter
-    sentence_splitter=...,       # callable: cot → list[str]; install [nlp] for paper-faithful NLTK punkt
+    sentence_splitter=...,       # callable: cot → list[str]; install [nlp] for Lanham-style NLTK punkt
     sampler=...,                 # async callable: prompt → completion
 )
 # result.aoc — length-weighted AOC scalar

@@ -23,7 +23,7 @@ pip install cot-suite
 Optional extras:
 
 ```bash
-pip install "cot-suite[nlp]"          # + NLTK punkt (Lanham paper-faithful sentence splitting)
+pip install "cot-suite[nlp]"          # + NLTK punkt (Lanham-style sentence splitting)
 pip install "cot-suite[langgraph]"    # + LangGraph middleware
 pip install "cot-suite[activations]"  # + nnsight / TransformerLens (open-weights only)
 ```

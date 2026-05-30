@@ -13,8 +13,10 @@ judges are present. Re-running is resumable — a judge already scored on a
 trajectory is skipped.
 
 Two headlines:
-  1. Reproduction fidelity — Haiku-vs-Gemini kappa (Gemini 2.5 Pro is E-Z's
-     original rater; Haiku 4.5 was cot-suite's substitute).
+  1. Rater-substitution fidelity — Haiku-vs-Gemini kappa: does the Haiku
+     substitute agree with E-Z's Gemini rater (Gemini 2.5 Pro is E-Z's
+     original rater; Haiku 4.5 was cot-suite's substitute)? NOT a
+     reproduction of E-Z's reported cells.
   2. Cross-classifier sensitivity — does switching judge reorder the 8-model
      ranking? (Young 2603.20172.)
 

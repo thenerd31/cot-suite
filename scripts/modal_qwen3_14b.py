@@ -1,5 +1,6 @@
 """Modal app hosting Qwen3-14B on a single H100 for Stage 1 of the
-2510.23966 reproduction pipeline.
+2510.23966 method-implementation pipeline (Stage 1; not a faithful
+reproduction of E-Z's Table-1 cells — see the Stage 1 framing note below).
 
 # Version pins (locked 2026-04-20)
 #   vllm==0.19.1        — PyPI latest stable (pypi.org/pypi/vllm/json, 2026-04-18)

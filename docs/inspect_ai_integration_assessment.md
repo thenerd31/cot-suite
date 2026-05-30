@@ -292,9 +292,9 @@ PR.
   than the agent's pre-research estimate of "2-8 weeks".)
 
 **Recommendation: ship cot-suite v0.1 first, then upstream *one*
-metric (suggest legibility/coverage — already implemented, has the
-tightest reproduction story) as a proof of process, then batch the
-remaining four into 2-3 PRs.** Don't block v0.1 launch on any of
+metric (suggest legibility/coverage — already implemented, the
+cleanest implementation to demonstrate for upstreaming) as a proof of
+process, then batch the remaining four into 2-3 PRs.** Don't block v0.1 launch on any of
 these PRs.
 
 ---

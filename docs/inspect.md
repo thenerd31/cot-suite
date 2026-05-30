@@ -101,7 +101,7 @@ Four more scorers, in priority order:
 | `cot_turpin_counterfactual` | Turpin 2305.04388 | ~12-18h | Solver+Scorer pair (accuracy drop is a cross-sample aggregate) |
 | `cot_chen_cue_injection` | Chen 2505.05410 | ~10-14h | Solver+Scorer pair, same pattern as Turpin |
 
-Confirm the post-2026-05-08 `inspect_evals` registry layout before opening any upstream PR (per `inspect_evals` PR #1538 by Scott-Simmons). The first upstream PR will be legibility/coverage — tightest reproduction story, already implemented end-to-end.
+Confirm the post-2026-05-08 `inspect_evals` registry layout before opening any upstream PR (per `inspect_evals` PR #1538 by Scott-Simmons). The first upstream PR will be legibility/coverage — the cleanest implementation to demonstrate for upstreaming, already implemented end-to-end. (It is not the project's tightest *reproduction* — that is Turpin, cell-for-cell ±0.08pp; the legibility/coverage autorater is a method-implementation, with from-spec E-Z reproduction deferred.)
 
 See [`ROADMAP.md`](https://github.com/thenerd31/cot-suite/blob/main/ROADMAP.md) for v0.2 / v0.2.1+ milestones.
 

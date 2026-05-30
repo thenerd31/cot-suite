@@ -145,8 +145,9 @@ Other v0.2 candidates (no firm commitments yet):
 ### v0.2.1+
 
 - **Open one `inspect_evals` upstream PR** — recommend legibility/coverage
-  first, since it has the tightest reproduction story and is already
-  implemented end-to-end.
+  first, since it is the cleanest implementation to demonstrate for
+  upstreaming (Turpin is the project's tightest *reproduction*; this autorater
+  is a method-implementation) and is already implemented end-to-end.
 - **Use that review feedback** to shape the remaining four metric PRs.
 
 ### v1.0 — Phase 7+ provenance hardening

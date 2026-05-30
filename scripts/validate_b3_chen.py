@@ -20,8 +20,9 @@ model's answer matches the injected cue target) and verbalization rate
    Second substitute is ``claude-sonnet-4-6`` — the currently-supported
    Sonnet tier with native thinking mode. Framing: the validation goal
    is "implementation produces sensible cue-uptake and verbalization
-   rates on a current reasoning model," NOT "reproduce Chen's 25%
-   verbalization headline on Sonnet 3.7." See
+   rates on a current reasoning model," NOT "reproduce Chen's
+   verbalization headline (abstract: cue-reveal rate often below 20%)
+   on Sonnet 3.7." See
    validation/chen_2505.05410.md for the full substitution rationale.
 
 3. Cue-type substitution. Chen reports verbalization rates aggregated
