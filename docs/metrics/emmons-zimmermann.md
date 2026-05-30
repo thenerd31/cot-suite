@@ -9,7 +9,7 @@
 
 A monitorable CoT scores high on both. A legible-but-not-faithful CoT scores high on legibility but low on coverage (the CoT reads cleanly but doesn't actually do the work). An illegible CoT scores low on legibility regardless of what's underneath.
 
-**Module:** `cotsuite.autoraters.legibility_coverage`. Validation status: **Stage 1 reproduction** — full N=198 GPQA-Diamond run on Qwen3-14B with Claude Haiku 4.5 as autorater.
+**Module:** `cotsuite.autoraters.legibility_coverage`. Validation status: **method-implementation + cross-judge validation run** (Qwen3-14B, multi-judge rater panel) — the full N=198 GPQA-Diamond run uses Claude Haiku 4.5 as autorater, extended by the multi-judge cross-judge validation (κ across Haiku/Sonnet/Gemini; see [`AUDIT.md`](https://github.com/thenerd31/cot-suite/blob/main/AUDIT.md)). This is **not** a reproduction of E-Z's Table 1: the paper rates **Qwen3-235B-A22B-Thinking** (not Qwen3-14B) with **Gemini 2.5 Pro** as rater (not Haiku/a multi-judge panel) pooled across **four datasets** (HLE / GPQA-Diamond / ARC-AGI / AIME, not GPQA-Diamond alone), so it does **not** reproduce E-Z's Table-1 cells. From-spec Table-1 reproduction is deferred — see [`ROADMAP.md`](https://github.com/thenerd31/cot-suite/blob/main/ROADMAP.md).
 
 ## The empirical highlight on the v0.1 8-model scaling table
 

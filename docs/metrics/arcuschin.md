@@ -6,7 +6,7 @@
 
 **Module:** `cotsuite.tests.post_hoc_rationalization`.
 
-**B4 GPT-4o-mini reproduction status (v2 normalization):** 4.88% strict-PHR, vs paper's reported ~13% on the same checkpoint. Difference: 8.12pp below paper. Under v1 raw judge output (without v2 normalization), our number was 9.30%, within ±5pp of paper.
+**B4 GPT-4o-mini application/measurement (v2 normalization)** — single-model, **not** run against ChainScope's released data; against-release reproduction = B4 redux, pending (see [`ROADMAP.md`](https://github.com/thenerd31/cot-suite/blob/main/ROADMAP.md)): 4.88% strict-PHR, vs paper's reported ~13% on the same checkpoint. Difference: 8.12pp below paper. Under v1 raw judge output (without v2 normalization), our number was 9.30%, within ±5pp of paper.
 
 The 4.88% figure is computed via the revised normalizer (value-string and content-reference resolution; drops cases where cot_conclusion can't map to A-D even when the case is a real divergence — `forced_choice` flag).
 
