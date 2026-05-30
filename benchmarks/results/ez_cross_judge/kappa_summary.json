@@ -1,0 +1,705 @@
+{
+  "judges_present": [
+    "haiku-4.5",
+    "sonnet-4.6",
+    "gemini-2.5-pro"
+  ],
+  "axes": {
+    "leg": {
+      "n_survivors": 773,
+      "pairwise_kappa": {
+        "haiku-4.5__sonnet-4.6": 0.26440158794749125,
+        "haiku-4.5__gemini-2.5-pro": 0.1910193020138098,
+        "sonnet-4.6__gemini-2.5-pro": 0.34079309498275046
+      },
+      "per_judge_mean": {
+        "haiku-4.5": 3.652,
+        "sonnet-4.6": 3.886,
+        "gemini-2.5-pro": 3.899
+      },
+      "dominant_frac": {
+        "haiku-4.5": 0.717,
+        "sonnet-4.6": 0.887,
+        "gemini-2.5-pro": 0.931
+      }
+    },
+    "cov": {
+      "n_survivors": 773,
+      "pairwise_kappa": {
+        "haiku-4.5__sonnet-4.6": 0.7139408250656423,
+        "haiku-4.5__gemini-2.5-pro": 0.5241965112584075,
+        "sonnet-4.6__gemini-2.5-pro": 0.6917010810730964
+      },
+      "per_judge_mean": {
+        "haiku-4.5": 3.137,
+        "sonnet-4.6": 3.459,
+        "gemini-2.5-pro": 3.589
+      },
+      "dominant_frac": {
+        "haiku-4.5": 0.523,
+        "sonnet-4.6": 0.679,
+        "gemini-2.5-pro": 0.797
+      }
+    }
+  },
+  "per_model": {
+    "leg": {
+      "ds_r1_distill_llama_70b_full": {
+        "n_survivors": 131,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.25972614648989345,
+          "haiku-4.5__gemini-2.5-pro": 0.18415253425313793,
+          "sonnet-4.6__gemini-2.5-pro": 0.3844739530132789
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.595,
+          "sonnet-4.6": 3.87,
+          "gemini-2.5-pro": 3.893
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.649,
+          "sonnet-4.6": 0.87,
+          "gemini-2.5-pro": 0.931
+        }
+      },
+      "ds_r1_distill_qwen_14b_full": {
+        "n_survivors": 109,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.19073512496078637,
+          "haiku-4.5__gemini-2.5-pro": 0.03178049743387301,
+          "sonnet-4.6__gemini-2.5-pro": 0.2118247554232242
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.413,
+          "sonnet-4.6": 3.881,
+          "gemini-2.5-pro": 3.945
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.523,
+          "sonnet-4.6": 0.881,
+          "gemini-2.5-pro": 0.963
+        }
+      },
+      "llama31_8b_instruct_full": {
+        "n_survivors": 51,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.4306220095693779,
+          "haiku-4.5__gemini-2.5-pro": 0.3814303638644918,
+          "sonnet-4.6__gemini-2.5-pro": 0.46063454759106937
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.765,
+          "sonnet-4.6": 3.745,
+          "gemini-2.5-pro": 3.745
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.882,
+          "sonnet-4.6": 0.765,
+          "gemini-2.5-pro": 0.863
+        }
+      },
+      "qwen25_72b_instruct_full": {
+        "n_survivors": 83,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": -0.01965601965601982,
+          "haiku-4.5__gemini-2.5-pro": -0.012195121951219523,
+          "sonnet-4.6__gemini-2.5-pro": 0.42600276625172895
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.988,
+          "sonnet-4.6": 3.952,
+          "gemini-2.5-pro": 3.964
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.988,
+          "sonnet-4.6": 0.952,
+          "gemini-2.5-pro": 0.976
+        }
+      },
+      "qwen25_7b_instruct_full": {
+        "n_survivors": 54,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.3305785123966942,
+          "haiku-4.5__gemini-2.5-pro": -0.054054054054053946,
+          "sonnet-4.6__gemini-2.5-pro": 0.28712871287128705
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.889,
+          "sonnet-4.6": 3.87,
+          "gemini-2.5-pro": 3.944
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.907,
+          "sonnet-4.6": 0.87,
+          "gemini-2.5-pro": 0.963
+        }
+      },
+      "qwen3_14b_gpqa_full": {
+        "n_survivors": 119,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.2521482621521097,
+          "haiku-4.5__gemini-2.5-pro": -0.016582914572864427,
+          "sonnet-4.6__gemini-2.5-pro": 0.10313367711225696
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.605,
+          "sonnet-4.6": 3.899,
+          "gemini-2.5-pro": 3.924
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.672,
+          "sonnet-4.6": 0.899,
+          "gemini-2.5-pro": 0.933
+        }
+      },
+      "qwen3_32b_gpqa_full": {
+        "n_survivors": 122,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.20150733835779455,
+          "haiku-4.5__gemini-2.5-pro": 0.17814371257485018,
+          "sonnet-4.6__gemini-2.5-pro": 0.31600407747196746
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.738,
+          "sonnet-4.6": 3.943,
+          "gemini-2.5-pro": 3.934
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.762,
+          "sonnet-4.6": 0.943,
+          "gemini-2.5-pro": 0.943
+        }
+      },
+      "qwen3_8b_gpqa_full": {
+        "n_survivors": 104,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.28232445520581106,
+          "haiku-4.5__gemini-2.5-pro": 0.4114793856103477,
+          "sonnet-4.6__gemini-2.5-pro": 0.3355317394888705
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.481,
+          "sonnet-4.6": 3.856,
+          "gemini-2.5-pro": 3.788
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.606,
+          "sonnet-4.6": 0.856,
+          "gemini-2.5-pro": 0.865
+        }
+      }
+    },
+    "cov": {
+      "ds_r1_distill_llama_70b_full": {
+        "n_survivors": 131,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.7586093935547276,
+          "haiku-4.5__gemini-2.5-pro": 0.47007347477916284,
+          "sonnet-4.6__gemini-2.5-pro": 0.6292247072534547
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.305,
+          "sonnet-4.6": 3.557,
+          "gemini-2.5-pro": 3.763
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.557,
+          "sonnet-4.6": 0.71,
+          "gemini-2.5-pro": 0.87
+        }
+      },
+      "ds_r1_distill_qwen_14b_full": {
+        "n_survivors": 109,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.6729844278298966,
+          "haiku-4.5__gemini-2.5-pro": 0.35364430125601154,
+          "sonnet-4.6__gemini-2.5-pro": 0.660605305766596
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.11,
+          "sonnet-4.6": 3.431,
+          "gemini-2.5-pro": 3.688
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.45,
+          "sonnet-4.6": 0.642,
+          "gemini-2.5-pro": 0.835
+        }
+      },
+      "llama31_8b_instruct_full": {
+        "n_survivors": 51,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.5905565383045313,
+          "haiku-4.5__gemini-2.5-pro": 0.44252675181221957,
+          "sonnet-4.6__gemini-2.5-pro": 0.6810007818608288
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 1.98,
+          "sonnet-4.6": 2.549,
+          "gemini-2.5-pro": 2.706
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.451,
+          "sonnet-4.6": 0.333,
+          "gemini-2.5-pro": 0.431
+        }
+      },
+      "qwen25_72b_instruct_full": {
+        "n_survivors": 83,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.6852085967130215,
+          "haiku-4.5__gemini-2.5-pro": 0.48857907512292276,
+          "sonnet-4.6__gemini-2.5-pro": 0.5900144387871419
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 2.988,
+          "sonnet-4.6": 3.301,
+          "gemini-2.5-pro": 3.289
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.482,
+          "sonnet-4.6": 0.602,
+          "gemini-2.5-pro": 0.602
+        }
+      },
+      "qwen25_7b_instruct_full": {
+        "n_survivors": 54,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.5714285714285714,
+          "haiku-4.5__gemini-2.5-pro": 0.5373608903020668,
+          "sonnet-4.6__gemini-2.5-pro": 0.6384180790960452
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 2.222,
+          "sonnet-4.6": 2.833,
+          "gemini-2.5-pro": 2.722
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.444,
+          "sonnet-4.6": 0.389,
+          "gemini-2.5-pro": 0.5
+        }
+      },
+      "qwen3_14b_gpqa_full": {
+        "n_survivors": 119,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.6965489884966283,
+          "haiku-4.5__gemini-2.5-pro": 0.3672062174954712,
+          "sonnet-4.6__gemini-2.5-pro": 0.603680981595092
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.42,
+          "sonnet-4.6": 3.647,
+          "gemini-2.5-pro": 3.832
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.622,
+          "sonnet-4.6": 0.748,
+          "gemini-2.5-pro": 0.908
+        }
+      },
+      "qwen3_32b_gpqa_full": {
+        "n_survivors": 122,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.6447663132746007,
+          "haiku-4.5__gemini-2.5-pro": 0.3549848942598187,
+          "sonnet-4.6__gemini-2.5-pro": 0.5979435802794622
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.59,
+          "sonnet-4.6": 3.828,
+          "gemini-2.5-pro": 3.885
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.73,
+          "sonnet-4.6": 0.885,
+          "gemini-2.5-pro": 0.943
+        }
+      },
+      "qwen3_8b_gpqa_full": {
+        "n_survivors": 104,
+        "pairwise_kappa": {
+          "haiku-4.5__sonnet-4.6": 0.6557534906114588,
+          "haiku-4.5__gemini-2.5-pro": 0.3906508725003184,
+          "sonnet-4.6__gemini-2.5-pro": 0.636432350718065
+        },
+        "per_judge_mean": {
+          "haiku-4.5": 3.26,
+          "sonnet-4.6": 3.615,
+          "gemini-2.5-pro": 3.76
+        },
+        "dominant_frac": {
+          "haiku-4.5": 0.538,
+          "sonnet-4.6": 0.76,
+          "gemini-2.5-pro": 0.856
+        }
+      }
+    }
+  },
+  "ranking_reversal": {
+    "leg": {
+      "per_judge_model_means": {
+        "haiku-4.5": {
+          "ds_r1_distill_llama_70b_full": 3.591,
+          "ds_r1_distill_qwen_14b_full": 3.414,
+          "llama31_8b_instruct_full": 3.769,
+          "qwen25_72b_instruct_full": 3.988,
+          "qwen25_7b_instruct_full": 3.891,
+          "qwen3_14b_gpqa_full": 3.608,
+          "qwen3_32b_gpqa_full": 3.734,
+          "qwen3_8b_gpqa_full": 3.477
+        },
+        "sonnet-4.6": {
+          "ds_r1_distill_llama_70b_full": 3.87,
+          "ds_r1_distill_qwen_14b_full": 3.881,
+          "llama31_8b_instruct_full": 3.745,
+          "qwen25_72b_instruct_full": 3.952,
+          "qwen25_7b_instruct_full": 3.87,
+          "qwen3_14b_gpqa_full": 3.899,
+          "qwen3_32b_gpqa_full": 3.943,
+          "qwen3_8b_gpqa_full": 3.856
+        },
+        "gemini-2.5-pro": {
+          "ds_r1_distill_llama_70b_full": 3.894,
+          "ds_r1_distill_qwen_14b_full": 3.946,
+          "llama31_8b_instruct_full": 3.75,
+          "qwen25_72b_instruct_full": 3.964,
+          "qwen25_7b_instruct_full": 3.945,
+          "qwen3_14b_gpqa_full": 3.925,
+          "qwen3_32b_gpqa_full": 3.927,
+          "qwen3_8b_gpqa_full": 3.785
+        }
+      },
+      "summary": [
+        "judges 'haiku-4.5' vs 'sonnet-4.6': 10 of 28 comparable subject-pairs rank-reversed (36%)",
+        "judges 'haiku-4.5' vs 'gemini-2.5-pro': 10 of 28 comparable subject-pairs rank-reversed (36%)",
+        "judges 'sonnet-4.6' vs 'gemini-2.5-pro': 4 of 28 comparable subject-pairs rank-reversed (14%)"
+      ],
+      "n_reversals": 24,
+      "reversals": [
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "ds_r1_distill_llama_70b_full",
+          "subject_y": "ds_r1_distill_qwen_14b_full",
+          "a_x": 3.590909090909091,
+          "a_y": 3.4144144144144146,
+          "b_x": 3.8702290076335877,
+          "b_y": 3.8807339449541285
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "ds_r1_distill_llama_70b_full",
+          "subject_y": "llama31_8b_instruct_full",
+          "a_x": 3.590909090909091,
+          "a_y": 3.769230769230769,
+          "b_x": 3.8702290076335877,
+          "b_y": 3.7450980392156863
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "llama31_8b_instruct_full",
+          "a_x": 3.4144144144144146,
+          "a_y": 3.769230769230769,
+          "b_x": 3.8807339449541285,
+          "b_y": 3.7450980392156863
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "qwen25_7b_instruct_full",
+          "a_x": 3.4144144144144146,
+          "a_y": 3.890909090909091,
+          "b_x": 3.8807339449541285,
+          "b_y": 3.8703703703703702
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "qwen3_8b_gpqa_full",
+          "a_x": 3.4144144144144146,
+          "a_y": 3.4766355140186915,
+          "b_x": 3.8807339449541285,
+          "b_y": 3.855769230769231
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "llama31_8b_instruct_full",
+          "subject_y": "qwen3_14b_gpqa_full",
+          "a_x": 3.769230769230769,
+          "a_y": 3.6083333333333334,
+          "b_x": 3.7450980392156863,
+          "b_y": 3.899159663865546
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "llama31_8b_instruct_full",
+          "subject_y": "qwen3_32b_gpqa_full",
+          "a_x": 3.769230769230769,
+          "a_y": 3.7338709677419355,
+          "b_x": 3.7450980392156863,
+          "b_y": 3.942622950819672
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "llama31_8b_instruct_full",
+          "subject_y": "qwen3_8b_gpqa_full",
+          "a_x": 3.769230769230769,
+          "a_y": 3.4766355140186915,
+          "b_x": 3.7450980392156863,
+          "b_y": 3.855769230769231
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "qwen25_7b_instruct_full",
+          "subject_y": "qwen3_14b_gpqa_full",
+          "a_x": 3.890909090909091,
+          "a_y": 3.6083333333333334,
+          "b_x": 3.8703703703703702,
+          "b_y": 3.899159663865546
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "qwen25_7b_instruct_full",
+          "subject_y": "qwen3_32b_gpqa_full",
+          "a_x": 3.890909090909091,
+          "a_y": 3.7338709677419355,
+          "b_x": 3.8703703703703702,
+          "b_y": 3.942622950819672
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_llama_70b_full",
+          "subject_y": "ds_r1_distill_qwen_14b_full",
+          "a_x": 3.590909090909091,
+          "a_y": 3.4144144144144146,
+          "b_x": 3.893939393939394,
+          "b_y": 3.945945945945946
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_llama_70b_full",
+          "subject_y": "llama31_8b_instruct_full",
+          "a_x": 3.590909090909091,
+          "a_y": 3.769230769230769,
+          "b_x": 3.893939393939394,
+          "b_y": 3.75
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "llama31_8b_instruct_full",
+          "a_x": 3.4144144144144146,
+          "a_y": 3.769230769230769,
+          "b_x": 3.945945945945946,
+          "b_y": 3.75
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "qwen25_7b_instruct_full",
+          "a_x": 3.4144144144144146,
+          "a_y": 3.890909090909091,
+          "b_x": 3.945945945945946,
+          "b_y": 3.9454545454545453
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "qwen3_14b_gpqa_full",
+          "a_x": 3.4144144144144146,
+          "a_y": 3.6083333333333334,
+          "b_x": 3.945945945945946,
+          "b_y": 3.925
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "qwen3_32b_gpqa_full",
+          "a_x": 3.4144144144144146,
+          "a_y": 3.7338709677419355,
+          "b_x": 3.945945945945946,
+          "b_y": 3.9274193548387095
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "qwen3_8b_gpqa_full",
+          "a_x": 3.4144144144144146,
+          "a_y": 3.4766355140186915,
+          "b_x": 3.945945945945946,
+          "b_y": 3.7850467289719627
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "llama31_8b_instruct_full",
+          "subject_y": "qwen3_14b_gpqa_full",
+          "a_x": 3.769230769230769,
+          "a_y": 3.6083333333333334,
+          "b_x": 3.75,
+          "b_y": 3.925
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "llama31_8b_instruct_full",
+          "subject_y": "qwen3_32b_gpqa_full",
+          "a_x": 3.769230769230769,
+          "a_y": 3.7338709677419355,
+          "b_x": 3.75,
+          "b_y": 3.9274193548387095
+        },
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "llama31_8b_instruct_full",
+          "subject_y": "qwen3_8b_gpqa_full",
+          "a_x": 3.769230769230769,
+          "a_y": 3.4766355140186915,
+          "b_x": 3.75,
+          "b_y": 3.7850467289719627
+        },
+        {
+          "judge_a": "sonnet-4.6",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "qwen3_14b_gpqa_full",
+          "a_x": 3.8807339449541285,
+          "a_y": 3.899159663865546,
+          "b_x": 3.945945945945946,
+          "b_y": 3.925
+        },
+        {
+          "judge_a": "sonnet-4.6",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_qwen_14b_full",
+          "subject_y": "qwen3_32b_gpqa_full",
+          "a_x": 3.8807339449541285,
+          "a_y": 3.942622950819672,
+          "b_x": 3.945945945945946,
+          "b_y": 3.9274193548387095
+        },
+        {
+          "judge_a": "sonnet-4.6",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "qwen25_7b_instruct_full",
+          "subject_y": "qwen3_14b_gpqa_full",
+          "a_x": 3.8703703703703702,
+          "a_y": 3.899159663865546,
+          "b_x": 3.9454545454545453,
+          "b_y": 3.925
+        },
+        {
+          "judge_a": "sonnet-4.6",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "qwen25_7b_instruct_full",
+          "subject_y": "qwen3_32b_gpqa_full",
+          "a_x": 3.8703703703703702,
+          "a_y": 3.942622950819672,
+          "b_x": 3.9454545454545453,
+          "b_y": 3.9274193548387095
+        }
+      ]
+    },
+    "cov": {
+      "per_judge_model_means": {
+        "haiku-4.5": {
+          "ds_r1_distill_llama_70b_full": 3.303,
+          "ds_r1_distill_qwen_14b_full": 3.126,
+          "llama31_8b_instruct_full": 1.962,
+          "qwen25_72b_instruct_full": 2.976,
+          "qwen25_7b_instruct_full": 2.218,
+          "qwen3_14b_gpqa_full": 3.417,
+          "qwen3_32b_gpqa_full": 3.573,
+          "qwen3_8b_gpqa_full": 3.243
+        },
+        "sonnet-4.6": {
+          "ds_r1_distill_llama_70b_full": 3.557,
+          "ds_r1_distill_qwen_14b_full": 3.431,
+          "llama31_8b_instruct_full": 2.549,
+          "qwen25_72b_instruct_full": 3.301,
+          "qwen25_7b_instruct_full": 2.833,
+          "qwen3_14b_gpqa_full": 3.647,
+          "qwen3_32b_gpqa_full": 3.828,
+          "qwen3_8b_gpqa_full": 3.615
+        },
+        "gemini-2.5-pro": {
+          "ds_r1_distill_llama_70b_full": 3.765,
+          "ds_r1_distill_qwen_14b_full": 3.694,
+          "llama31_8b_instruct_full": 2.654,
+          "qwen25_72b_instruct_full": 3.274,
+          "qwen25_7b_instruct_full": 2.709,
+          "qwen3_14b_gpqa_full": 3.833,
+          "qwen3_32b_gpqa_full": 3.871,
+          "qwen3_8b_gpqa_full": 3.748
+        }
+      },
+      "summary": [
+        "judges 'haiku-4.5' vs 'sonnet-4.6': 1 of 28 comparable subject-pairs rank-reversed (4%)",
+        "judges 'sonnet-4.6' vs 'gemini-2.5-pro': 1 of 28 comparable subject-pairs rank-reversed (4%)"
+      ],
+      "n_reversals": 2,
+      "reversals": [
+        {
+          "judge_a": "haiku-4.5",
+          "judge_b": "sonnet-4.6",
+          "subject_x": "ds_r1_distill_llama_70b_full",
+          "subject_y": "qwen3_8b_gpqa_full",
+          "a_x": 3.303030303030303,
+          "a_y": 3.2429906542056073,
+          "b_x": 3.5572519083969465,
+          "b_y": 3.6153846153846154
+        },
+        {
+          "judge_a": "sonnet-4.6",
+          "judge_b": "gemini-2.5-pro",
+          "subject_x": "ds_r1_distill_llama_70b_full",
+          "subject_y": "qwen3_8b_gpqa_full",
+          "a_x": 3.5572519083969465,
+          "a_y": 3.6153846153846154,
+          "b_x": 3.765151515151515,
+          "b_y": 3.7476635514018692
+        }
+      ]
+    }
+  },
+  "fidelity_haiku_vs_gemini": {
+    "leg": 0.1910193020138098,
+    "cov": 0.5241965112584075
+  },
+  "meta": {
+    "n_records": 785,
+    "prompt_version": "emmons_zimmermann_v1",
+    "prompt_sha256": "ac1e0ac4044b0a64816bc3c4424e547a462e64d18cf0f5555dec7ed5b42aaa67",
+    "num_categories": 5,
+    "max_tokens": {
+      "gpt-4o": 2048,
+      "sonnet-4.6": 2048,
+      "gemini-2.5-pro": 8192
+    },
+    "mcq_prompt_reconstruction": "Phase-A verified (question_text byte-match + correct-letter, 24/24)",
+    "parse_fail_rate": {
+      "sonnet-4.6": 0.0153,
+      "gemini-2.5-pro": 0.0
+    },
+    "gpt_4o_pending": true
+  }
+}

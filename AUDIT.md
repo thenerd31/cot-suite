@@ -664,3 +664,40 @@ v0.1 problem.
   classification correctness but didn't cover whether-to-classify-
   at-all. Manual case adjudication on the 6 dropped cases per model
   surfaced the over-aggression that no automated check caught.
+
+## E-Z cross-judge validation (Phase 6)
+
+Cross-classifier quadratic-weighted Cohen's κ on the 785 committed Haiku-rated
+GPQA-Diamond autorater trajectories (Emmons & Zimmermann 2510.23966
+legibility+coverage), re-scoring through additional judges on the byte-identical
+Appendix C prompt (SHA `ac1e0ac4…`) + the reconstructed `mcq_prompt` Haiku was
+scored on. `scripts/ez_cross_judge.py`; `benchmarks/results/ez_cross_judge/`;
+`num_categories=5`; κ via `cotsuite.judges`. `mcq_prompt` reconstruction is
+Phase-A verified (question_text byte-match + correct-letter, 24/24). This is a
+validation study, not a paper-cell reproduction — no Reproduction Claims Ledger row.
+
+**B1 — three judges: Haiku 4.5 (committed) + Sonnet 4.6 + Gemini 2.5 Pro.**
+gpt-4o (B2) pending OpenAI Tier-2 (30k-TPM throttle). Pooled over **773/785**
+all-three-parsed survivors; parse-fail: Sonnet 1.53%, Gemini 0.0%.
+
+| pair | legibility κ | coverage κ |
+|---|--:|--:|
+| Haiku ↔ Sonnet | 0.264 | 0.714 |
+| **Haiku ↔ Gemini** (fidelity) | **0.191** | **0.524** |
+| Sonnet ↔ Gemini | 0.341 | 0.692 |
+
+- **Reproduction fidelity (Haiku vs Gemini = E-Z's original rater):** *moderate*
+  on **coverage (κ=0.52)**; *low* on **legibility (κ=0.19)** — but legibility is
+  **near-ceiling/degenerate** (dominant category = 72% Haiku / 89% Sonnet / 93%
+  Gemini, all above the 0.70 degeneracy threshold), so its κ is statistically
+  unstable (no variance to agree on), not genuine disagreement. Coverage
+  (dominant 52–80%) is the discriminating axis.
+- **Cross-classifier sensitivity (model-ranking reversal, 8 models):** coverage
+  rankings are **stable** (Haiku↔Gemini 0 reversals, others ≤4%); legibility
+  rankings reverse heavily (Haiku↔Sonnet & Haiku↔Gemini 36%) — again an artifact
+  of the legibility ceiling, not substantive disagreement.
+- **Read:** on the axis with real signal (coverage), the Haiku substitute
+  *moderately* matches Gemini and the 8-model ordering is judge-stable — a
+  partial validation of the committed Haiku numbers. Legibility saturates across
+  all judges on GPQA CoTs, making it uninformative for κ/ranking here. Full
+  four-judge matrix recomputes when the gpt-4o leg (B2) appends.

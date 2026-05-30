@@ -20,15 +20,18 @@ class GraderClient(Protocol):
 @dataclass
 class GeminiClient:
     model: str
+    max_tokens: int = 1024
 
     async def complete(self, prompt: str) -> str:
         from google import genai  # type: ignore[import-not-found]
+        from google.genai import types  # type: ignore[import-not-found]
 
         client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
         # google-genai exposes sync + async; favour async when available.
         response = await client.aio.models.generate_content(
             model=self.model,
             contents=prompt,
+            config=types.GenerateContentConfig(max_output_tokens=self.max_tokens),
         )
         return response.text or ""
 
@@ -36,6 +39,7 @@ class GeminiClient:
 @dataclass
 class AnthropicClient:
     model: str
+    max_tokens: int = 1024
 
     async def complete(self, prompt: str) -> str:
         import anthropic
@@ -43,7 +47,7 @@ class AnthropicClient:
         client = anthropic.AsyncAnthropic()
         response = await client.messages.create(
             model=self.model,
-            max_tokens=1024,
+            max_tokens=self.max_tokens,
             messages=[{"role": "user", "content": prompt}],
         )
         parts = [b.text for b in response.content if getattr(b, "type", None) == "text"]
@@ -53,6 +57,7 @@ class AnthropicClient:
 @dataclass
 class OpenAIClient:
     model: str
+    max_tokens: int = 1024
 
     async def complete(self, prompt: str) -> str:
         from openai import AsyncOpenAI
@@ -61,7 +66,7 @@ class OpenAIClient:
         response = await client.chat.completions.create(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=1024,
+            max_tokens=self.max_tokens,
         )
         return response.choices[0].message.content or ""
 
@@ -92,6 +97,7 @@ class OpenAICompatibleClient:
     model: str
     base_url: str
     env_key: str
+    max_tokens: int = 1024
 
     async def complete(self, prompt: str) -> str:
         from openai import AsyncOpenAI
@@ -100,12 +106,12 @@ class OpenAICompatibleClient:
         response = await client.chat.completions.create(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=1024,
+            max_tokens=self.max_tokens,
         )
         return response.choices[0].message.content or ""
 
 
-def get_grader_client(spec: str) -> GraderClient:
+def get_grader_client(spec: str, *, max_tokens: int = 1024) -> GraderClient:
     """Parse `provider/model` and return an async client.
 
     Examples:
@@ -121,13 +127,15 @@ def get_grader_client(spec: str) -> GraderClient:
     provider, name = spec.split("/", 1)
     match provider:
         case "google" | "gemini":
-            return GeminiClient(model=name)
+            return GeminiClient(model=name, max_tokens=max_tokens)
         case "anthropic":
-            return AnthropicClient(model=name)
+            return AnthropicClient(model=name, max_tokens=max_tokens)
         case "openai":
-            return OpenAIClient(model=name)
+            return OpenAIClient(model=name, max_tokens=max_tokens)
         case _ if provider in OPENAI_COMPATIBLE_PROVIDERS:
             base_url, env_key = OPENAI_COMPATIBLE_PROVIDERS[provider]
-            return OpenAICompatibleClient(model=name, base_url=base_url, env_key=env_key)
+            return OpenAICompatibleClient(
+                model=name, base_url=base_url, env_key=env_key, max_tokens=max_tokens
+            )
         case _:
             raise ValueError(f"unknown provider {provider!r} (got spec {spec!r})")
