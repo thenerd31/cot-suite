@@ -65,11 +65,11 @@ print(f"Retention curve: {aoc_result.per_fraction}")
 
 ## Roadmap to Inspect AI (task/solver — NOT scorer)
 
-The 4-test suite does **not** map to Inspect's `Scorer` abstraction (Stage-0 recon, 2026-05-30): each test is a mid-trajectory intervention + per-item AOC computed via N re-elicitations of the model-under-test, which does not fit `score(state, target)`. v0.2 ports them as Inspect **tasks/solvers** instead (the abstraction is a decision gate, and this is the hardest of the v0.2 ports — built last, after Chen and Turpin):
+The 4-test suite does **not** map to Inspect's `Scorer` abstraction (Stage-0 recon, 2026-05-30): each test is a mid-trajectory intervention + per-item AOC computed via N re-elicitations of the model-under-test, which does not fit `score(state, target)`. They are ported as Inspect **tasks/solvers** instead:
 
-- early-answering (truncate the CoT at each prefix fraction + re-elicit)
-- mistake-injection (corrupt each sentence + re-elicit; needs a 2nd generator model)
-- paraphrasing
-- filler-tokens (filler-length sweep)
+- **`early_answering`** — ✅ **shipped** as an Inspect task (the Lanham POC): `cot_lanham_early_answering` solver (truncate the CoT at each prefix fraction + re-elicit the model-under-test, reusing the native `@register_test` fn) + the thin `cot_lanham_early_answering_aoc` scorer. Single model.
+- `mistake_injection` — ⏳ v0.2 (corrupt each sentence + re-elicit; **needs a 2nd model role** — the mistake generator).
+- `paraphrasing` — ⏳ v0.2 (**needs a 2nd model role** — the paraphraser).
+- `filler_tokens` — ⏳ v0.2 (filler-length sweep; single model).
 
-See [Inspect AI integration](../inspect.md) for v0.1 status and v0.2 milestones.
+See [Inspect AI integration](../inspect.md) for status and milestones.

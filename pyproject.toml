@@ -145,9 +145,9 @@ convention = "google"
 # D-rule strictness is scoped to the v0.1 *public API surface* — the
 # same modules that get strict mypy treatment in [[tool.mypy.overrides]]:
 # top-level cotsuite, inspect/, inspect/scorers/{legibility_coverage,
-# post_hoc_rationalization, chen_cue_injection, turpin_counterfactual},
-# inspect/solvers/{cue_injection, bias_injection},
-# autoraters/legibility_coverage, core/trajectory.
+# post_hoc_rationalization, chen_cue_injection, turpin_counterfactual,
+# lanham_early_answering}, inspect/solvers/{cue_injection, bias_injection,
+# lanham_early_answering}, autoraters/legibility_coverage, core/trajectory.
 # Everything else is internal scaffolding and gets function/class-level
 # docstring-rule exemption (module-level D100 is still enforced).
 "src/cotsuite/cli.py" = ["D101", "D102", "D103", "D105", "D107"]
@@ -200,9 +200,11 @@ module = [
   "cotsuite.inspect.scorers.post_hoc_rationalization",
   "cotsuite.inspect.scorers.chen_cue_injection",
   "cotsuite.inspect.scorers.turpin_counterfactual",
+  "cotsuite.inspect.scorers.lanham_early_answering",
   "cotsuite.inspect.solvers",
   "cotsuite.inspect.solvers.cue_injection",
   "cotsuite.inspect.solvers.bias_injection",
+  "cotsuite.inspect.solvers.lanham_early_answering",
   "cotsuite.autoraters.legibility_coverage",
   "cotsuite.core.trajectory",
 ]

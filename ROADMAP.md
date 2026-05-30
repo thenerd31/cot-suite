@@ -237,16 +237,21 @@ retained so existing cross-references and the docs-site roadmap
 
 ### v0.2 — Phase 6 integration (4-6 weeks post-launch)
 
-Port the remaining methods to Inspect **in their correct abstraction** — the
-Stage-0 scorer recon (2026-05-30) confirmed not all fit `Scorer`:
+The remaining methods are ported to Inspect **in their correct abstraction** — the
+Stage-0 scorer recon (2026-05-30) confirmed not all fit `Scorer`. Status:
 
-| Method | Paper | Inspect abstraction | Notes |
+| Method | Paper | Inspect abstraction | Status |
 |---|---|---|---|
-| Chen cue-injection | Chen 2505.05410 | **Solver + Scorer** | Solver injects the cue; scorer judges cue-follow + verbalization (per-sample → `mean()`). Multi-judge (`judges: list[str]`) from the start — verbalization judge is the Young-motivated cross-classifier point. |
-| Turpin counterfactual | Turpin 2305.04388 | **Solver + Scorer** | Same pattern; scorer captures the per-sample verbalization / bias-follow signal only. `accuracy_drop` stays **dataset-level** (the ±0.08pp-validated B2 path), **not** a `Score` — it's a paired-arm diff (baseline − biased), not per-trajectory. |
-| Lanham (4 tests) | Lanham 2307.13702 | **Task / Solver — NOT Scorer** | Mid-trajectory interventions + per-item AOC via N re-elicitations of the model-under-test (truncate-and-re-elicit / corrupt-and-re-elicit / filler-sweep) — don't fit `score(state, target)`. mistake-injection also needs a 2nd generator model. Abstraction is a decision gate. |
+| Chen cue-injection | Chen 2505.05410 | **Solver + Scorer** | ✅ shipped — `cot_chen_cue_injection` + `cot_cue_injection_solver` (per-sample cue-follow + verbalization; multi-judge from the start). |
+| Turpin counterfactual | Turpin 2305.04388 | **Solver + Scorer** | ✅ shipped — `cot_turpin_counterfactual` + `cot_bias_injection_solver` (per-sample bias-follow + verbalization). `accuracy_drop` stays **dataset-level** (the ±0.08pp-validated B2 path), **not** a `Score`. |
+| Lanham `early_answering` | Lanham 2307.13702 §3.1 | **Task / Solver — NOT Scorer** | ✅ shipped (POC) — `cot_lanham_early_answering` solver (re-elicits the model-under-test at CoT-prefix fractions; reuses the native `@register_test` fn) + thin `cot_lanham_early_answering_aoc` scorer. Single model. |
+| Lanham `mistake_injection` | Lanham §3.2 | **Task / Solver** | ⏳ v0.2 — needs a **2nd model role** (mistake generator). |
+| Lanham `paraphrasing` | Lanham §3.3 | **Task / Solver** | ⏳ v0.2 — needs a **2nd model role** (paraphraser). |
+| Lanham `filler_tokens` | Lanham §3.4 | **Task / Solver** | ⏳ v0.2 (single model). |
 
-Build order: Chen → Turpin → Lanham (easiest → hardest; Lanham gated on the abstraction choice).
+Build order (done): Chen → Turpin → Lanham `early_answering` (POC, proving Lanham
+is Inspect-native). Remaining: the three Lanham interventions above
+(`mistake_injection` / `paraphrasing` each need a second model role).
 
 Plus the Phase 6 monitorability integration: OpenAI monitorability-evals
 interop (g-mean² + cross-fit filter + three archetypes), the MonitorBench

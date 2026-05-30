@@ -58,6 +58,6 @@ inspect eval some_task.py --scorer cotsuite/cot_legibility_coverage
 
 ## Status
 
-Pre-alpha. v0.1 launch targets mid-May 2026. v0.2 (Turpin/Chen Inspect scorers + injection solvers; Lanham as Inspect tasks/solvers — *not* scorers) follows 4-6 weeks after launch — see [roadmap](roadmap.md).
+Pre-alpha. v0.1 launch targets mid-May 2026. The Chen/Turpin Inspect scorers (+ injection solvers) and the Lanham `early_answering` Inspect task are implemented; v0.2 adds the remaining three Lanham interventions (`mistake_injection`, `paraphrasing`, `filler_tokens`) — see [roadmap](roadmap.md).
 
 [Source on GitHub](https://github.com/thenerd31/cot-suite){.md-button} [PyPI](https://pypi.org/project/cot-suite/){.md-button}
