@@ -2,7 +2,7 @@
 
 A unified Python library for **chain-of-thought monitorability and faithfulness** on reasoning-model agents.
 
-`cot-suite` operationalizes five published evaluations as scorers under a single CLI: Lanham 2307.13702, Turpin 2305.04388, Chen 2505.05410, Arcuschin 2503.08679, and Emmons & Zimmermann 2510.23966. The v0.1 release ships an 8-model open-weight scaling demonstration on GPQA-Diamond.
+`cot-suite` operationalizes five published evaluations under a single CLI, each through its correct Inspect-AI abstraction — scorers for the per-trajectory/judge methods, solvers/tasks for the interventions (not all are scorers): Lanham 2307.13702, Turpin 2305.04388, Chen 2505.05410, Arcuschin 2503.08679, and Emmons & Zimmermann 2510.23966. The v0.1 release ships an 8-model open-weight scaling demonstration on GPQA-Diamond.
 
 ## 30-second value prop
 
@@ -58,6 +58,6 @@ inspect eval some_task.py --scorer cotsuite/cot_legibility_coverage
 
 ## Status
 
-Pre-alpha. v0.1 launch targets mid-May 2026. v0.2 (Lanham/Turpin/Chen Inspect scorers) follows 4-6 weeks after launch — see [roadmap](roadmap.md).
+Pre-alpha. v0.1 launch targets mid-May 2026. v0.2 (Turpin/Chen Inspect scorers + injection solvers; Lanham as Inspect tasks/solvers — *not* scorers) follows 4-6 weeks after launch — see [roadmap](roadmap.md).
 
 [Source on GitHub](https://github.com/thenerd31/cot-suite){.md-button} [PyPI](https://pypi.org/project/cot-suite/){.md-button}

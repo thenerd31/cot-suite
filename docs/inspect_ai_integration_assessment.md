@@ -35,6 +35,17 @@ plus wire model calls through `inspect_ai.model.get_model(role="grader")`
 instead of our `GraderClient`". Tests + a basic Inspect smoke task
 included.
 
+> **Partially superseded by the Stage-0 scorer recon (2026-05-30).** That recon
+> reclassified **Lanham as an Inspect task/solver, NOT a `Scorer`**: its tests are
+> mid-trajectory interventions + per-item AOC computed via N re-elicitations of the
+> *model-under-test*, which fit a task/solver better than `score(state, target)`
+> (a scorer *can* call models N times, but that re-runs the model under test, not a
+> grader — an idiom mismatch). It also set the v0.2 build order to
+> **Chen → Turpin → Lanham** (easiest → hardest) and confirmed Turpin's
+> `accuracy_drop` stays a **dataset-level** metric, not a `Score`. The fit/hours
+> below are the earlier (more optimistic) estimate; treat the README / ROADMAP
+> framing as authoritative.
+
 | Metric | Current shape | Inspect fit | Hours |
 |---|---|---|---|
 | **Lanham early-answering** (`src/cotsuite/tests/lanham/early_answering.py`) | per-trajectory async fn; takes `cot` string + `question` + `answer_extractor`; emits `TestResult` with `aoc` + `per_fraction` | Clean. Per-sample. The N internal `client.complete` calls become N `grader.generate` calls. AOC reduces to a single `Score.value` with `aoc` and `per_fraction` in metadata. | **6-10 h** |
@@ -453,10 +464,12 @@ data. (a) is doable but is its own ~10-15 h side quest.
 mismatch is real architectural work, not a wrapper. Doing it under
 launch pressure risks shipping a half-correct Solver-pair pattern
 that's painful to revise. Doing it after v0.1 launches gives us
-actual user feedback on which scorers matter — possibly we should
-ship Lanham mistake-injection as a Solver+Scorer first because it's
-the cleanest of the three multi-call cases, and let Turpin/Chen wait
-for v0.2.1.
+actual user feedback on which scorers matter. (**Superseded by the
+2026-05-30 Stage-0 recon:** the build order is **Chen → Turpin → Lanham**
+— the cue-injection scorers map cleanly as Solver+Scorer and ship first;
+Lanham is the *hardest*, ports as a task/solver not a scorer, and is gated
+on an abstraction decision. An earlier draft of this note suggested
+Lanham-first; the recon reversed that.)
 
 **Why not Scope C ever (probably).** The standalone CLI is doing
 real work that Inspect's framework doesn't naturally express:

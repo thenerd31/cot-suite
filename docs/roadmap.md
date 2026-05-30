@@ -125,14 +125,16 @@ Shipped in v0.1:
 
 ### v0.2 — Phase 6 integration (4-6 weeks post-launch)
 
-Port the remaining four methodologies to Inspect Scorers:
+Port the remaining methods to Inspect **in their correct abstraction** (Stage-0
+scorer recon, 2026-05-30 — not all fit `Scorer`):
 
-| Scorer | Paper | Notes |
-|---|---|---|
-| `cot_lanham_early_answering` | Lanham 2307.13702 §3.1 | Cleanest of the four |
-| `cot_lanham_mistake_injection` | Lanham 2307.13702 §3.2 | Second grader role for the mistake generator |
-| `cot_turpin_counterfactual` | Turpin 2305.04388 | Solver+Scorer pair (cross-sample aggregate) |
-| `cot_chen_cue_injection` | Chen 2505.05410 | Solver+Scorer pair, same pattern as Turpin |
+| Method | Paper | Inspect abstraction | Notes |
+|---|---|---|---|
+| Chen cue-injection | Chen 2505.05410 | **Solver + Scorer** | Solver injects the cue; scorer judges cue-follow + verbalization (per-sample → `mean()`). Multi-judge from the start. |
+| Turpin counterfactual | Turpin 2305.04388 | **Solver + Scorer** | Same pattern; per-sample verbalization / bias-follow. `accuracy_drop` stays **dataset-level** (±0.08pp-validated B2 path), not a `Score`. |
+| Lanham (4 tests) | Lanham 2307.13702 | **Task / Solver — NOT Scorer** | Mid-trajectory interventions + per-item AOC; don't fit `score(state, target)`. mistake-injection needs a 2nd model. Decision gate. |
+
+Build order: Chen → Turpin → Lanham (easiest → hardest).
 
 Plus the Phase 6 monitorability integration (OpenAI monitorability-evals
 interop, MonitorBench loader, default cross-judge sensitivity, CoT-Control

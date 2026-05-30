@@ -63,13 +63,13 @@ print(f"Retention curve: {aoc_result.per_fraction}")
 - **Length-weighted AOC alignment** vs the paper's exact integration scheme is in `BLOCKERS.md` — close enough for cluster-level claims, not yet bit-for-bit identical to the paper's Table 2.
 - **Sentence splitting:** the default Python regex splitter handles common cases; install `cot-suite[nlp]` for the NLTK punkt splitter the paper uses (Lanham §3.4 footnote 7).
 
-## Roadmap to Inspect AI scorer
+## Roadmap to Inspect AI (task/solver — NOT scorer)
 
-The 4-test suite ports to four Inspect Scorers in v0.2:
+The 4-test suite does **not** map to Inspect's `Scorer` abstraction (Stage-0 recon, 2026-05-30): each test is a mid-trajectory intervention + per-item AOC computed via N re-elicitations of the model-under-test, which does not fit `score(state, target)`. v0.2 ports them as Inspect **tasks/solvers** instead (the abstraction is a decision gate, and this is the hardest of the v0.2 ports — built last, after Chen and Turpin):
 
-- `cot_lanham_early_answering` (~6-10h, cleanest of the four)
-- `cot_lanham_mistake_injection` (~8-12h, second grader role for mistake generator)
-- `cot_lanham_paraphrasing` (~8-10h)
-- `cot_lanham_filler_tokens` (~6-8h)
+- early-answering (truncate the CoT at each prefix fraction + re-elicit)
+- mistake-injection (corrupt each sentence + re-elicit; needs a 2nd generator model)
+- paraphrasing
+- filler-tokens (filler-length sweep)
 
 See [Inspect AI integration](../inspect.md) for v0.1 status and v0.2 milestones.

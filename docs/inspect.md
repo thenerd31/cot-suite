@@ -92,14 +92,13 @@ def gpqa_diamond_monitorability():
 
 ## v0.2 roadmap
 
-Four more scorers, in priority order:
+The remaining methods, **in their correct Inspect abstraction** (Stage-0 recon, 2026-05-30 — not all fit `Scorer`), in build order:
 
-| Scorer | Methodology | Effort | Notes |
-|---|---|---|---|
-| `cot_lanham_early_answering` | Lanham 2307.13702 §3.1 | ~6-10h | Cleanest of the four |
-| `cot_lanham_mistake_injection` | Lanham 2307.13702 §3.2 | ~8-12h | Second grader role for the mistake generator |
-| `cot_turpin_counterfactual` | Turpin 2305.04388 | ~12-18h | Solver+Scorer pair (accuracy drop is a cross-sample aggregate) |
-| `cot_chen_cue_injection` | Chen 2505.05410 | ~10-14h | Solver+Scorer pair, same pattern as Turpin |
+| Method | Methodology | Abstraction | Effort | Notes |
+|---|---|---|---|---|
+| Chen cue-injection | Chen 2505.05410 | **Solver + Scorer** | ~10-14h | Solver injects the cue; scorer judges cue-follow + verbalization (per-sample → `mean()`). Multi-judge from the start. |
+| Turpin counterfactual | Turpin 2305.04388 | **Solver + Scorer** | ~12-18h | Per-sample verbalization/bias-follow; `accuracy_drop` is a cross-sample aggregate that stays **dataset-level** (the B2 path), not a `Score`. |
+| Lanham (4 tests) | Lanham 2307.13702 | **Task / Solver — NOT Scorer** | gated | Mid-trajectory interventions + per-item AOC via N re-elicitations of the model-under-test — don't fit `score(state, target)`. mistake-injection needs a 2nd generator model. Abstraction is a decision gate. |
 
 Confirm the post-2026-05-08 `inspect_evals` registry layout before opening any upstream PR (per `inspect_evals` PR #1538 by Scott-Simmons). The first upstream PR will be legibility/coverage — the cleanest implementation to demonstrate for upstreaming, already implemented end-to-end. (It is not the project's tightest *reproduction* — that is Turpin, cell-for-cell ±0.08pp; the legibility/coverage autorater is a method-implementation, with from-spec E-Z reproduction deferred.)
 
