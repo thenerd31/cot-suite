@@ -7,8 +7,8 @@ al., 2025. arXiv: 2510.23966.
 verbatim, run against Claude Haiku 4.5) produces
 **legibility/coverage distributions consistent with the paper's
 intent** on the scaling trajectories — NOT exact reproduction of the
-pooled-four-dataset Table 1 numbers on Qwen3-235B-A22B-Thinking with
-Gemini 2.5 Pro as rater.
+**Qwen3-235B-A22B-Thinking row of Table 1** (the lowest-monitorability
+model among the table's five model rows) with Gemini 2.5 Pro as rater.
 
 ---
 
@@ -16,15 +16,19 @@ Gemini 2.5 Pro as rater.
 
 | axis | Emmons & Zimmermann 2025 |
 |---|---|
-| model under test | Qwen3-235B-A22B-Thinking |
-| datasets | HLE, GPQA-Diamond, ARC-AGI, AIME (pooled across four) |
+| model under test | Qwen3-235B-A22B-Thinking (one of **five** model rows in Table 1) |
+| datasets | HLE, GPQA-Diamond, ARC-AGI, AIME (each row pooled across four) |
 | autorater | Gemini 2.5 Pro, n=5 runs per item |
 | scale | thousands of trajectories across the pooled sample |
-| Table 1 headline | legibility 97.33% ± 0.18%, coverage 95.27% ± 0.39% |
+| Table 1 — Qwen3-235B row | legibility 97.33% ± 0.18%, coverage 95.27% ± 0.39% (the **lowest-monitorability** of the five rows) |
 
-The Table 1 numbers are pooled across the four datasets — there is
-no per-dataset breakdown in the paper (verified via arXiv HTML fetch
-2026-04-20).
+Table 1 is **per-model** — five rows, each pooled across the four
+datasets. The 97.33/95.27 figures are the **Qwen3-235B-A22B-Thinking row
+specifically** (the lowest-monitorability model in the table), not a
+single pooled headline. The other four rows (arxiv.org/html/2510.23966v1,
+fetched 2026-04-20) are higher: Gemini-2.5-Pro 99.81/99.38,
+Gemini-2.5-Flash 99.94/97.89, GPT-OSS-120B 99.71/96.71, DeepSeek-R1
+99.20/98.14. There is no per-dataset breakdown within a model row.
 
 ---
 

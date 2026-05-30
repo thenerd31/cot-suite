@@ -10,7 +10,12 @@ cot-suite is an Inspect AI-native library for chain-of-thought monitorability ev
 
 The library bundles four contributions:
 
-1. **Paper-faithful reproductions** of foundational CoT-monitorability methodologies as Inspect scorers — Lanham [2307.13702](https://arxiv.org/abs/2307.13702), Turpin [2305.04388](https://arxiv.org/abs/2305.04388), Yanda Chen [2505.05410](https://arxiv.org/abs/2505.05410), Arcuschin & Janiak [2503.08679](https://arxiv.org/abs/2503.08679), Emmons & Zimmermann [2510.23966](https://arxiv.org/abs/2510.23966). Each scorer cites its source paper, vendors released artifacts where available, and ships with a documented delta against the paper's reported cells.
+1. **Paper-method implementations** of foundational CoT-monitorability methodologies as Inspect scorers. Each cites its source paper; **one is a cell-for-cell reproduction against released artifacts**, and the rest are method-implementations applied to current models, with reproduction status stated honestly per paper:
+   - **Turpin [2305.04388](https://arxiv.org/abs/2305.04388)** — **reproduction** (cell-for-cell, ±0.08pp against Turpin's released `bbh_samples`); the one genuine reproduction.
+   - **Arcuschin & Janiak [2503.08679](https://arxiv.org/abs/2503.08679)** — implements IPHR detection; reproduction against ChainScope's released traces pending (B4 redux).
+   - **Emmons & Zimmermann [2510.23966](https://arxiv.org/abs/2510.23966)** — implements the legibility/coverage autorater (E-Z Appendix C prompt), applied to a capability-diverse model set with cross-judge validation; from-spec reproduction of E-Z's Table-1 cells not yet performed.
+   - **Yanda Chen [2505.05410](https://arxiv.org/abs/2505.05410)** — implements the six-cue verbalization method (directional; original models retired, no public code/data release).
+   - **Lanham [2307.13702](https://arxiv.org/abs/2307.13702)** — implements the four faithfulness tests (directional; Claude 1.3 retired, no public release, AOC estimator underspecified).
 2. **Cross-classifier sensitivity reporting by default.** Every faithfulness scorer runs against at least two classifiers (regex pipeline + LLM judge) and reports per-judge scores, Cohen's κ, and ranking-reversal warnings. Motivated by Young [2603.20172](https://arxiv.org/abs/2603.20172), which showed per-model gaps up to 30.6pp across classifiers, with model-ranking reversals, on the same trajectories — making single-number faithfulness measurements methodologically unreliable.
 3. **Inspect-native interop** with OpenAI's monitorability-evals (Apr 2026) — supports g-mean² with cross-fit filter, the three eval archetypes (intervention / process / outcome-property), and the released datasets via Inspect adapters.
 4. **An Inspect-native MonitorBench task loader** (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590), 1,514 instances) and a roadmap for additional task surfaces (ChainScope, CoT-Control).
@@ -32,13 +37,13 @@ Full methodology and shortcut disclosures in [`AUDIT.md`](AUDIT.md). Known pre-r
 
 ## Related work
 
-cot-suite tracks Young's trilogy ([2603.20172](https://arxiv.org/abs/2603.20172), [2603.22582](https://arxiv.org/abs/2603.22582), [2603.26410](https://arxiv.org/abs/2603.26410)) as *concurrent* work; that line motivates the cross-classifier sensitivity reporting at the core of this library. MonitorBench (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590)) supplies the 1,514-instance task surface we load natively. OpenAI's monitorability-evals (the companion release to "Monitoring Monitorability," [2512.18311](https://arxiv.org/abs/2512.18311)) supplies the g-mean² metric and three-archetype eval taxonomy we interoperate with. The faithfulness scorers reproduce Lanham 2307.13702, Turpin 2305.04388, Yanda Chen 2505.05410, and Arcuschin & Janiak 2503.08679, while the autorater ports Emmons & Zimmermann 2510.23966. See [`docs/related_work.md`](docs/related_work.md) for the full landscape.
+cot-suite tracks Young's trilogy ([2603.20172](https://arxiv.org/abs/2603.20172), [2603.22582](https://arxiv.org/abs/2603.22582), [2603.26410](https://arxiv.org/abs/2603.26410)) as *concurrent* work; that line motivates the cross-classifier sensitivity reporting at the core of this library. MonitorBench (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590)) supplies the 1,514-instance task surface we load natively. OpenAI's monitorability-evals (the companion release to "Monitoring Monitorability," [2512.18311](https://arxiv.org/abs/2512.18311)) supplies the g-mean² metric and three-archetype eval taxonomy we interoperate with. The faithfulness scorers **implement the methods of** Lanham 2307.13702, Turpin 2305.04388, Yanda Chen 2505.05410, and Arcuschin & Janiak 2503.08679, and the autorater ports Emmons & Zimmermann 2510.23966; **only Turpin is reproduced cell-for-cell** (±0.08pp against released artifacts) — the rest are method-implementations applied to current models, with per-paper reproduction status in the contributions list above. See [`docs/related_work.md`](docs/related_work.md) for the full landscape.
 
 ## Install
 
 ```bash
 pip install cot-suite                 # core
-pip install "cot-suite[nlp]"          # + NLTK punkt (Lanham paper-faithful sentence splitting)
+pip install "cot-suite[nlp]"          # + NLTK punkt (Lanham-style sentence splitting)
 pip install "cot-suite[langgraph]"    # + LangGraph middleware
 pip install "cot-suite[activations]"  # + nnsight / TransformerLens (open-weights only)
 ```

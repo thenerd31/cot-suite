@@ -11,25 +11,35 @@ launch target, Phase 6 = v0.2-era integration, Phase 7+ = launch / v1.0.
 
 ## Phase 5 (current) — Reproduction-faithfulness lockdown
 
-The v0.1 launch target: genuinely execute the reproductions the project
-claims, rather than relaunch under overclaimed framing (see AUDIT.md
-"Briefing Reconciliation", 2026-05-28).
+The v0.1 launch target: state each paper's reproduction status honestly and
+execute the one reproduction feasible against released artifacts (Turpin),
+rather than relaunch under overclaimed framing (see AUDIT.md "Briefing
+Reconciliation", 2026-05-28). Per the 5-paper reproducibility audit
+(2026-05-30), **only Turpin is a cell-for-cell reproduction**; the other four
+are method-implementations applied to current models.
 
-- **B2 Turpin — COMPLETE.** Stage A reproduces the Turpin 2305.04388 Table 1
-  four-cell `suggested_answer` accuracy drops within ±0.08pp on all 4 cells
-  (commit `035a725`; AUDIT.md Reproduction Claims Ledger). Stage B apparatus
-  committed; run pending.
-- **B4 redux — PLANNED.** Real 4-model orthogonality study against ChainScope
-  released traces. Reframes the prior overclaimed B4 work — see AUDIT.md
-  "Briefing Reconciliation".
-- **B1 redux — PLANNED, lower priority than B4 redux.** 4-model Lanham
-  capability curve. Deprioritized because of model-availability constraints:
-  Lanham's Claude 1.3 is retired.
-- **B3 Yanda Chen six-cue — PLANNED.** Cites Young 2603.22582 as concurrent
-  work.
-- **Emmons–Zimmermann cross-judge validation — PLANNED, promoted to Phase 5
-  centerpiece.** Multi-judge agreement on the legibility/coverage autorater as
-  a first-class launch artifact.
+- **B2 Turpin — reproduction COMPLETE (the one cell-for-cell reproduction).**
+  Stage A reproduces the Turpin 2305.04388 Table 1 four-cell `suggested_answer`
+  accuracy drops within ±0.08pp on all 4 cells, by metric-replay against
+  Turpin's *released* `bbh_samples` (commit `035a725`; AUDIT.md Reproduction
+  Claims Ledger). Stage B — a **novel** 4-model × 5-task capability curve (NOT a
+  paper reproduction) — has executed (commit `d0803b4`).
+- **B4 redux (Arcuschin) — the only against-release reproduction path,
+  PLANNED.** Run cot-suite's IPHR detector on ChainScope's *released* traces and
+  match the paper's per-model cells. The current single-model detector run is an
+  **application**, not a reproduction.
+- **Emmons — from-spec reproduction DEFERRED / optional.** E-Z release only the
+  Appendix C prompt (no trajectories, no code, no machine-readable cells), so a
+  reproduction must be from-spec: 5 paper models × 4 datasets with
+  Gemini-2.5-Pro as rater, matched to Table 1 — cost-heavy and gated by the
+  Gemini-2.5-Pro deprecation window (2026-06-17). The shipped **cross-judge
+  validation** (3-judge κ; gpt-4o pending Tier-2) is a *different* artifact — it
+  validates the rater substitution, not E-Z's cells.
+- **B1 (Lanham) + B3 (Chen) — method-implementations, NOT cleanly
+  reproducible.** Retired models (Lanham: Claude 1.3; Chen: Claude 3.5 v2 / 3.7)
+  and no public code/data release, so cell-for-cell reproduction is infeasible;
+  both ship as **directional instruments on current models only** (Lanham also
+  has an underspecified AOC estimator).
 - **Phase 5 infrastructure** — client-adapter extension, split:
   **P1a (done)** routes Together / Fireworks / DeepSeek / OpenRouter through
   `get_grader_client` via a generic `OpenAICompatibleClient` (+ `verify_keys`
@@ -68,8 +78,11 @@ and provenance hardening (see "v1.0" in `ROADMAP.md`).
 
 Shipped in v0.1:
 
-- **Five paper-verified evaluation methodologies** under one CLI — Lanham,
-  Turpin, Chen, Arcuschin, Emmons & Zimmermann ([metrics overview](metrics/index.md)).
+- **Five paper-method implementations** under one CLI — Lanham, Turpin, Chen,
+  Arcuschin, Emmons & Zimmermann ([metrics overview](metrics/index.md)). One
+  (Turpin) is reproduced cell-for-cell against released artifacts (±0.08pp); the
+  rest are method-implementations applied to current models (per-paper
+  reproduction status in Phase 5 above).
 - **Two Inspect AI scorers** auto-discoverable via
   `[project.entry-points.inspect_ai]` — `cot_legibility_coverage` and
   `cot_post_hoc_rationalization` ([Inspect AI integration](inspect.md)).

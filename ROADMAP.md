@@ -11,42 +11,50 @@ v0.2.1+ / v1.0) is preserved below the phase plan so existing references
 still resolve.
 
 **Do not implement Phase 6+ items inside v0.1 — the v0.1 scope is frozen on
-fixes and paper-verified reproductions, not features.** The parking-lot
+fixes and honest per-paper reproduction-status work, not features.** The parking-lot
 sections at the bottom exist so good ideas aren't lost.
 
 ---
 
 ## Phase 5 (current) — Reproduction-faithfulness lockdown
 
-Maps to the **v0.1** launch target. The Phase 5 goal is to genuinely execute
-the reproductions the project claims, rather than relaunch under overclaimed
-framing (see AUDIT.md "Briefing Reconciliation", 2026-05-28).
+Maps to the **v0.1** launch target. The Phase 5 goal is to state each paper's
+reproduction status honestly and execute the one reproduction feasible against
+released artifacts (Turpin), rather than relaunch under overclaimed framing
+(see AUDIT.md "Briefing Reconciliation", 2026-05-28).
 
-- **B2 Turpin — COMPLETE.** Stage A reproduces the Turpin 2305.04388 Table 1
-  four-cell `suggested_answer` accuracy drops within ±0.08pp on all 4 cells
-  (commit `035a725`; ledger row in AUDIT.md, script
-  `scripts/validate_b2_turpin_stage_a.py`, output
-  `validation/b2_turpin_stage_a_results.json`). Stage B apparatus is
-  committed; the run is pending.
-- **B4 redux — PLANNED.** Real 4-model orthogonality study against
-  ChainScope released traces. Reframes the prior overclaimed B4 work — see
-  AUDIT.md "Briefing Reconciliation". Replaces the single-model
-  (gpt-4o-mini, N=100) reproduction currently in
-  `scripts/validate_b4_arcuschin.py` with a genuine multi-model run on
-  paper-labeled trajectories.
-- **B1 redux — PLANNED (lower priority than B4 redux).** 4-model Lanham
-  capability curve. Deprioritized relative to B4 redux because of
-  model-availability constraints: Lanham's Claude 1.3 is retired, so the
-  curve must be reconstructed on available models rather than the paper's
-  exact lineup. (The committed `validation/b1_lanham_raw.jsonl` contains only
-  404s from the deprecated `claude-3-5-sonnet-20241022` checkpoint — no
-  successful run exists yet.)
-- **B3 Yanda Chen six-cue — PLANNED.** Cites Young 2603.22582 as concurrent
-  work.
-- **Emmons–Zimmermann cross-judge validation — PLANNED, promoted to Phase 5
-  centerpiece.** Run the legibility/coverage autorater trajectories through
-  multiple judge models and report agreement, making cross-judge sensitivity
-  a first-class launch artifact rather than a v0.1.1 follow-up.
+Per the 5-paper reproducibility audit (2026-05-30), **only Turpin is a
+cell-for-cell reproduction**; the other four are method-implementations, with
+reproduction status noted honestly per paper.
+
+- **B2 Turpin — reproduction COMPLETE (the one cell-for-cell reproduction).**
+  Stage A reproduces the Turpin 2305.04388 Table 1 four-cell `suggested_answer`
+  accuracy drops within ±0.08pp on all 4 cells, by metric-replay against
+  Turpin's *released* `bbh_samples` (commit `035a725`; AUDIT.md Reproduction
+  Claims Ledger; `scripts/validate_b2_turpin_stage_a.py`). Stage B — a **novel**
+  4-model × 5-task capability curve (NOT a paper reproduction) — has executed
+  (commit `d0803b4`).
+- **B4 redux (Arcuschin) — the only against-release reproduction path, PLANNED.**
+  Run cot-suite's IPHR detector on ChainScope's *released* traces
+  (`jettjaniak/chainscope`) and match the paper's per-model cells. The current
+  `scripts/validate_b4_arcuschin.py` (gpt-4o-mini, N=100, GPQA) is an
+  **application** of the detector, not a reproduction.
+- **Emmons — from-spec reproduction DEFERRED / optional.** E-Z release only the
+  Appendix C prompt (no trajectories, no code, no machine-readable cells), so a
+  reproduction must be from-spec: the 5 paper models (Qwen3-235B, GPT-OSS-120B,
+  DeepSeek-R1, Gemini-2.5-Pro/Flash) on the 4 datasets (HLE / GPQA-Diamond /
+  ARC-AGI / AIME) with Gemini-2.5-Pro as rater, matched to Table 1. Cost-heavy
+  and gated by the Gemini-2.5-Pro deprecation window (2026-06-17). The shipped
+  **cross-judge validation** (3-judge κ, Haiku/Sonnet/Gemini; gpt-4o pending
+  Tier-2) is a *different* artifact — it validates the rater substitution, not
+  E-Z's cells.
+- **B1 (Lanham) + B3 (Chen) — method-implementations, NOT cleanly reproducible.**
+  Both have retired models (Lanham: Claude 1.3; Chen: Claude 3.5 v2 / 3.7) and
+  no public code/data release, so cell-for-cell reproduction is infeasible.
+  cot-suite implements the four Lanham faithfulness tests and the Chen six-cue
+  method as **directional instruments on current models only**. (Lanham also
+  has an underspecified AOC estimator; `validation/b1_lanham_raw.jsonl` holds
+  only 404s from a deprecated checkpoint.)
 - **Phase 5 infrastructure:**
   - **Client-adapter extension — P1a (DONE, this commit).** A generic
     `OpenAICompatibleClient` routes Together / Fireworks / DeepSeek /
@@ -162,8 +170,10 @@ retained so existing cross-references and the docs-site roadmap
 
 ### v0.1 (Phase 5 launch target)
 
-- **Five paper-verified evaluation methodologies** under one CLI — Lanham,
-  Turpin, Chen, Arcuschin, Emmons & Zimmermann.
+- **Five paper-method implementations** under one CLI — Lanham, Turpin, Chen,
+  Arcuschin, Emmons & Zimmermann. One (Turpin) is reproduced cell-for-cell
+  against released artifacts (±0.08pp); the rest are method-implementations
+  applied to current models (per-paper reproduction status in Phase 5 above).
 - **Two Inspect AI scorers** auto-discoverable via
   `[project.entry-points.inspect_ai]` — `cot_legibility_coverage` and
   `cot_post_hoc_rationalization` (per-trajectory Arcuschin signal — strict
