@@ -31,7 +31,7 @@ PAIR_LABELS = {
     "haiku__gemini-2.5-pro": "Haiku↔Gemini",
     "sonnet-4.6__gemini-2.5-pro": "Sonnet↔Gemini",
 }
-# κ is the coefficient that misleads (muted red); p_o + AC2 are what's actually true.
+# Muted red for κ (the coefficient that misleads); green/blue for p_o and AC2.
 SERIES_COLOR = {
     "κ (Cohen)": "#c0392b",
     "$p_o$ (raw agreement)": "#27ae60",

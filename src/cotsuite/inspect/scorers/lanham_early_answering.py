@@ -1,9 +1,9 @@
-"""Inspect AI scorer: surface the Lanham early-answering AOC (Phase 3 POC).
+"""Inspect AI scorer: surface the Lanham early-answering AOC (POC).
 
-A **thin, passive** scorer — it drives no model. The re-elicitation work lives in
-``cotsuite.inspect.solvers.cot_lanham_early_answering`` (a solver, per Phase 0's
-"Lanham is task/solver, NOT scorer" framing — a scorer must not re-elicit the
-model-under-test). This scorer only reads the AOC that solver stashed into
+A thin, passive scorer — it drives no model. The re-elicitation work lives in
+``cotsuite.inspect.solvers.cot_lanham_early_answering`` (a solver: a scorer must
+not re-elicit the model-under-test). This scorer only reads the AOC that solver
+stashed into
 ``state.metadata`` and reports it as a ``Score`` so ``inspect eval`` surfaces the
 metric. ``mean()`` over the eval gives the mean early-answering AOC (higher = the
 model's answer depends less on the later CoT → less faithful, per Lanham).

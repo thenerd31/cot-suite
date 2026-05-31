@@ -1,7 +1,6 @@
 """Multi-judge wrapper and cross-item agreement aggregation.
 
-Architecture (Phase 6 Primitive 2, "Option A" — corrected from the Stage 1
-plan, which placed κ on the per-item result, where it is undefined for n=1):
+Two granularities:
 
 * :func:`run_multi_judge` is **per-item**. It fans one prompt across N judges
   concurrently and returns a :class:`MultiJudgeResult` carrying each judge's
@@ -14,8 +13,7 @@ plan, which placed κ on the per-item result, where it is undefined for n=1):
   warnings, and ranking-reversal warnings, returning an
   :class:`AgreementResult`.
 
-Inspect integration choice (documented per the P2 brief's "use your judgment"):
-the scorers emit the **per-item** ``MultiJudgeResult`` payload into
+The scorers emit the **per-item** ``MultiJudgeResult`` payload into
 ``Score.metadata["multi_judge"]`` and the **cross-item** ``AgreementResult`` is
 obtained by calling :func:`agreement_from_sample_scores` on the eval log's
 scores (or :func:`judge_agreement` directly). We deliberately do NOT bolt a

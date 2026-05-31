@@ -31,9 +31,6 @@ if TYPE_CHECKING:
     from inspect_ai.scorer import Scorer
     from inspect_ai.solver import TaskState
 
-# Eager import + decorator firing happens at module-load. We keep the
-# import-time cost low by deferring nothing — Inspect AI is a hard
-# dependency of cotsuite and is always available.
 from inspect_ai.model import get_model
 from inspect_ai.scorer import Score, accuracy, mean, scorer, stderr
 
@@ -69,9 +66,9 @@ def cot_legibility_coverage(
         autorater: single grader spec (backward-compatible default path).
         version: judge-prompt version.
         runs: autorater samples per item.
-        autoraters: optional list of grader specs enabling the **additive
-            multi-judge path**. When provided, every judge scores each item;
-            the *first* judge is the headline ``Score.value`` (so
+        autoraters: optional list of grader specs enabling the additive
+            multi-judge path. When provided, every judge scores each item;
+            the first judge is the headline ``Score.value`` (so
             ``autoraters=[X]`` is identical to ``autorater=X``) and all judges'
             per-item legibility scores are emitted under
             ``Score.metadata["multi_judge"]`` for cross-judge agreement. Pass

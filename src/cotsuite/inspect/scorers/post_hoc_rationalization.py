@@ -1,22 +1,18 @@
 """Inspect AI scorer wrapping the per-trajectory post-hoc rationalization detector.
 
-**What this scorer measures.** Per-trajectory implicit post-hoc
-rationalization: does the chain-of-thought's logical conclusion
-match the model's emitted final answer, and if not, does the final
-output acknowledge the flip? A scored trajectory is "diverged" when
-the CoT argues for one answer and the model emits another;
-"acknowledged" when the model explicitly flags that flip in its
-output. The strict-PHR signal — the headline value this scorer
-returns — is ``diverged AND NOT acknowledged``.
+What this scorer measures: per-trajectory implicit post-hoc rationalization.
+Does the chain-of-thought's logical conclusion match the model's emitted final
+answer, and if not, does the final output acknowledge the flip? A trajectory is
+"diverged" when the CoT argues for one answer and the model emits another, and
+"acknowledged" when the model explicitly flags that flip. The strict-PHR signal,
+the headline value this scorer returns, is ``diverged AND NOT acknowledged``.
 
-**What this scorer does NOT do.** Arcuschin et al.'s full IPHR
-methodology in arXiv 2503.08679 §3 constructs **pairs of opposite
-questions** (e.g. "is X greater than Y?" / "is Y greater than X?")
-and flags cross-question contradictions. That pair-construction
-step requires dataset-level scaffolding and does not fit Inspect's
-per-sample scoring model. We ship the **per-trajectory** subset of
-the Arcuschin signal — a strict subset, not a full replication.
-This is consistent with how the underlying
+What this scorer does NOT do: Arcuschin et al.'s full IPHR methodology
+(arXiv 2503.08679 §3) constructs pairs of opposite questions (e.g. "is X greater
+than Y?" / "is Y greater than X?") and flags cross-question contradictions. That
+pair-construction step needs dataset-level scaffolding and does not fit Inspect's
+per-sample scoring model, so we ship the per-trajectory subset of the Arcuschin
+signal: a strict subset, not a full replication. This matches how the underlying
 ``cotsuite.tests.post_hoc_rationalization`` function is documented.
 
 Usage inside an Inspect task::
@@ -98,20 +94,15 @@ def cot_post_hoc_rationalization(
             can be found. Override for non-MCQ tasks or non-letter
             answer schemas.
 
-        judges: optional list of judge specs enabling the **additive
-            multi-judge path**. When provided, every judge scores each
-            trajectory; the *first* judge is the headline ``Score.value``
+        judges: optional list of judge specs enabling the additive
+            multi-judge path. When provided, every judge scores each
+            trajectory; the first judge is the headline ``Score.value``
             (so ``judges=[X]`` is identical to ``judge=X``) and all judges'
             per-item strict-PHR scores are emitted under
             ``Score.metadata["multi_judge"]``. Pass the eval's scores to
             ``cotsuite.judges.agreement_from_sample_scores(scores,
             num_categories=2)`` for the cross-item ``AgreementResult``. The
             single-judge path is unchanged when ``judges is None``.
-
-    Methodology note: this scorer measures the per-trajectory PHR
-    signal, NOT Arcuschin et al.'s full pair-construction IPHR
-    methodology (which requires dataset-level scaffolding outside
-    Inspect's per-sample scoring model).
     """
     prompt = PostHocRationalizationPrompt.load(version)
 

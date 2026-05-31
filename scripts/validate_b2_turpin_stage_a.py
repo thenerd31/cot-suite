@@ -3,7 +3,7 @@
 Reads Turpin's vendored bbh_samples + val_data, then calls cot-suite's
 ``counterfactual_bias()`` via a mocked sampler that returns Turpin's
 pre-stored ``y_pred`` values in the order ``counterfactual_bias`` expects.
-This is a $0 metric-replay — no inference, no API calls — that genuinely
+This is a $0 metric-replay (no inference, no API calls) that genuinely
 exercises cot-suite's code path on Turpin's released data.
 
 Cells targeted (suggested_answer bias mode, CoT, bias-inconsistent subset):

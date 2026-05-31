@@ -1,8 +1,8 @@
 """Multi-judge agreement primitives.
 
 Reusable, non-Inspect-native substrate for cross-judge faithfulness work
-(Emmons-Zimmermann cross-judge validation, the v0.1.1 cross-judge ablations,
-and the Turpin/Chen cue-verbalization consumers). Deliberately *not* placed
+(Emmons-Zimmermann cross-judge validation and the Turpin/Chen cue-verbalization
+consumers). Deliberately *not* placed
 under ``cotsuite.inspect`` because ``_cue_judge`` and the reproduction scripts
 that consume these are not Inspect-native.
 
