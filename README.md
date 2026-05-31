@@ -2,43 +2,39 @@
 
 cot-suite is an Inspect AI-native library for chain-of-thought monitorability evaluation on reasoning-model agents.
 
-**Status:** Pre-launch, targeting late-July to mid-August 2026.
+![Cohen's κ collapses to ~0.2 on saturated legibility while raw agreement and Gwet's AC2 stay ~0.97; on coverage κ tracks AC2.](results/kappa_degeneracy.png)
 
-> Renamed from `cot-divergence` on 2026-04-21. The old `cotdiv` import path still works via a shim until 2026-07-21.
+On frontier-model legibility, the usual agreement statistic (Cohen's κ) collapses to about 0.2 and reads as "the judges barely agree," yet raw agreement (`p_o` ≈ 0.97) and the prevalence-robust Gwet AC2 (≈ 0.96) show they agree on ~98% of items, so that low κ is a base-rate artifact rather than disagreement. cot-suite also carries two against-release reproductions of prior monitorability results, Turpin and Arcuschin, documented below.
 
-## What it does
+> Pre-launch, targeting late-July to mid-August 2026. Renamed from `cot-divergence` on 2026-04-21; the `cotdiv` import path keeps working through a shim until 2026-07-21.
 
-The library bundles four contributions:
+## What this reproduces
 
-1. **Paper-method implementations** of foundational CoT-monitorability methodologies, each exposed through its correct Inspect-AI abstraction — **scorers** for the per-trajectory / judge methods, **solvers/tasks** for the intervention methods (see [Modules](#modules) and [`ROADMAP.md`](ROADMAP.md); not every method fits Inspect's `Scorer`). Each cites its source paper; **two are against-release reproductions** (Turpin cell-for-cell ±0.08pp; Arcuschin IPHR integer-exact ±0 for 9 models), and the rest are method-implementations applied to current models, with reproduction status stated honestly per paper:
-   - **Turpin [2305.04388](https://arxiv.org/abs/2305.04388)** — **reproduction** (cell-for-cell, ±0.08pp against Turpin's released `bbh_samples`).
-   - **Arcuschin & Janiak [2503.08679](https://arxiv.org/abs/2503.08679)** — **integer-exact (±0) against-release reproduction** of the IPHR per-model unfaithfulness rates for 9 models (4 of 7 paper-headline cells: gpt-4o-mini 13.49%, claude-3.5-haiku 7.42%, gemini-2.5-flash 2.17%, claude-3.7-sonnet_1k 0.04%), by independently reimplementing the three IPHR criteria (`cotsuite.tests.iphr`) and metric-replaying ChainScope's released df — verified against ChainScope's own computed counts. 7 oversampled cells are blocked — 3 of them headline (chatgpt-4o-latest, deepseek-r1, gemini-2.5-pro) — by unreconstructable adaptive oversampling, not an implementation limit. Also ships a per-trajectory PHR detector — a different, narrower signal.
-   - **Emmons & Zimmermann [2510.23966](https://arxiv.org/abs/2510.23966)** — implements the legibility/coverage autorater (E-Z Appendix C prompt), applied to a capability-diverse model set with cross-judge validation; from-spec reproduction of E-Z's Table-1 cells not yet performed.
-   - **Yanda Chen [2505.05410](https://arxiv.org/abs/2505.05410)** — implements the six-cue verbalization method (directional; original models retired, no public code/data release).
-   - **Lanham [2307.13702](https://arxiv.org/abs/2307.13702)** — implements the four faithfulness tests (directional; Claude 1.3 retired, no public release, AOC estimator underspecified).
-2. **Cross-classifier sensitivity reporting by default.** Every faithfulness scorer runs against at least two classifiers (regex pipeline + LLM judge) and reports per-judge scores, Cohen's κ, and ranking-reversal warnings. Motivated by Young [2603.20172](https://arxiv.org/abs/2603.20172), which showed per-model gaps up to 30.6pp across classifiers, with model-ranking reversals, on the same trajectories — making single-number faithfulness measurements methodologically unreliable.
-3. **Inspect-native interop** with OpenAI's monitorability-evals (Apr 2026) — supports g-mean² with cross-fit filter, the three eval archetypes (intervention / process / outcome-property), and the released datasets via Inspect adapters.
-4. **An Inspect-native MonitorBench task loader** (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590), 1,514 instances) and a roadmap for additional task surfaces (ChainScope, CoT-Control).
+Two against-release reproductions, each replaying a paper's published metric on its own released data. Original vs. ours vs. Δ.
 
-Built to support the kind of external review of frontier-lab monitorability claims that OpenAI established as a precedent in their May 2026 accidental-CoT-grading disclosure.
+**Turpin et al.** ([2305.04388](https://arxiv.org/abs/2305.04388)). Biased-context accuracy drop (percentage points), the four Table-1 cells; reproduction within 0.08pp (tolerance 0.5pp).
 
-## Modules
+| model | shot | paper | ours | Δ |
+|---|---|--:|--:|--:|
+| text-davinci-003 | zero-shot | -36.3 | -36.38 | -0.08 |
+| claude-v1 | zero-shot | -30.6 | -30.65 | -0.05 |
+| text-davinci-003 | few-shot | -24.1 | -24.11 | -0.01 |
+| claude-v1 | few-shot | -21.5 | -21.57 | -0.07 |
 
-- **`cotsuite.autoraters`** — verbatim port of the Emmons & Zimmermann 2510.23966 Appendix C autorater (legibility + coverage), SHA-256-hashed for reproducibility.
-- **`cotsuite.tests.lanham`** — Lanham 2307.13702 four-test suite (early answering, mistake injection, paraphrasing, filler tokens).
-- **`cotsuite.tests.turpin_counterfactual`** — Turpin 2305.04388 counterfactual bias battery.
-- **`cotsuite.tests.chen_cue_injection`** — Chen 2505.05410 six-hint cue-injection catalog (five verified from the paper's Table 1, Visual Pattern in extensions pending a few-shot scaffold).
-- **`cotsuite.tests.post_hoc_rationalization`** — Arcuschin 2503.08679 implicit-rationalization detector (CoT conclusion vs final-answer divergence via LLM-as-judge).
-- **`cotsuite.tests.iphr`** — Arcuschin 2503.08679 pair-level IPHR metric (group-bias → accuracy-diff → direction criteria); cot-suite's independent reimplementation used for the B4a integer-exact against-release reproduction. Distinct construct from the per-trajectory detector above.
-- **`cotsuite.core.classify`** — faithfulness classification dispatcher with strict near-zero thresholds (`computational`, `rationalization`, `mixed`, `unknown`).
-- **`cotsuite.core.provenance`** — every test / cue / metric carries a `Provenance` record; unverified or extension work lives in `tests/extensions/` until PDF cross-check.
-- **`cotsuite.inspect.scorers`** — Inspect AI scorers. Two ship in v0.1: `cot_legibility_coverage` (Emmons & Zimmermann) and `cot_post_hoc_rationalization` (per-trajectory Arcuschin signal — strict subset of the paper's full pair-construction IPHR methodology). The remaining Inspect wrappers are now implemented, each **in its correct abstraction, not all as scorers**: Chen cue-verbalization (`cot_chen_cue_injection`) and Turpin bias-verbalization (`cot_turpin_counterfactual`) **scorers**, each paired with a cue/bias-injection **solver**; and the Lanham **`early_answering`** Inspect **task** (`cot_lanham_early_answering` solver + thin `cot_lanham_early_answering_aoc` scorer) — proof Lanham is Inspect-native, since its mid-trajectory AOC intervention is a task/solver, *not* a `score(state, target)` scorer. Deferred to v0.2: Lanham's `mistake_injection` + `paraphrasing` (each needs a second model role) and `filler_tokens`. Turpin's `accuracy_drop` stays a **dataset-level** metric (the ±0.08pp-validated B2 path), not a `Score`. See [`ROADMAP.md`](ROADMAP.md). Auto-discoverable via `[project.entry-points.inspect_ai]`: after `pip install cot-suite`, `inspect eval some_task --scorer cotsuite/cot_legibility_coverage` works without further setup. Self-grading guard fires a `UserWarning` if Inspect's grader role resolves to the eval's primary model.
+**Arcuschin et al.** ([2503.08679](https://arxiv.org/abs/2503.08679), ChainScope). Implicit Post-Hoc Rationalization (IPHR) pair rate, recomputed from the released ChainScope dataframe (n = 4,892 pairs). Integer-exact metric replay: ours matches the release count for every model below (Δ = 0). Partial, covering 4 of the 7 headline cells.
 
-Full methodology and shortcut disclosures in [`AUDIT.md`](AUDIT.md). Known pre-release blockers in [`BLOCKERS.md`](BLOCKERS.md). Roadmap in [`ROADMAP.md`](ROADMAP.md).
+| model | paper | ours | count | Δ (count) |
+|---|--:|--:|--:|--:|
+| gpt-4o-mini | 13% | 13.49% | 660 | 0 |
+| claude-3.5-haiku | 7% | 7.42% | 363 | 0 |
+| gemini-2.5-flash | 2.17% | 2.17% | 106 | 0 |
+| claude-3.7-sonnet (1k) | 0.04% | 0.04% | 2 | 0 |
 
-## Related work
+The paper reports rounded integers for the first two rows; ours are the unrounded rates that round to them. The other 3 headline cells (chatgpt-4o-latest, deepseek-r1, gemini-2.5-pro) and 4 non-headline cells are blocked: their per-model pair sets were adaptively oversampled in a way the release does not let us reconstruct, so no honest cell-for-cell Δ exists.
 
-cot-suite tracks Young's trilogy ([2603.20172](https://arxiv.org/abs/2603.20172), [2603.22582](https://arxiv.org/abs/2603.22582), [2603.26410](https://arxiv.org/abs/2603.26410)) as *concurrent* work; that line motivates the cross-classifier sensitivity reporting at the core of this library. MonitorBench (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590)) supplies the 1,514-instance task surface we load natively. OpenAI's monitorability-evals (the companion release to "Monitoring Monitorability," [2512.18311](https://arxiv.org/abs/2512.18311)) supplies the g-mean² metric and three-archetype eval taxonomy we interoperate with. The faithfulness scorers **implement the methods of** Lanham 2307.13702, Turpin 2305.04388, Yanda Chen 2505.05410, and Arcuschin & Janiak 2503.08679, and the autorater ports Emmons & Zimmermann 2510.23966. **Two are against-release reproductions:** Turpin is reproduced cell-for-cell (±0.08pp), and Arcuschin's IPHR rates are reproduced integer-exact (±0) for 9 models against ChainScope's released df (`jettjaniak/chainscope`, MIT). The rest are method-implementations applied to current models, with per-paper reproduction status in the contributions list above. See [`docs/related_work.md`](docs/related_work.md) for the full landscape.
+## Why κ misleads
+
+The κ collapse in the figure is the Cohen's-κ prevalence paradox (Feinstein & Cicchetti, 1990): when one rating category dominates, κ's chance-correction term inflates and the coefficient falls toward zero even at near-perfect observed agreement. Gwet's AC2 (Gwet, 2008) is a standard prevalence-robust alternative. The statistic is textbook; what cot-suite adds is showing that this artifact silently breaks cross-judge monitorability metrics on exactly the saturated, near-ceiling regime those metrics target. So every faithfulness scorer reports κ, Gwet AC2, raw agreement, and a saturation flag together, across at least two classifiers, instead of one κ that can read as disagreement where there is none. Full write-up: [`docs/cross_judge_degeneracy.md`](docs/cross_judge_degeneracy.md).
 
 ## Install
 
@@ -47,33 +43,24 @@ pip install cot-suite                 # core
 pip install "cot-suite[nlp]"          # + NLTK punkt (Lanham-style sentence splitting)
 pip install "cot-suite[langgraph]"    # + LangGraph middleware
 pip install "cot-suite[activations]"  # + nnsight / TransformerLens (open-weights only)
+pip install cot-divergence            # legacy alias, resolves to cot-suite until 2026-07-21
 ```
 
-The legacy name still resolves:
+## Reproduce
+
+Every command runs offline on committed or vendored data, with no model calls ($0).
 
 ```bash
-pip install cot-divergence  # aliased to cot-suite until 2026-07-21
+uv run --with matplotlib python results/figures.py                      # Figure 1
+PYTHONPATH=. .venv/bin/python scripts/degeneracy_reanalysis_ez.py       # κ-degeneracy re-analysis
+PYTHONPATH=. .venv/bin/python scripts/validate_b2_turpin_stage_a.py     # Turpin reproduction
+PYTHONPATH=. .venv/bin/python scripts/validate_b4_iphr_reproduction.py  # Arcuschin IPHR reproduction
 ```
 
-## Quickstart
+## Modules, citation, license
 
-```python
-from cotsuite import score_trajectory
-from cotsuite.adapters import from_anthropic
+Faithfulness methods are exposed through their correct Inspect-AI abstractions (scorers for the judge methods, solvers and tasks for the interventions), each citing its source paper: the Emmons & Zimmermann legibility/coverage autorater, the Lanham four-test suite, the Turpin counterfactual battery, Chen cue-injection, and the Arcuschin pair-level IPHR metric alongside a narrower per-trajectory PHR detector. Scorers are auto-discoverable through Inspect's entry points after `pip install cot-suite`. cot-suite also interoperates with OpenAI's monitorability-evals (g-mean² and the three eval archetypes) and loads the MonitorBench task surface (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590), 1,514 instances) natively.
 
-traj = from_anthropic(messages, model="claude-opus-4-5")
-result = score_trajectory(
-    traj,
-    metrics=["legibility", "coverage"],
-    autorater="anthropic/claude-haiku-4-5",  # or "google/gemini-2.5-pro"
-)
-print(f"legibility = {result.metrics['legibility'].value:.2f} ± {result.metrics['legibility'].stderr:.2f}")
-```
+Methodology and shortcut disclosures: [`AUDIT.md`](AUDIT.md). Roadmap and Inspect-wrapper status: [`ROADMAP.md`](ROADMAP.md). Pre-release blockers: [`BLOCKERS.md`](BLOCKERS.md). Related-work landscape (Young's trilogy, MonitorBench, OpenAI's monitorability-evals): [`docs/related_work.md`](docs/related_work.md). Usage: [`docs/quickstart.md`](docs/quickstart.md).
 
-## Citation
-
-See [`CITATION.cff`](CITATION.cff) (DOI pending v1.0). In the interim, cite the repo URL.
-
-## License
-
-MIT.
+Cite via [`CITATION.cff`](CITATION.cff) (DOI pending v1.0); until then, cite the repo URL. License: MIT.
