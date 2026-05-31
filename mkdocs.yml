@@ -58,7 +58,6 @@ exclude_docs: |
   related_work.md
   inspect_ai_integration_assessment.md
   autorater-notes.md
-  path-d-plan.md
   paper-refs/
 
 markdown_extensions:
