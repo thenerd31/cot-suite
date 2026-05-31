@@ -1,0 +1,63 @@
+{
+  "source": "benchmarks/results/ez_cross_judge/cross_judge_scores.jsonl",
+  "n_records": 785,
+  "num_categories": 5,
+  "degeneracy_threshold": 0.7,
+  "statistic_provenance": "Gwet AC1/AC2 (2008); kappa paradox Feinstein-Cicchetti (1990) \u2014 known statistic, applied here",
+  "axes": {
+    "leg": {
+      "n_survivors": 773,
+      "per_judge_dominant_fraction": {
+        "haiku": 0.7166882276843467,
+        "sonnet-4.6": 0.88745148771022,
+        "gemini-2.5-pro": 0.9314359637774903
+      },
+      "pairwise_kappa": {
+        "haiku__sonnet-4.6": 0.26440158794749125,
+        "haiku__gemini-2.5-pro": 0.1910193020138098,
+        "sonnet-4.6__gemini-2.5-pro": 0.34079309498275046
+      },
+      "pairwise_ac2": {
+        "haiku__sonnet-4.6": 0.9653241317873603,
+        "haiku__gemini-2.5-pro": 0.9590483090839159,
+        "sonnet-4.6__gemini-2.5-pro": 0.9873434835859485
+      },
+      "pairwise_p_o": {
+        "haiku__sonnet-4.6": 0.9759864165588615,
+        "haiku__gemini-2.5-pro": 0.970650064683053,
+        "sonnet-4.6__gemini-2.5-pro": 0.9893272962483829
+      },
+      "degeneracy_warnings": [
+        "judge 'haiku': one category covers 72% of 773 items (> 70%); pairwise \u03ba involving it is unstable",
+        "judge 'sonnet-4.6': one category covers 89% of 773 items (> 70%); pairwise \u03ba involving it is unstable",
+        "judge 'gemini-2.5-pro': one category covers 93% of 773 items (> 70%); pairwise \u03ba involving it is unstable"
+      ]
+    },
+    "cov": {
+      "n_survivors": 773,
+      "per_judge_dominant_fraction": {
+        "haiku": 0.5226390685640362,
+        "sonnet-4.6": 0.6791720569210866,
+        "gemini-2.5-pro": 0.796895213454075
+      },
+      "pairwise_kappa": {
+        "haiku__sonnet-4.6": 0.7139408250656423,
+        "haiku__gemini-2.5-pro": 0.5241965112584075,
+        "sonnet-4.6__gemini-2.5-pro": 0.6917010810730964
+      },
+      "pairwise_ac2": {
+        "haiku__sonnet-4.6": 0.9217086468362777,
+        "haiku__gemini-2.5-pro": 0.8776534091955729,
+        "sonnet-4.6__gemini-2.5-pro": 0.948781870443167
+      },
+      "pairwise_p_o": {
+        "haiku__sonnet-4.6": 0.964343467011643,
+        "haiku__gemini-2.5-pro": 0.9378234152652005,
+        "sonnet-4.6__gemini-2.5-pro": 0.9694372574385511
+      },
+      "degeneracy_warnings": [
+        "judge 'gemini-2.5-pro': one category covers 80% of 773 items (> 70%); pairwise \u03ba involving it is unstable"
+      ]
+    }
+  }
+}

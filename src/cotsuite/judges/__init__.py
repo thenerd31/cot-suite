@@ -22,6 +22,8 @@ from cotsuite.judges.kappa import (
     DEGENERACY_THRESHOLD,
     cohen_kappa_quadratic,
     dominant_category_fraction,
+    gwet_ac1,
+    observed_agreement,
 )
 from cotsuite.judges.multi_judge import (
     AgreementResult,
@@ -47,6 +49,8 @@ __all__ = [
     "cohen_kappa_quadratic",
     "detect_ranking_reversals",
     "dominant_category_fraction",
+    "gwet_ac1",
+    "observed_agreement",
     "judge_agreement",
     "ranking_reversal_summary",
     "run_multi_judge",

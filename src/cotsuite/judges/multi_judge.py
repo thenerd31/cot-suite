@@ -41,6 +41,8 @@ from cotsuite.judges.kappa import (
     DEGENERACY_THRESHOLD,
     cohen_kappa_quadratic,
     dominant_category_fraction,
+    gwet_ac1,
+    observed_agreement,
 )
 from cotsuite.judges.ranking_reversal import ranking_reversal_summary
 from cotsuite.models.clients import GraderClient
@@ -73,6 +75,13 @@ class AgreementResult(BaseModel):
     degeneracy_warnings: list[str] = Field(default_factory=list)
     n_items: int = 0
     num_categories: int | None = None
+    # Prevalence-robust additions (additive, backward-compatible). AC1/AC2 and raw
+    # observed agreement let a κ-degeneracy/ceiling artifact be told apart from
+    # substantive disagreement; per_judge_dominant_fraction is the saturation flag
+    # (compare against DEGENERACY_THRESHOLD = 0.70).
+    pairwise_ac1: dict[tuple[str, str], float] = Field(default_factory=dict)
+    pairwise_p_o: dict[tuple[str, str], float] = Field(default_factory=dict)
+    per_judge_dominant_fraction: dict[str, float] = Field(default_factory=dict)
 
 
 async def run_multi_judge(
@@ -166,8 +175,10 @@ def judge_agreement(
     labels = {judge: _to_labels(col, num_categories) for judge, col in columns.items()}
 
     degeneracy_warnings: list[str] = []
+    per_judge_dominant_fraction: dict[str, float] = {}
     for judge in judges:
         fraction = dominant_category_fraction(labels[judge])
+        per_judge_dominant_fraction[judge] = fraction
         if fraction > DEGENERACY_THRESHOLD:
             degeneracy_warnings.append(
                 f"judge {judge!r}: one category covers {fraction:.0%} of "
@@ -176,9 +187,18 @@ def judge_agreement(
             )
 
     pairwise_kappa: dict[tuple[str, str], float] = {}
+    pairwise_ac1: dict[tuple[str, str], float] = {}
+    pairwise_p_o: dict[tuple[str, str], float] = {}
     for judge_a, judge_b in combinations(judges, 2):
+        la, lb = labels[judge_a], labels[judge_b]
         pairwise_kappa[(judge_a, judge_b)] = cohen_kappa_quadratic(
-            labels[judge_a], labels[judge_b], num_categories=num_categories
+            la, lb, num_categories=num_categories
+        )
+        # AC1/AC2 + raw observed agreement on the same weighting as the κ above,
+        # so a low κ with high AC1 + high p_o reads as a degeneracy artifact.
+        pairwise_ac1[(judge_a, judge_b)] = gwet_ac1(la, lb, num_categories=num_categories)
+        pairwise_p_o[(judge_a, judge_b)] = observed_agreement(
+            la, lb, num_categories=num_categories
         )
 
     subject_scores = {
@@ -193,6 +213,9 @@ def judge_agreement(
         degeneracy_warnings=degeneracy_warnings,
         n_items=len(results),
         num_categories=num_categories,
+        pairwise_ac1=pairwise_ac1,
+        pairwise_p_o=pairwise_p_o,
+        per_judge_dominant_fraction=per_judge_dominant_fraction,
     )
 
 
