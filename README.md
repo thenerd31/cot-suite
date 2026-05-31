@@ -2,9 +2,11 @@
 
 cot-suite is an Inspect AI-native library for chain-of-thought monitorability evaluation on reasoning-model agents.
 
+Cross-judge agreement (Cohen's κ) is increasingly used to decide whether an LLM-judged monitorability metric is trustworthy. On saturated metrics — the high-monitorability regime those metrics are built to measure — κ collapses to ~0.2 and looks like the judges disagree, even though they agree on ~98% of items (raw agreement 0.97, Gwet's AC2 0.96). The low κ is a known statistical artifact, the Feinstein-Cicchetti prevalence paradox, not real disagreement.
+
 ![Cohen's κ collapses to ~0.2 on saturated legibility while raw agreement and Gwet's AC2 stay ~0.97; on coverage κ tracks AC2.](results/kappa_degeneracy.png)
 
-On frontier-model legibility, the usual agreement statistic (Cohen's κ) collapses to about 0.2 and reads as "the judges barely agree," yet raw agreement (`p_o` ≈ 0.97) and the prevalence-robust Gwet AC2 (≈ 0.96) show they agree on ~98% of items, so that low κ is a base-rate artifact rather than disagreement. cot-suite also carries two against-release reproductions of prior monitorability results, Turpin and Arcuschin, documented below.
+The statistic is textbook; the contribution is the applied demonstration that it silently breaks cross-judge monitorability metrics on exactly the saturated regime they target. For example, a recent classifier-sensitivity result (Young, 2603.20172) reads low cross-classifier κ as construct divergence between classifiers, without separating the saturation artifact from real disagreement.
 
 > Pre-launch (v0.1 targeted late-July to mid-August 2026). Renamed from `cot-divergence` on 2026-04-21; `from cotdiv ...` still imports, with a deprecation warning, until 2026-07-21.
 
@@ -32,9 +34,9 @@ Two against-release reproductions, each replaying a paper's published metric on 
 
 The paper reports rounded integers for the first two rows; ours are the unrounded rates that round to them. The other 3 headline cells (chatgpt-4o-latest, deepseek-r1, gemini-2.5-pro) and 4 non-headline cells are blocked: their per-model pair sets were adaptively oversampled in a way the release does not let us reconstruct, so no honest cell-for-cell Δ exists.
 
-## Why κ misleads
+## What cot-suite reports
 
-The κ collapse in the figure is the Cohen's-κ prevalence paradox (Feinstein & Cicchetti, 1990): when one rating category dominates, κ's chance-correction term inflates and the coefficient falls toward zero even at near-perfect observed agreement. Gwet's AC2 (Gwet, 2008) is a standard prevalence-robust alternative. The statistic is textbook; what cot-suite adds is showing that this artifact silently breaks cross-judge monitorability metrics on exactly the saturated, near-ceiling regime those metrics target. So every faithfulness scorer reports κ, Gwet AC2, raw agreement, and a saturation flag together, across at least two classifiers, instead of one κ that can read as disagreement where there is none. Full write-up: [`docs/cross_judge_degeneracy.md`](docs/cross_judge_degeneracy.md).
+Every faithfulness scorer reports κ, Gwet AC2, raw agreement, and a per-judge saturation flag together, across at least two classifiers, rather than a single κ that can read as disagreement where there is none. The flag marks the saturated, near-ceiling case where κ is least trustworthy. Full write-up: [`docs/cross_judge_degeneracy.md`](docs/cross_judge_degeneracy.md).
 
 ## Install
 
