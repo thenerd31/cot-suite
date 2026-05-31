@@ -1,11 +1,8 @@
 # When "judges disagree" on CoT monitorability — and when they don't
 
-**TL;DR.** Cross-judge agreement on CoT-monitorability metrics is usually reported
-with Cohen's κ. On *saturated* axes (e.g. frontier-model legibility, where almost
-every CoT scores 4/4), κ collapses to ~0.2 and looks like the judges wildly
-disagree — but they actually agree on ~98% of items. The low κ is a base-rate
-artifact, not substantive disagreement. You can only tell the two apart by
-reporting a prevalence-robust coefficient + a saturation flag *alongside* κ.
+**TL;DR.** On saturated CoT-monitorability axes like frontier-model legibility, Cohen's κ collapses to ~0.2 and reads as judge disagreement, yet raw agreement (`p_o` ≈ 0.97) and a prevalence-robust coefficient (Gwet AC2 ≈ 0.96) show the judges agree on ~98% of items, so report a prevalence-robust coefficient and a saturation flag alongside κ before calling a monitorability metric judge-sensitive.
+
+![Cohen's κ collapses to ~0.2 on saturated legibility while raw agreement and Gwet's AC2 stay ~0.97; on coverage κ tracks AC2.](../results/kappa_degeneracy.png)
 
 ## The statistic is not new — the application is
 
