@@ -6,7 +6,7 @@ cot-suite is an Inspect AI-native library for chain-of-thought monitorability ev
 
 On frontier-model legibility, the usual agreement statistic (Cohen's κ) collapses to about 0.2 and reads as "the judges barely agree," yet raw agreement (`p_o` ≈ 0.97) and the prevalence-robust Gwet AC2 (≈ 0.96) show they agree on ~98% of items, so that low κ is a base-rate artifact rather than disagreement. cot-suite also carries two against-release reproductions of prior monitorability results, Turpin and Arcuschin, documented below.
 
-> Pre-launch, targeting late-July to mid-August 2026. Renamed from `cot-divergence` on 2026-04-21; the `cotdiv` import path keeps working through a shim until 2026-07-21.
+> Pre-launch (v0.1 targeted late-July to mid-August 2026). Renamed from `cot-divergence` on 2026-04-21; `from cotdiv ...` still imports, with a deprecation warning, until 2026-07-21.
 
 ## What this reproduces
 
@@ -38,12 +38,15 @@ The κ collapse in the figure is the Cohen's-κ prevalence paradox (Feinstein & 
 
 ## Install
 
+Pre-launch: `pip install cot-suite` currently installs a 0.0.1 placeholder, not this library; the described feature set ships in the v0.1 PyPI release (see Roadmap). To run it today, install from source:
+
 ```bash
-pip install cot-suite                 # core
-pip install "cot-suite[nlp]"          # + NLTK punkt (Lanham-style sentence splitting)
-pip install "cot-suite[langgraph]"    # + LangGraph middleware
-pip install "cot-suite[activations]"  # + nnsight / TransformerLens (open-weights only)
-pip install cot-divergence            # legacy alias, resolves to cot-suite until 2026-07-21
+git clone https://github.com/thenerd31/cot-suite
+cd cot-suite
+pip install -e .                 # core
+pip install -e ".[nlp]"          # + NLTK punkt (Lanham-style sentence splitting)
+pip install -e ".[langgraph]"    # + LangGraph middleware
+pip install -e ".[activations]"  # + nnsight / TransformerLens (open-weights only)
 ```
 
 ## Reproduce
@@ -57,10 +60,17 @@ PYTHONPATH=. .venv/bin/python scripts/validate_b2_turpin_stage_a.py     # Turpin
 PYTHONPATH=. .venv/bin/python scripts/validate_b4_iphr_reproduction.py  # Arcuschin IPHR reproduction
 ```
 
-## Modules, citation, license
+## Modules
 
-Faithfulness methods are exposed through their correct Inspect-AI abstractions (scorers for the judge methods, solvers and tasks for the interventions), each citing its source paper: the Emmons & Zimmermann legibility/coverage autorater, the Lanham four-test suite, the Turpin counterfactual battery, Chen cue-injection, and the Arcuschin pair-level IPHR metric alongside a narrower per-trajectory PHR detector. Scorers are auto-discoverable through Inspect's entry points after `pip install cot-suite`. cot-suite also interoperates with OpenAI's monitorability-evals (g-mean² and the three eval archetypes) and loads the MonitorBench task surface (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590), 1,514 instances) natively.
+Five methods ship as Inspect-native scorers, solvers, or tasks, each citing its source paper and auto-registered through Inspect's entry points (`[project.entry-points.inspect_ai]`), so a command like `inspect eval ... --scorer cotsuite/cot_legibility_coverage` resolves once the package is installed: the Emmons & Zimmermann legibility/coverage autorater, the Turpin counterfactual battery, Chen cue-injection (5 of the paper's 6 cues; Visual Pattern ships as a simplified extension), Lanham's `early_answering` test, and a per-trajectory post-hoc-rationalization detector.
 
-Methodology and shortcut disclosures: [`AUDIT.md`](AUDIT.md). Roadmap and Inspect-wrapper status: [`ROADMAP.md`](ROADMAP.md). Pre-release blockers: [`BLOCKERS.md`](BLOCKERS.md). Related-work landscape (Young's trilogy, MonitorBench, OpenAI's monitorability-evals): [`docs/related_work.md`](docs/related_work.md). Usage: [`docs/quickstart.md`](docs/quickstart.md).
+Other components are library code, not Inspect scorers: Lanham's three remaining tests (`mistake_injection`, `paraphrasing`, `filler_tokens`), and the pair-level IPHR metric (`cotsuite.tests.iphr`) that backs the Arcuschin reproduction above and runs from its validation script. Separately, cot-suite vendors OpenAI's g-mean² metric with cross-fit filtering (from `openai/monitorability-evals`) and wires it in as an Inspect `@metric`.
 
-Cite via [`CITATION.cff`](CITATION.cff) (DOI pending v1.0); until then, cite the repo URL. License: MIT.
+Methodology and shortcut disclosures: [`AUDIT.md`](AUDIT.md). Inspect-wrapper status: [`ROADMAP.md`](ROADMAP.md). Pre-release blockers: [`BLOCKERS.md`](BLOCKERS.md). Related-work landscape: [`docs/related_work.md`](docs/related_work.md). Usage: [`docs/quickstart.md`](docs/quickstart.md). Cite via [`CITATION.cff`](CITATION.cff) (DOI pending v1.0). License: MIT.
+
+## Roadmap (v0.2)
+
+- Inspect wrappers for Lanham's `mistake_injection`, `paraphrasing`, and `filler_tokens` (each needs a second model role).
+- A MonitorBench loader (ASTRAL-Group [2603.28590](https://arxiv.org/abs/2603.28590), 1,514 instances) as an Inspect dataset.
+- The three monitorability-evals archetypes (intervention / process / outcome-property) alongside the already-vendored g-mean² metric.
+- The v0.1 PyPI release of the library described above.
