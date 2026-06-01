@@ -5,7 +5,7 @@ no model calls, $0) and renders ``results/kappa_degeneracy.png``: per axis × ju
 pair, Cohen's κ beside raw observed agreement ``p_o`` and prevalence-robust Gwet
 AC2. The point at a glance — on saturated **legibility**, κ collapses to ~0.2 while
 p_o/AC2 stay ~0.97 (the gap is a base-rate artifact, not judge disagreement); on
-**coverage** (real variance), κ ≈ AC2.
+**coverage** (real variance), κ recovers toward AC2.
 
 matplotlib is a figure-only dependency, NOT a cot-suite runtime dep. Run:
 
@@ -76,7 +76,7 @@ def main() -> None:
     fig.suptitle(
         "Cohen's κ collapses to ~0.2 on legibility while raw agreement ($p_o$) and "
         "prevalence-robust AC2\nstay ~0.97 — the gap is a base-rate artifact, not judge "
-        "disagreement; on coverage, κ ≈ AC2.",
+        "disagreement; on coverage, κ recovers toward AC2.",
         fontsize=9,
         y=1.04,
     )

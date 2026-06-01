@@ -42,8 +42,8 @@ Appendix-C legibility/coverage rubric (0–4):
   same artifact drives the 36% legibility model-ranking "reversals" we also see —
   reorderings within a ~0.5-point band on a 4-point scale.)
 - **Coverage has real variance.** Dominant-fraction 0.52–0.80; κ (0.52–0.71) sits
-  close to AC2 and the rankings are judge-stable → genuine moderate-to-substantial
-  agreement on the axis that actually discriminates.
+  much closer to AC2 than on legibility and the rankings are judge-stable → genuine
+  moderate-to-substantial agreement on the axis that actually discriminates.
 
 ## The applied claim
 
@@ -85,8 +85,8 @@ flag per axis.
 and AC2 = 0.96–0.99 — they agree on ~98% of items. Every judge scores ≥72% of CoTs in
 one bucket. The low κ is the paradox, not disagreement.
 
-5/ Coverage (real variance, less saturated): κ = 0.52–0.71, close to AC2, rankings
-judge-stable → genuine agreement. So κ *does* track agreement where there's spread —
+5/ Coverage (real variance, less saturated): κ = 0.52–0.71, far closer to AC2 than on
+legibility, rankings judge-stable → genuine agreement. So κ *does* track agreement where there's spread —
 it only breaks on the saturated axis.
 
 6/ Why it matters: frontier-model legibility is exactly E&Z's "high monitorability by

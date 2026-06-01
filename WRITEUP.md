@@ -12,7 +12,7 @@ What is worth showing is where it bites. Cross-judge κ is increasingly used to 
 
 ## Both directions, honestly
 
-This is not "LLM judges are unreliable." On coverage, the axis with real score variance (dominant category 52–80%, not saturated), κ runs 0.52–0.71, sits close to AC2, and the model rankings are judge-stable. Where there is spread, κ tracks agreement; it breaks only on the saturated axis. The takeaway is procedural: report a prevalence-robust coefficient and a saturation flag alongside κ before concluding a monitorability metric is judge-sensitive.
+This is not "LLM judges are unreliable." On coverage, the axis with real score variance (dominant category 52–80%, not saturated), κ runs 0.52–0.71, sits much closer to AC2 than on legibility, and the model rankings are judge-stable. Where there is spread, κ tracks agreement; it breaks only on the saturated axis. The takeaway is procedural: report a prevalence-robust coefficient and a saturation flag alongside κ before concluding a monitorability metric is judge-sensitive.
 
 The data is a $0 re-analysis of committed scores: three judges (Claude Haiku 4.5, Claude Sonnet 4.6, Gemini 2.5 Pro) scoring 773 GPQA-Diamond chain-of-thoughts on Emmons & Zimmermann's legibility/coverage rubric. No new model calls.
 
@@ -36,7 +36,7 @@ This is a finding, not a finished paper. It rests on three judges and one rubric
 
 4/ Why it matters: frontier-model legibility is the "high monitorability by default" regime these metrics target, and it is near-ceiling, which is exactly where κ is least trustworthy. A judge substitute that looks unreliable (κ = 0.19) can be a faithful one (p_o = 0.97).
 
-5/ Both directions: on coverage (real variance, dominant category 52–80%) κ = 0.52–0.71, close to AC2, rankings judge-stable. So this is not "judges are unreliable." It is "check saturation before concluding judge-sensitivity."
+5/ Both directions: on coverage (real variance, dominant category 52–80%) κ = 0.52–0.71, far closer to AC2 than on legibility, rankings judge-stable. So this is not "judges are unreliable." It is "check saturation before concluding judge-sensitivity."
 
 6/ A recent classifier-sensitivity result (Young, 2603.20172) reads low cross-classifier κ as construct divergence, without separating the saturation artifact from real disagreement. The decomposition that proves the split (McNemar + prevalence index) and a K=2 generalization are in progress, not done.
 
