@@ -40,26 +40,27 @@ Every faithfulness scorer reports κ, Gwet AC2, raw agreement, and a per-judge s
 
 ## Install
 
-Pre-launch: `pip install cot-suite` currently installs a 0.0.1 placeholder, not this library; the described feature set ships in the v0.1 PyPI release (see Roadmap). To run it today, install from source:
+Pre-launch: `pip install cot-suite` currently installs a 0.0.1 placeholder, not this library; the described feature set ships in the v0.1 PyPI release (see Roadmap). To run it today, install from source into a local `.venv` (the Reproduce commands below use it):
 
 ```bash
 git clone https://github.com/thenerd31/cot-suite
 cd cot-suite
-pip install -e .                 # core
-pip install -e ".[nlp]"          # + NLTK punkt (Lanham-style sentence splitting)
-pip install -e ".[langgraph]"    # + LangGraph middleware
-pip install -e ".[activations]"  # + nnsight / TransformerLens (open-weights only)
+python3 -m venv .venv
+.venv/bin/pip install -e .         # core
+.venv/bin/pip install matplotlib   # for the Figure 1 command (figure-only, not a runtime dep)
 ```
+
+Optional extras, not needed to reproduce below: `.venv/bin/pip install -e ".[nlp]"` (NLTK punkt for Lanham-style sentence splitting), `".[langgraph]"` (LangGraph middleware), `".[activations]"` (nnsight / TransformerLens, open-weights only).
 
 ## Reproduce
 
-Every command runs offline on committed or vendored data, with no model calls ($0).
+Each command runs on committed or vendored data and makes no model or API calls ($0). Installing the packages above needs PyPI network; the analysis itself does not.
 
 ```bash
-uv run --with matplotlib python results/figures.py                      # Figure 1
-PYTHONPATH=. .venv/bin/python scripts/degeneracy_reanalysis_ez.py       # κ-degeneracy re-analysis
-PYTHONPATH=. .venv/bin/python scripts/validate_b2_turpin_stage_a.py     # Turpin reproduction
-PYTHONPATH=. .venv/bin/python scripts/validate_b4_iphr_reproduction.py  # Arcuschin IPHR reproduction
+.venv/bin/python results/figures.py                        # Figure 1
+.venv/bin/python scripts/degeneracy_reanalysis_ez.py       # κ-degeneracy re-analysis
+.venv/bin/python scripts/validate_b2_turpin_stage_a.py     # Turpin reproduction
+.venv/bin/python scripts/validate_b4_iphr_reproduction.py  # Arcuschin IPHR reproduction
 ```
 
 ## Modules
