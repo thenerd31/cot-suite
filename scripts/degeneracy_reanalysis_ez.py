@@ -22,8 +22,8 @@ The read (both directions, honestly):
   degeneracy/ceiling artifact, NOT substantive judge disagreement. The 36% legibility
   ranking-reversals (see kappa_summary.json) are the same artifact.
 - **Coverage** has real variance (dominant fraction 0.52-0.80): κ (0.52-0.71) is
-  close to AC2 and the rankings are judge-stable → genuine agreement on the axis with
-  signal.
+  much closer to AC2 than on legibility and the rankings are judge-stable → genuine
+  agreement on the axis with signal.
 
 Applied claim: a monitorability metric can look judge-unreliable purely because its
 score distribution is saturated; report a prevalence-robust coefficient + a
@@ -114,7 +114,7 @@ def main() -> int:
     print("\nRead:")
     print("  legibility — every judge degenerate; κ collapses but p_o & AC2 stay high")
     print("               → ceiling artifact, not substantive judge disagreement.")
-    print("  coverage   — real variance; κ ≈ AC2, rankings judge-stable → genuine agreement.")
+    print("  coverage   — real variance; κ recovers toward AC2, rankings judge-stable → genuine agreement.")
 
     OUTPUT_PATH.write_text(json.dumps(out, indent=2) + "\n")
     print(f"\nWrote {OUTPUT_PATH}  ($0 — no model calls)")
