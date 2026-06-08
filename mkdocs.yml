@@ -58,6 +58,7 @@ exclude_docs: |
   related_work.md
   inspect_ai_integration_assessment.md
   autorater-notes.md
+  cross_judge_degeneracy.md
   paper-refs/
 
 markdown_extensions:
