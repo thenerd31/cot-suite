@@ -7,7 +7,7 @@ cot-suite v0.1 wraps five published evaluation methodologies under a unified API
 | [Lanham 4-test suite](lanham.md) | Lanham 2307.13702 | Causal-intervention faithfulness via early answering, mistake injection, paraphrasing, filler tokens | B1 ✓ |
 | [Turpin counterfactual bias](turpin.md) | Turpin 2305.04388 | Faithfulness via accuracy drop under biased context | B2 ✓ |
 | [Chen cue injection](chen.md) | Chen 2505.05410 | Faithfulness via cue-acknowledgment rate across 6 cue types | B3 ✓ |
-| [Arcuschin PHR detector](arcuschin.md) | Arcuschin 2503.08679 | Per-trajectory implicit post-hoc rationalization (CoT vs final-answer divergence) | B4 ⚠ application/measurement (9.30% on GPT-4o-mini vs paper 13%); against-release reproduction (B4 redux) pending |
+| [Arcuschin PHR detector](arcuschin.md) | Arcuschin 2503.08679 | Per-trajectory implicit post-hoc rationalization (CoT vs final-answer divergence) | B4a ✓ against-release IPHR reproduction complete: integer-exact (Δ=0), 9 models, 4 of 7 headline cells (gpt-4o-mini 13.49% ≈ paper 13%); per-trajectory detector is a distinct, narrower application signal |
 | [Emmons-Zimmermann legibility/coverage](emmons-zimmermann.md) | Emmons & Zimmermann 2510.23966 | LLM-as-judge legibility + causal coverage on a 0-4 Likert | method-implementation + cross-judge validation (Qwen3-14B; **not** an E-Z Table-1 reproduction) |
 
 ## Two question types, one bundle

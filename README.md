@@ -23,7 +23,7 @@ Two against-release reproductions, each replaying a paper's published metric on 
 | text-davinci-003 | few-shot | -24.1 | -24.11 | -0.01 |
 | claude-v1 | few-shot | -21.5 | -21.57 | -0.07 |
 
-**Arcuschin et al.** ([2503.08679](https://arxiv.org/abs/2503.08679), ChainScope). Implicit Post-Hoc Rationalization (IPHR) pair rate, recomputed from the released ChainScope dataframe (n = 4,892 pairs). Integer-exact metric replay: ours matches the release count for every model below (Δ = 0). Partial, covering 4 of the 7 headline cells.
+**Arcuschin et al.** ([2503.08679](https://arxiv.org/abs/2503.08679), ChainScope). Implicit Post-Hoc Rationalization (IPHR) pair rate, recomputed from the released ChainScope dataframe (n = 4,892 pairs). Integer-exact metric replay (Δ = 0) against the released count for all 9 non-oversampled models (the 4 paper-headline cells shown below, plus 5 non-headline). Partial against the paper, covering 4 of its 7 headline cells.
 
 | model | paper | ours | count | Δ (count) |
 |---|--:|--:|--:|--:|
